@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using ICD.Common.Attributes;
 
 [assembly: AssemblyTitle("ICD.Connect.API")]
 [assembly: AssemblyCompany("")]
