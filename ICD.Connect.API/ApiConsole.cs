@@ -17,7 +17,6 @@ namespace ICD.Connect.API
 	/// </summary>
 	public sealed class ApiConsole : IConsoleNode
 	{
-
 		private const string ROOT_COMMAND = "ICD";
 		private const string ROOT_HELP = "Root node for dynamic console commands";
 
@@ -51,15 +50,6 @@ namespace ICD.Connect.API
 			s_Singleton = new ApiConsole();
 			s_Children = new IcdHashSet<IConsoleNodeBase>();
 			s_ChildrenSection = new SafeCriticalSection();
-
-#if SIMPLSHARP
-			// Avoid crashing Simpl applications
-			if (IcdEnvironment.RuntimeEnvironment != IcdEnvironment.eRuntimeEnvironment.SimplSharpPro)
-				return;
-
-			if (CrestronConsole.ConsoleRegistered)
-				return;
-#endif
 
 			IcdConsole.AddNewConsoleCommand(ExecuteCommand, ROOT_COMMAND, ROOT_HELP, IcdConsole.eAccessLevel.Operator);
 		}

@@ -75,7 +75,7 @@
     <Compile Include="Commands\GenericConsoleCommand.cs" />
     <Compile Include="Commands\IConsoleCommand.cs" />
     <Compile Include="Commands\ParamsConsoleCommand.cs" />
-    <Compile Include="IcdConsole.cs" />
+    <Compile Include="ApiConsole.cs" />
     <Compile Include="Nodes\ConsoleNodeGroup.cs" />
     <Compile Include="Nodes\IConsoleNode.cs" />
     <Compile Include="Nodes\IConsoleNodeBase.cs" />
