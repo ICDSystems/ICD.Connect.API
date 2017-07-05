@@ -182,6 +182,7 @@ namespace ICD.Connect.API.Commands
 		/// <param name="name"></param>
 		/// <param name="help"></param>
 		/// <param name="callback"></param>
+		/// <param name="hidden"></param>
 		public GenericConsoleCommand(string name, string help, Action<T1, T2, T3> callback, bool hidden)
 			: base(name, help, hidden)
 		{
@@ -255,6 +256,7 @@ namespace ICD.Connect.API.Commands
 		/// <param name="name"></param>
 		/// <param name="help"></param>
 		/// <param name="callback"></param>
+		/// <param name="hidden"></param>
 		public GenericConsoleCommand(string name, string help, Action<T1, T2, T3, T4> callback, bool hidden)
 			: base(name, help, hidden)
 		{
@@ -271,6 +273,7 @@ namespace ICD.Connect.API.Commands
 		/// <param name="name"></param>
 		/// <param name="help"></param>
 		/// <param name="callback"></param>
+		/// <param name="hidden"></param>
 		public GenericConsoleCommand(string name, string help, Func<T1, T2, T3, T4, string> callback, bool hidden)
 			: base(name, help, hidden)
 		{
