@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
+using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
 #if SIMPLSHARP
 using Crestron.SimplSharp;
 #endif
-using ICD.Common.Properties;
-using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
 
 namespace ICD.Connect.API
 {

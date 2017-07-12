@@ -1,7 +1,7 @@
-﻿using System.Globalization;
-#if !SIMPLSHARP
+﻿#if !SIMPLSHARP
 using System.Reflection;
 #endif
+using System.Globalization;
 using ICD.Common.Utils;
 
 namespace ICD.Connect.API.Commands
