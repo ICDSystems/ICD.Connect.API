@@ -59,6 +59,9 @@ namespace ICD.Connect.API.Nodes
 		/// <returns></returns>
 		public static string GetSafeConsoleName(this IConsoleNodeBase extends)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
 			return StringUtils.RemoveWhitespace(extends.ConsoleName);
 		}
 
@@ -70,6 +73,9 @@ namespace ICD.Connect.API.Nodes
 		/// <returns></returns>
 		public static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelector(this IConsoleNodeBase extends, string selector)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
 			// Selector is an index.
 			uint index;
 			if (StringUtils.TryParse(selector, out index))
@@ -100,6 +106,9 @@ namespace ICD.Connect.API.Nodes
 		/// <returns></returns>
 		private static IConsoleNodeBase GetConsoleNodeByName(this IConsoleNodeBase extends, string name)
 		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
 			return extends.GetConsoleNodes()
 			              .FirstOrDefault(g => name.Equals(g.GetSafeConsoleName(), StringComparison.CurrentCultureIgnoreCase));
 		}
