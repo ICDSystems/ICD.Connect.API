@@ -83,7 +83,7 @@ namespace ICD.Connect.API.Commands
 		private static string GetHelpString(string name)
 		{
 			string array = StringUtils.ArrayFormat(EnumUtils.GetValues<T>().OrderBy(e => e.ToString()));
-			return string.Format("{0} x {1}", name, array);
+			return string.Format("{0} <{1}>", name, array);
 		}
 	}
 }
