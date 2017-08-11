@@ -84,7 +84,7 @@ namespace ICD.Connect.API.Commands
 #else
             if (typeof(T).GetTypeInfo().IsEnum)
 #endif
-				return EnumUtils.Parse<T>(value, true);
+				return EnumUtils.ParseStrict<T>(value, true);
 
 			return (T)System.Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
 		}

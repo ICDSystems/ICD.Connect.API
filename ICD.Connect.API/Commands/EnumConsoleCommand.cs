@@ -69,7 +69,7 @@ namespace ICD.Connect.API.Commands
 
 			T param;
 
-			if (!EnumUtils.TryParse(parameters[0], true, out param))
+			if (!EnumUtils.TryParseStrict(parameters[0], true, out param))
 				return string.Format("Invalid parameter {0}", parameters[0]);
 
 			return m_Callback(param);
