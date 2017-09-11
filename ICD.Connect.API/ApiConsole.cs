@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
@@ -52,6 +53,10 @@ namespace ICD.Connect.API
 			s_ChildrenSection = new SafeCriticalSection();
 
 			IcdConsole.AddNewConsoleCommand(ExecuteCommand, ROOT_COMMAND, ROOT_HELP, IcdConsole.eAccessLevel.Operator);
+
+			IcdConsole.AddNewConsoleCommand(parameters => IcdConsole.ConsoleCommandResponse(CleanErrorLog(parameters)), "icderr",
+								"Prints the error log without the added Crestron info",
+								IcdConsole.eAccessLevel.Operator);
 		}
 
 		#region Methods
@@ -150,6 +155,25 @@ namespace ICD.Connect.API
 #endif
 
 		#endregion
+
+		/// <summary>
+		/// Removes crestron junk from the error log.
+		/// </summary>
+		/// <param name="args"></param>
+		/// <returns></returns>
+		private static string CleanErrorLog(params string[] args)
+		{
+			string errLog = string.Empty;
+			IcdConsole.SendControlSystemCommand("err " + string.Join(" ", args), ref errLog);
+
+			string cleaned = Regex.Replace(errLog,
+										   @"(^|\n)(?:\d+\. )?(Error|Notice|Info|Warning|Ok): (?:\w*)\.exe (?:\[(App \d+)\])? *# (.+?)  # ?",
+										   "$1$4 - $3 $2:: ");
+			cleaned = Regex.Replace(cleaned,
+									@"(?<!(^|\n)\d*)(?:\d+\. )?(Error|Notice|Info|Warning|Ok): SimplSharpPro\.exe ?(?:\[App (\d+)\] )?# (.+?)  # ?",
+									"");
+			return cleaned;
+		}
 
 		#region Console
 
