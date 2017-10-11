@@ -53,7 +53,7 @@ namespace ICD.Connect.API.Nodes
 			{
 				ServiceProvider.TryGetService<ILoggerService>()
 				               .AddEntry(eSeverity.Error, e, "Failed to execute console command \"{0}\" - {1}", command, e.Message);
-				return string.Format("Failed to execute console command \"{0}\" - Please see error log", command);
+				return string.Format("Failed to execute console command \"{0}\" - {1}", command, e.Message);
 			}
 		}
 
