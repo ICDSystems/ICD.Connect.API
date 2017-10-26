@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 
 namespace ICD.Connect.API.Nodes
@@ -79,7 +80,9 @@ namespace ICD.Connect.API.Nodes
 			uint index;
 			if (StringUtils.TryParse(selector, out index))
 			{
-				yield return extends.GetConsoleNodeByKey(index);
+				IConsoleNodeBase indexed = extends.GetConsoleNodeByKey(index);
+				if (indexed != null)
+					yield return indexed;
 				yield break;
 			}
 
@@ -103,6 +106,7 @@ namespace ICD.Connect.API.Nodes
 		/// <param name="extends"></param>
 		/// <param name="name"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		private static IConsoleNodeBase GetConsoleNodeByName(this IConsoleNodeBase extends, string name)
 		{
 			if (extends == null)
