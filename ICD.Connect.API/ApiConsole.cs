@@ -55,8 +55,8 @@ namespace ICD.Connect.API
 			IcdConsole.AddNewConsoleCommand(ExecuteCommand, ROOT_COMMAND, ROOT_HELP, IcdConsole.eAccessLevel.Operator);
 
 			IcdConsole.AddNewConsoleCommand(parameters => IcdConsole.ConsoleCommandResponse(CleanErrorLog(parameters)), "icderr",
-								"Prints the error log without the added Crestron info",
-								IcdConsole.eAccessLevel.Operator);
+			                                "Prints the error log without the added Crestron info",
+			                                IcdConsole.eAccessLevel.Operator);
 		}
 
 		#region Methods
@@ -138,7 +138,7 @@ namespace ICD.Connect.API
 			if (commandString == HELP_COMMAND)
 			{
 				IcdConsole.ConsoleCommandResponse("Type \"{0} {1}\" to see commands registered for {2}", ROOT_COMMAND, HELP_COMMAND,
-						typeof(IcdConsole).Name);
+				                                  typeof(IcdConsole).Name);
 				return;
 			}
 
@@ -167,11 +167,11 @@ namespace ICD.Connect.API
 			IcdConsole.SendControlSystemCommand("err " + string.Join(" ", args), ref errLog);
 
 			string cleaned = Regex.Replace(errLog,
-										   @"(^|\n)(?:\d+\. )?(Error|Notice|Info|Warning|Ok): (?:\w*)\.exe (?:\[(App \d+)\])? *# (.+?)  # ?",
-										   "$1$4 - $3 $2:: ");
+			                               @"(^|\n)(?:\d+\. )?(Error|Notice|Info|Warning|Ok): (?:\w*)\.exe (?:\[(App \d+)\])? *# (.+?)  # ?",
+			                               "$1$4 - $3 $2:: ");
 			cleaned = Regex.Replace(cleaned,
-									@"(?<!(^|\n)\d*)(?:\d+\. )?(Error|Notice|Info|Warning|Ok): SimplSharpPro\.exe ?(?:\[App (\d+)\] )?# (.+?)  # ?",
-									"");
+			                        @"(?<!(^|\n)\d*)(?:\d+\. )?(Error|Notice|Info|Warning|Ok): SimplSharpPro\.exe ?(?:\[App (\d+)\] )?# (.+?)  # ?",
+			                        "");
 			return cleaned;
 		}
 
