@@ -47,14 +47,16 @@ namespace ICD.Connect.API.Nodes
 			if (nodes.Length == 0)
 				return string.Format("Unexpected command {0}", first);
 
+			string output = null;
+
 			foreach (IConsoleNodeBase node in nodes)
 			{
 				string resp = node.ExecuteConsoleCommand(remaining);
 				if (resp != null)
-					return resp;
+					output = (output ?? string.Empty) + IcdEnvironment.NewLine + resp;
 			}
 
-			return null;
+			return output;
 		}
 
 		/// <summary>
