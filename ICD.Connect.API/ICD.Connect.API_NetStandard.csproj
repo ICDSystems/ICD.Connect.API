@@ -5,9 +5,14 @@
     <TargetFramework>netstandard1.6</TargetFramework>
 	<RootNamespace>ICD.Connect.API</RootNamespace>
   </PropertyGroup>
-
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;STANDARD</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <OutputPath>binNetCoreApp\$(Configuration)\</OutputPath>
+    <DefineConstants>TRACE;STANDARD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
