@@ -207,7 +207,11 @@ namespace ICD.Connect.API
 		{
 			ILoggerService logger = ServiceProvider.TryGetService<ILoggerService>();
 			if (logger != null)
-				yield return new EnumConsoleCommand<eSeverity>("SetLoggingSeverity", s => logger.SeverityLevel = s);
+			{
+				string help = string.Format("SetLoggingSeverity <{0}>",
+				                            StringUtils.ArrayFormat(EnumUtils.GetValues<eSeverity>().OrderBy(e => (int)e)));
+				yield return new GenericConsoleCommand<eSeverity>("SetLoggingSeverity", help, s => logger.SeverityLevel = s);
+			}
 		}
 
 		#endregion
