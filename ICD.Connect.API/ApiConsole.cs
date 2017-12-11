@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ICD.Common.Properties;
+using ICD.Common.Services;
+using ICD.Common.Services.Logging;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Connect.API.Commands;
@@ -192,6 +194,9 @@ namespace ICD.Connect.API
 		/// <param name="addRow"></param>
 		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
+			ILoggerService logger = ServiceProvider.TryGetService<ILoggerService>();
+			if (logger != null)
+				addRow("Logging Severity", logger.SeverityLevel);
 		}
 
 		/// <summary>
@@ -200,7 +205,9 @@ namespace ICD.Connect.API
 		/// <returns></returns>
 		public IEnumerable<IConsoleCommand> GetConsoleCommands()
 		{
-			yield break;
+			ILoggerService logger = ServiceProvider.TryGetService<ILoggerService>();
+			if (logger != null)
+				yield return new EnumConsoleCommand<eSeverity>("SetLoggingSeverity", s => logger.SeverityLevel = s);
 		}
 
 		#endregion
