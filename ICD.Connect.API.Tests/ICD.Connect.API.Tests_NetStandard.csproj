@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ICD.Common.Utils\ICD.Common.Utils.Tests\ICD.Common.Utils.Tests_NetStandard.csproj" />
     <ProjectReference Include="..\ICD.Connect.API\ICD.Connect.API_NetStandard.csproj" />
   </ItemGroup>
 
