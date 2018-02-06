@@ -17,7 +17,8 @@ namespace ICD.Connect.API.Attributes
 		/// <summary>
 		/// Returns the info for the attribute.
 		/// </summary>
+		/// <param name="memberInfo"></param>
 		/// <returns></returns>
-		IApiInfo GetInfo();
+		IApiInfo GetInfo(object memberInfo);
 	}
 }

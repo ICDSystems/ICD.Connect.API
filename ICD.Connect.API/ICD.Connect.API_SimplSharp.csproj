@@ -76,7 +76,6 @@
     <Compile Include="Attributes\ApiMethodAttribute.cs" />
     <Compile Include="Attributes\ApiParameterAttribute.cs" />
     <Compile Include="Attributes\ApiPropertyAttribute.cs" />
-    <Compile Include="Attributes\ApiEventAttribute.cs" />
     <Compile Include="Commands\AbstractConsoleCommand.cs" />
     <Compile Include="Commands\ConsoleCommand.cs" />
     <Compile Include="Commands\EnumConsoleCommand.cs" />
@@ -85,7 +84,6 @@
     <Compile Include="Commands\ParamsConsoleCommand.cs" />
     <Compile Include="ApiConsole.cs" />
     <Compile Include="Info\ApiClassInfo.cs" />
-    <Compile Include="Info\ApiEventInfo.cs" />
     <Compile Include="Info\ApiMethodInfo.cs" />
     <Compile Include="Info\ApiParameterInfo.cs" />
     <Compile Include="Info\ApiPropertyInfo.cs" />

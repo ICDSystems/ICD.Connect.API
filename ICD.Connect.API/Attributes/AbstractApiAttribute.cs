@@ -20,12 +20,6 @@ namespace ICD.Connect.API.Attributes
 		public string Help { get { return m_Help; } }
 
 		/// <summary>
-		/// Returns the info for the attribute.
-		/// </summary>
-		/// <returns></returns>
-		public abstract IApiInfo GetInfo();
-
-		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="name"></param>
@@ -35,6 +29,13 @@ namespace ICD.Connect.API.Attributes
 			m_Name = FormatName(name);
 			m_Help = FormatHelp(help);
 		}
+
+		/// <summary>
+		/// Returns the info for the attribute.
+		/// </summary>
+		/// <param name="memberInfo"></param>
+		/// <returns></returns>
+		public abstract IApiInfo GetInfo(object memberInfo);
 
 		/// <summary>
 		/// Capitalizes the first character of each word and removes all whitespace.

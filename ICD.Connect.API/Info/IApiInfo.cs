@@ -7,12 +7,12 @@ namespace ICD.Connect.API.Info
 		/// <summary>
 		/// Gets the name for the API attribute.
 		/// </summary>
-		string Name { get; }
+		string Name { get; set; }
 
 		/// <summary>
 		/// Gets the help for the API attribute.
 		/// </summary>
-		string Help { get; }
+		string Help { get; set; }
 
 		/// <summary>
 		/// Serializes the instance to JSON.

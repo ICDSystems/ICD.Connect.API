@@ -1,6 +1,7 @@
 ﻿using ICD.Common.Utils.Json;
 using ICD.Connect.API.Attributes;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ICD.Connect.API.Info
 {
@@ -9,28 +10,21 @@ namespace ICD.Connect.API.Info
 		private const string NAME_PROPERTY = "name";
 		private const string HELP_PROPERTY = "help";
 
-		private readonly string m_Name;
-		private readonly string m_Help;
+		/// <summary>
+		/// Gets/sets the name for the API attribute.
+		/// </summary>
+		public string Name { get; set; }
 
 		/// <summary>
-		/// Gets the name for the API attribute.
+		/// Gets/sets the help for the API attribute.
 		/// </summary>
-		public string Name { get { return m_Name; } }
-
-		/// <summary>
-		/// Gets the help for the API attribute.
-		/// </summary>
-		public string Help { get { return m_Help; } }
+		public string Help { get; set; }
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="name"></param>
-		/// <param name="help"></param>
-		protected AbstractApiInfo(string name, string help)
+		protected AbstractApiInfo()
 		{
-			m_Name = name;
-			m_Help = help;
 		}
 
 		/// <summary>
@@ -38,8 +32,10 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="attribute"></param>
 		protected AbstractApiInfo(AbstractApiAttribute attribute)
-			: this(attribute.Name, attribute.Help)
+			: this()
 		{
+			Name = attribute.Name;
+			Help = attribute.Help;
 		}
 
 		/// <summary>
@@ -59,11 +55,17 @@ namespace ICD.Connect.API.Info
 		{
 			writer.WriteStartObject();
 			{
-				writer.WritePropertyName(NAME_PROPERTY);
-				writer.WriteValue(m_Name);
+				if (Name != null)
+				{
+					writer.WritePropertyName(NAME_PROPERTY);
+					writer.WriteValue(Name);
+				}
 
-				writer.WritePropertyName(HELP_PROPERTY);
-				writer.WriteValue(m_Help);
+				if (Help != null)
+				{
+					writer.WritePropertyName(HELP_PROPERTY);
+					writer.WriteValue(Help);
+				}
 
 				WriteProperties(writer);
 			}
@@ -76,6 +78,17 @@ namespace ICD.Connect.API.Info
 		/// <param name="writer"></param>
 		protected virtual void WriteProperties(JsonWriter writer)
 		{
+		}
+
+		/// <summary>
+		/// Updates the instance with the information from the JSON object.
+		/// </summary>
+		/// <param name="instance"></param>
+		/// <param name="token"></param>
+		protected static void Deserialize(AbstractApiInfo instance, JToken token)
+		{
+			instance.Name = (string)token[NAME_PROPERTY];
+			instance.Help = (string)token[HELP_PROPERTY];
 		}
 	}
 }

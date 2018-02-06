@@ -1,4 +1,9 @@
 ﻿using System;
+#if SIMPLSHARP
+using Crestron.SimplSharp.Reflection;
+#else
+using System.Reflection;
+#endif
 using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.Attributes
@@ -20,9 +25,10 @@ namespace ICD.Connect.API.Attributes
 		/// Returns the info for the attribute.
 		/// </summary>
 		/// <returns></returns>
-		public override IApiInfo GetInfo()
+		public override IApiInfo GetInfo(object memberInfo)
 		{
-			return new ApiParameterInfo(this);
+			ParameterInfo parameter = memberInfo as ParameterInfo;
+			return new ApiParameterInfo(this, parameter);
 		}
 	}
 }
