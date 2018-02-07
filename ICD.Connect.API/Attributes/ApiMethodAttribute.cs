@@ -22,13 +22,13 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		/// <summary>
-		/// Returns the info for the attribute.
+		/// Gets the method info for the given member.
 		/// </summary>
+		/// <param name="method"></param>
 		/// <returns></returns>
-		public override IApiInfo GetInfo(object memberInfo)
-		{
-			MethodInfo method = memberInfo as MethodInfo;
-			return new ApiMethodInfo(this, method);
-		}
+		public ApiMethodInfo GetInfo(MethodInfo method)
+	    {
+		    return new ApiMethodInfo(this, method);
+	    }
     }
 }

@@ -17,12 +17,12 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		/// <summary>
-		/// Returns the info for the attribute.
+		/// Gets the class info for the given type.
 		/// </summary>
+		/// <param name="type"></param>
 		/// <returns></returns>
-		public override IApiInfo GetInfo(object memberInfo)
+		public ApiClassInfo GetInfo(Type type)
 		{
-			Type type = memberInfo as Type;
 			return new ApiClassInfo(this, type);
 		}
 	}

@@ -25,10 +25,9 @@ namespace ICD.Connect.API.Attributes
 		/// Returns the info for the attribute.
 		/// </summary>
 		/// <returns></returns>
-		public override IApiInfo GetInfo(object memberInfo)
+		public ApiPropertyInfo GetInfo(PropertyInfo memberInfo)
 		{
-			PropertyInfo property = memberInfo as PropertyInfo;
-			return new ApiPropertyInfo(this, property);
+			return new ApiPropertyInfo(this, memberInfo);
 		}
     }
 }

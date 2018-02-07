@@ -33,13 +33,6 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		/// <summary>
-		/// Returns the info for the attribute.
-		/// </summary>
-		/// <param name="memberInfo"></param>
-		/// <returns></returns>
-		public abstract IApiInfo GetInfo(object memberInfo);
-
-		/// <summary>
 		/// Capitalizes the first character of each word and removes all whitespace.
 		/// </summary>
 		/// <param name="name"></param>
