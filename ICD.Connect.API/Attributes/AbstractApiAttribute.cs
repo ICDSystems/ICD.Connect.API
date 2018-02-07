@@ -1,9 +1,11 @@
-﻿using ICD.Common.Utils;
+﻿using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Attributes;
 using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.Attributes
 {
+	[MeansImplicitUse]
 	public abstract class AbstractApiAttribute : AbstractIcdAttribute, IApiAttribute
 	{
 		private readonly string m_Name;
