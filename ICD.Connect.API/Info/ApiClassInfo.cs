@@ -96,7 +96,7 @@ namespace ICD.Connect.API.Info
 #else
 				type.GetTypeInfo()
 #endif
-					.GetProperties())
+					.GetProperties(ApiPropertyAttribute.BindingFlags))
 			{
 				ApiPropertyAttribute attribute = GetPropertyAttributeForMethod(property);
 				if (attribute == null)
@@ -119,7 +119,7 @@ namespace ICD.Connect.API.Info
 #else
 				type.GetTypeInfo()
 #endif
-				    .GetMethods())
+				    .GetMethods(ApiMethodAttribute.BindingFlags))
 			{
 				ApiMethodAttribute attribute = GetMethodAttributeForMethod(method);
 				if (attribute == null)

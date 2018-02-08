@@ -1,7 +1,11 @@
-﻿using ICD.Common.Properties;
+﻿#if SIMPLSHARP
+using Crestron.SimplSharp.Reflection;
+#else
+using System.Reflection;
+#endif
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Attributes;
-using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.Attributes
 {
@@ -20,6 +24,20 @@ namespace ICD.Connect.API.Attributes
 		/// Gets the help string for the decorated item.
 		/// </summary>
 		public string Help { get { return m_Help; } }
+
+		/// <summary>
+		/// Gets the binding flags for API discovery.
+		/// </summary>
+		public static BindingFlags BindingFlags
+		{
+			get
+			{
+				return BindingFlags.Instance |
+				       BindingFlags.Static |
+				       BindingFlags.NonPublic |
+				       BindingFlags.Public;
+			}
+		}
 
 		/// <summary>
 		/// Constructor.

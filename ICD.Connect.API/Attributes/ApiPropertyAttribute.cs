@@ -10,7 +10,12 @@ namespace ICD.Connect.API.Attributes
 {
 	[AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
 	public sealed class ApiPropertyAttribute : AbstractApiAttribute
-    {
+	{
+		/// <summary>
+		/// Gets the binding flags for API property discovery.
+		/// </summary>
+		public new static BindingFlags BindingFlags { get { return AbstractApiAttribute.BindingFlags; } }
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -29,5 +34,5 @@ namespace ICD.Connect.API.Attributes
 		{
 			return new ApiPropertyInfo(this, memberInfo);
 		}
-    }
+	}
 }
