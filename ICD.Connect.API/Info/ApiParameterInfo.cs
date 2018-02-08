@@ -30,6 +30,7 @@ namespace ICD.Connect.API.Info
 		/// Constructor.
 		/// </summary>
 		public ApiParameterInfo()
+			: this(null, null)
 		{
 		}
 
@@ -52,8 +53,33 @@ namespace ICD.Connect.API.Info
 		public ApiParameterInfo(ApiParameterAttribute attribute, ParameterInfo parameter, object instance)
 			: base(attribute)
 		{
-			Type = parameter.ParameterType;
+			Type = parameter == null ? null : parameter.ParameterType;
 		}
+
+		#region Methods
+
+		/// <summary>
+		/// Sets the value and type.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="value"></param>
+		public void SetValue<T>(T value)
+		{
+			SetValue(typeof(T), value);
+		}
+
+		/// <summary>
+		/// Sets the value and type.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="value"></param>
+		public void SetValue(Type type, object value)
+		{
+			Type = type;
+			Value = value;
+		}
+
+		#endregion
 
 		#region Serialization
 
@@ -111,7 +137,7 @@ namespace ICD.Connect.API.Info
 		{
 			// Type
 			string typeName = (string)token[PROPERTY_TYPE];
-			instance.Type = typeName == null ? null : Type.GetType(typeName, true, true);
+			instance.Type = typeName == null ? null : Type.GetType(typeName, false, true);
 
 			// Value
 			instance.Value = JsonUtils.Deserialize(instance.Type, token[PROPERTY_VALUE]);

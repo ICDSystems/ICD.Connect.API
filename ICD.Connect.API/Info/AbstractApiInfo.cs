@@ -24,6 +24,7 @@ namespace ICD.Connect.API.Info
 		/// Constructor.
 		/// </summary>
 		protected AbstractApiInfo()
+			: this(null)
 		{
 		}
 
@@ -32,10 +33,9 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="attribute"></param>
 		protected AbstractApiInfo(AbstractApiAttribute attribute)
-			: this()
 		{
-			Name = attribute.Name;
-			Help = attribute.Help;
+			Name = attribute == null ? null : attribute.Name;
+			Help = attribute == null ? null : attribute.Help;
 		}
 
 		/// <summary>

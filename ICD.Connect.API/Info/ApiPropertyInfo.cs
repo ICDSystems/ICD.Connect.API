@@ -42,6 +42,7 @@ namespace ICD.Connect.API.Info
 		/// Constructor.
 		/// </summary>
 		public ApiPropertyInfo()
+			: this(null, null)
 		{
 		}
 
@@ -64,11 +65,36 @@ namespace ICD.Connect.API.Info
 		public ApiPropertyInfo(ApiPropertyAttribute attribute, PropertyInfo property, object instance)
 			: base(attribute)
 		{
-			Type = property.PropertyType;
-			Read = property.CanRead;
-			Write = property.CanWrite;
-			Value = instance == null || !Read ? null : property.GetValue(instance, new object[0]);
+			Type = property == null ? null : property.PropertyType;
+			Read = property != null && property.CanRead;
+			Write = property != null && property.CanWrite;
+			Value = instance == null || property == null || !Read ? null : property.GetValue(instance, new object[0]);
 		}
+
+		#region Methods
+
+		/// <summary>
+		/// Sets the value and type.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="value"></param>
+		public void SetValue<T>(T value)
+		{
+			SetValue(typeof(T), value);
+		}
+
+		/// <summary>
+		/// Sets the value and type.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="value"></param>
+		public void SetValue(Type type, object value)
+		{
+			Type = type;
+			Value = value;
+		}
+
+		#endregion
 
 		#region Serialization
 
@@ -138,7 +164,7 @@ namespace ICD.Connect.API.Info
 		{
 			// Type
 			string typeName = (string)token[PROPERTY_TYPE];
-			instance.Type = typeName == null ? null : Type.GetType(typeName, true, true);
+			instance.Type = typeName == null ? null : Type.GetType(typeName, false, true);
 
 			// Value
 			instance.Value = JsonUtils.Deserialize(instance.Type, token[PROPERTY_VALUE]);

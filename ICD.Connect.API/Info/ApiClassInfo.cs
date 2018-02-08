@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Properties;
 using ICD.Connect.API.Attributes;
 using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
@@ -26,6 +25,7 @@ namespace ICD.Connect.API.Info
 		/// Constructor.
 		/// </summary>
 		public ApiClassInfo()
+			: this(null, null)
 		{
 		}
 
@@ -55,7 +55,7 @@ namespace ICD.Connect.API.Info
 			m_Properties = new List<ApiPropertyInfo>(properties);
 
 			// Pull the name from the instance
-			if (string.IsNullOrEmpty(attribute.Name) && instance != null)
+			if ((attribute == null || string.IsNullOrEmpty(attribute.Name)) && instance != null)
 				Name = instance.GetType().Name;
 		}
 
@@ -81,6 +81,15 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
+		/// Adds the method to the collection.
+		/// </summary>
+		/// <param name="method"></param>
+		public void AddMethod(ApiMethodInfo method)
+		{
+			m_Methods.Add(method);
+		}
+
+		/// <summary>
 		/// Gets the properties for this class.
 		/// </summary>
 		/// <returns></returns>
@@ -99,55 +108,43 @@ namespace ICD.Connect.API.Info
 			m_Properties.AddRange(properties);
 		}
 
+		/// <summary>
+		/// Adds the property to the collection.
+		/// </summary>
+		/// <param name="property"></param>
+		public void AddProperty(ApiPropertyInfo property)
+		{
+			m_Properties.Add(property);
+		}
+
 		#endregion
 
 		#region Private Methods
 
 		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance)
 		{
-			foreach (PropertyInfo property in
-#if SIMPLSHARP
-				((CType)type)
-#else
-				type.GetTypeInfo()
-#endif
-					.GetProperties(ApiPropertyAttribute.BindingFlags))
+			if (type == null)
+				yield break;
+
+			foreach (PropertyInfo property in ApiPropertyAttribute.GetProperties(type))
 			{
-				ApiPropertyAttribute attribute = GetPropertyAttributeForMethod(property);
-				if (attribute == null)
-					continue;
-
-				yield return new ApiPropertyInfo(attribute, property, instance);
+				ApiPropertyAttribute attribute = ApiPropertyAttribute.GetPropertyAttributeForProperty(property);
+				if (attribute != null)
+					yield return new ApiPropertyInfo(attribute, property, instance);
 			}
-		}
-
-		private ApiPropertyAttribute GetPropertyAttributeForMethod(PropertyInfo property)
-		{
-			return property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
 		}
 
 		private IEnumerable<ApiMethodInfo> GetMethodInfo(Type type, object instance)
 		{
-			foreach (MethodInfo method in
-#if SIMPLSHARP
-				((CType)type)
-#else
-				type.GetTypeInfo()
-#endif
-				    .GetMethods(ApiMethodAttribute.BindingFlags))
+			if (type == null)
+				yield break;
+
+			foreach (MethodInfo method in ApiMethodAttribute.GetMethods(type))
 			{
-				ApiMethodAttribute attribute = GetMethodAttributeForMethod(method);
-				if (attribute == null)
-					continue;
-
-				yield return new ApiMethodInfo(attribute, method, instance);
+				ApiMethodAttribute attribute = ApiMethodAttribute.GetMethodAttributeForMethod(method);
+				if (attribute != null)
+					yield return new ApiMethodInfo(attribute, method, instance);
 			}
-		}
-
-		[CanBeNull]
-		private ApiMethodAttribute GetMethodAttributeForMethod(MethodInfo method)
-		{
-			return method.GetCustomAttributes<ApiMethodAttribute>(true).FirstOrDefault();
 		}
 
 		#endregion

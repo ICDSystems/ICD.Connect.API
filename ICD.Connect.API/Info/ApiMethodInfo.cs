@@ -22,6 +22,7 @@ namespace ICD.Connect.API.Info
 		/// Constructor.
 		/// </summary>
 		public ApiMethodInfo()
+			: this(null, null)
 		{
 		}
 
@@ -69,12 +70,24 @@ namespace ICD.Connect.API.Info
 			m_Parameters.AddRange(parameters);
 		}
 
+		/// <summary>
+		/// Adds the parameter to the collection.
+		/// </summary>
+		/// <param name="parameter"></param>
+		public void AddParameter(ApiParameterInfo parameter)
+		{
+			m_Parameters.Add(parameter);
+		}
+
 		#endregion
 
 		#region Private Methods
 
 		private IEnumerable<ApiParameterInfo> GetParameterInfo(MethodInfo method, object instance)
 		{
+			if (method == null)
+				yield break;
+
 			foreach (ParameterInfo parameter in method.GetParameters())
 			{
 				ApiParameterAttribute attribute = GetParameterAttributeForParameter(parameter);
