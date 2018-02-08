@@ -60,6 +60,7 @@ namespace ICD.Connect.API.Attributes
 			if (name == null)
 				return string.Empty;
 
+			name = StringUtils.NiceName(name);
 			name = StringUtils.ToTitleCase(name);
 			return StringUtils.RemoveWhitespace(name);
 		}

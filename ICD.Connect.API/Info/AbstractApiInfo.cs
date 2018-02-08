@@ -55,13 +55,13 @@ namespace ICD.Connect.API.Info
 		{
 			writer.WriteStartObject();
 			{
-				if (Name != null)
+				if (!string.IsNullOrEmpty(Name))
 				{
 					writer.WritePropertyName(NAME_PROPERTY);
 					writer.WriteValue(Name);
 				}
 
-				if (Help != null)
+				if (!string.IsNullOrEmpty(Help))
 				{
 					writer.WritePropertyName(HELP_PROPERTY);
 					writer.WriteValue(Help);

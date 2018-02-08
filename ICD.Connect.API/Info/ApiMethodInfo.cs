@@ -101,7 +101,7 @@ namespace ICD.Connect.API.Info
 			base.WriteProperties(writer);
 
 			// Parameters
-			if (m_Parameters.Count == 0)
+			if (m_Parameters.Count > 0)
 			{
 				writer.WritePropertyName(PROPERTY_PARAMETERS);
 				writer.WriteStartArray();
