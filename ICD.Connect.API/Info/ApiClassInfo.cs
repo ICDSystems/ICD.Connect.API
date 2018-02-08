@@ -35,13 +35,28 @@ namespace ICD.Connect.API.Info
 		/// <param name="attribute"></param>
 		/// <param name="type"></param>
 		public ApiClassInfo(ApiClassAttribute attribute, Type type)
+			: this(attribute, type, null)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
+		/// <param name="type"></param>
+		/// <param name="instance"></param>
+		public ApiClassInfo(ApiClassAttribute attribute, Type type, object instance)
 			: base(attribute)
 		{
-			IEnumerable<ApiMethodInfo> parameters = GetMethodInfo(type);
+			IEnumerable<ApiMethodInfo> parameters = GetMethodInfo(type, instance);
 			m_Methods = new List<ApiMethodInfo>(parameters);
 
-			IEnumerable<ApiPropertyInfo> properties = GetPropertyInfo(type);
+			IEnumerable<ApiPropertyInfo> properties = GetPropertyInfo(type, instance);
 			m_Properties = new List<ApiPropertyInfo>(properties);
+
+			// Pull the name from the instance
+			if (string.IsNullOrEmpty(attribute.Name) && instance != null)
+				Name = instance.GetType().Name;
 		}
 
 		#region Methods
@@ -88,7 +103,7 @@ namespace ICD.Connect.API.Info
 
 		#region Private Methods
 
-		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type)
+		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance)
 		{
 			foreach (PropertyInfo property in
 #if SIMPLSHARP
@@ -102,7 +117,7 @@ namespace ICD.Connect.API.Info
 				if (attribute == null)
 					continue;
 
-				yield return new ApiPropertyInfo(attribute, property) ;
+				yield return new ApiPropertyInfo(attribute, property, instance);
 			}
 		}
 
@@ -111,7 +126,7 @@ namespace ICD.Connect.API.Info
 			return property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
 		}
 
-		private IEnumerable<ApiMethodInfo> GetMethodInfo(Type type)
+		private IEnumerable<ApiMethodInfo> GetMethodInfo(Type type, object instance)
 		{
 			foreach (MethodInfo method in
 #if SIMPLSHARP
@@ -125,7 +140,7 @@ namespace ICD.Connect.API.Info
 				if (attribute == null)
 					continue;
 
-				yield return new ApiMethodInfo(attribute, method);
+				yield return new ApiMethodInfo(attribute, method, instance);
 			}
 		}
 

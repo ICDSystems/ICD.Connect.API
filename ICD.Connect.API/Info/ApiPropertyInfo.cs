@@ -51,11 +51,23 @@ namespace ICD.Connect.API.Info
 		/// <param name="attribute"></param>
 		/// <param name="property"></param>
 		public ApiPropertyInfo(ApiPropertyAttribute attribute, PropertyInfo property)
+			: this(attribute, property, null)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
+		/// <param name="property"></param>
+		/// <param name="instance"></param>
+		public ApiPropertyInfo(ApiPropertyAttribute attribute, PropertyInfo property, object instance)
 			: base(attribute)
 		{
 			Type = property.PropertyType;
 			Read = property.CanRead;
 			Write = property.CanWrite;
+			Value = instance == null || !Read ? null : property.GetValue(instance, new object[0]);
 		}
 
 		#region Serialization
