@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Info;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
 using System.Reflection;
 #endif
-using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.Attributes
 {
 	[AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
-	public sealed class ApiPropertyAttribute : AbstractApiAttribute
+	public sealed class ApiNodeAttribute : AbstractApiAttribute
 	{
 		private static readonly Dictionary<Type, Dictionary<string, PropertyInfo>> s_Cache;
 
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
-		static ApiPropertyAttribute()
+		static ApiNodeAttribute()
 		{
 			s_Cache = new Dictionary<Type, Dictionary<string, PropertyInfo>>();
 		}
@@ -30,7 +30,7 @@ namespace ICD.Connect.API.Attributes
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="help"></param>
-		public ApiPropertyAttribute(string name, string help)
+		public ApiNodeAttribute(string name, string help)
 			: base(name, help)
 		{
 		}
@@ -41,9 +41,9 @@ namespace ICD.Connect.API.Attributes
 		/// Returns the info for the attribute.
 		/// </summary>
 		/// <returns></returns>
-		public ApiPropertyInfo GetInfo(PropertyInfo memberInfo)
+		public ApiNodeInfo GetInfo(PropertyInfo memberInfo)
 		{
-			return new ApiPropertyInfo(this, memberInfo);
+			return new ApiNodeInfo(this, memberInfo);
 		}
 
 		/// <summary>
@@ -52,7 +52,7 @@ namespace ICD.Connect.API.Attributes
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public static PropertyInfo GetProperty(ApiPropertyInfo info, Type type)
+		public static PropertyInfo GetProperty(ApiNodeInfo info, Type type)
 		{
 			if (!s_Cache.ContainsKey(type))
 				CacheType(type);
@@ -73,8 +73,15 @@ namespace ICD.Connect.API.Attributes
 
 			foreach (PropertyInfo property in GetProperties(type))
 			{
-				ApiPropertyAttribute attribute = GetPropertyAttributeForProperty(property);
+				if (!property.CanRead)
+					continue;
+
+				ApiNodeAttribute attribute = GetNodeAttributeForProperty(property);
 				if (attribute == null)
+					continue;
+
+				// Only care about nodes that have the ApiClass attribute.
+				if (ApiClassAttribute.GetClassAttributeForType(property.PropertyType) == null)
 					continue;
 
 				s_Cache[type].Add(attribute.Name, property);
@@ -93,9 +100,9 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		[CanBeNull]
-		public static ApiPropertyAttribute GetPropertyAttributeForProperty(PropertyInfo property)
+		public static ApiNodeAttribute GetNodeAttributeForProperty(PropertyInfo property)
 		{
-			return property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
+			return property.GetCustomAttributes<ApiNodeAttribute>(true).FirstOrDefault();
 		}
 
 		#endregion

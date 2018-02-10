@@ -18,11 +18,6 @@ namespace ICD.Connect.API.Attributes
 		private static readonly Dictionary<Type, Dictionary<string, MethodInfo>> s_Cache;
 
 		/// <summary>
-		/// Gets the binding flags for API method discovery.
-		/// </summary>
-		public new static BindingFlags BindingFlags { get { return AbstractApiAttribute.BindingFlags; } }
-
-		/// <summary>
 		/// Constructor.
 		/// </summary>
 		static ApiMethodAttribute()

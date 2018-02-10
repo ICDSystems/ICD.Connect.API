@@ -1,4 +1,12 @@
 ﻿using System;
+using System.Linq;
+using ICD.Common.Properties;
+#if SIMPLSHARP
+using Crestron.SimplSharp.Reflection;
+#else
+using System.Reflection;
+#endif
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.Attributes
@@ -43,6 +51,18 @@ namespace ICD.Connect.API.Attributes
 		public ApiClassInfo GetInfo(Type type, object instance)
 		{
 			return new ApiClassInfo(this, type, instance);
+		}
+
+		[CanBeNull]
+		public static ApiClassAttribute GetClassAttributeForType(Type type)
+		{
+			return
+#if SIMPLSHARP
+				((CType)type)
+#else
+				type
+#endif
+					.GetCustomAttributes<ApiClassAttribute>(true).FirstOrDefault();
 		}
 	}
 }

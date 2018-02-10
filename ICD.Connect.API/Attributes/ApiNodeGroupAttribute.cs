@@ -3,24 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Info;
+using ICD.Connect.API.Nodes;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
 using System.Reflection;
 #endif
-using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.Attributes
 {
 	[AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
-	public sealed class ApiPropertyAttribute : AbstractApiAttribute
+	public sealed class ApiNodeGroupAttribute : AbstractApiAttribute
 	{
 		private static readonly Dictionary<Type, Dictionary<string, PropertyInfo>> s_Cache;
 
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
-		static ApiPropertyAttribute()
+		static ApiNodeGroupAttribute()
 		{
 			s_Cache = new Dictionary<Type, Dictionary<string, PropertyInfo>>();
 		}
@@ -30,7 +31,7 @@ namespace ICD.Connect.API.Attributes
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="help"></param>
-		public ApiPropertyAttribute(string name, string help)
+		public ApiNodeGroupAttribute(string name, string help)
 			: base(name, help)
 		{
 		}
@@ -41,9 +42,9 @@ namespace ICD.Connect.API.Attributes
 		/// Returns the info for the attribute.
 		/// </summary>
 		/// <returns></returns>
-		public ApiPropertyInfo GetInfo(PropertyInfo memberInfo)
+		public ApiNodeGroupInfo GetInfo(PropertyInfo memberInfo)
 		{
-			return new ApiPropertyInfo(this, memberInfo);
+			return new ApiNodeGroupInfo(this, memberInfo);
 		}
 
 		/// <summary>
@@ -52,7 +53,7 @@ namespace ICD.Connect.API.Attributes
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public static PropertyInfo GetProperty(ApiPropertyInfo info, Type type)
+		public static PropertyInfo GetProperty(ApiNodeInfo info, Type type)
 		{
 			if (!s_Cache.ContainsKey(type))
 				CacheType(type);
@@ -73,7 +74,13 @@ namespace ICD.Connect.API.Attributes
 
 			foreach (PropertyInfo property in GetProperties(type))
 			{
-				ApiPropertyAttribute attribute = GetPropertyAttributeForProperty(property);
+				if (!property.CanRead)
+					continue;
+
+				if (!typeof(IApiNodeGroup).IsAssignableFrom(property.PropertyType))
+					continue;
+
+				ApiNodeGroupAttribute attribute = GetNodeGroupAttributeForProperty(property);
 				if (attribute == null)
 					continue;
 
@@ -93,9 +100,9 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		[CanBeNull]
-		public static ApiPropertyAttribute GetPropertyAttributeForProperty(PropertyInfo property)
+		public static ApiNodeGroupAttribute GetNodeGroupAttributeForProperty(PropertyInfo property)
 		{
-			return property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
+			return property.GetCustomAttributes<ApiNodeGroupAttribute>(true).FirstOrDefault();
 		}
 
 		#endregion
