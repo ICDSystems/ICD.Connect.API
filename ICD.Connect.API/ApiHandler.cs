@@ -86,7 +86,13 @@ namespace ICD.Connect.API
 			PropertyInfo property = ApiNodeAttribute.GetProperty(node, type);
 
 			object nodeValue = property.GetValue(instance, new object [0]);
-			Type nodeType = nodeValue == null ? property.PropertyType : nodeValue.GetType();
+			Type nodeType = nodeValue == null
+				                ?
+#if SIMPLSHARP
+				                (Type)
+#endif
+				                property.PropertyType
+				                : nodeValue.GetType();
 
 			HandleRequest(node.Node, nodeType, nodeValue);
 		}
