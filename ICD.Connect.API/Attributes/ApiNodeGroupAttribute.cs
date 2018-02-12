@@ -91,12 +91,16 @@ namespace ICD.Connect.API.Attributes
 		public static IEnumerable<PropertyInfo> GetProperties(Type type)
 		{
 			return
+				type.GetBaseTypes()
+				    .Prepend(type)
+				    .SelectMany(t =>
 #if SIMPLSHARP
-				((CType)type)
+				                ((CType)t)
 #else
-				type.GetTypeInfo()
+						        t.GetTypeInfo()
 #endif
-					.GetProperties(BindingFlags);
+					                .GetProperties(BindingFlags))
+				    .Distinct((a, b) => a.Name == b.Name, p => p.Name.GetHashCode());
 		}
 
 		[CanBeNull]
