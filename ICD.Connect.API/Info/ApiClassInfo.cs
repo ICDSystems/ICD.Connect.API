@@ -376,7 +376,7 @@ namespace ICD.Connect.API.Info
 
 			// Node Groups
 			JToken nodeGroups = token[PROPERTY_NODEGROUPS];
-			if (nodes != null)
+			if (nodeGroups != null)
 			{
 				IEnumerable<ApiNodeGroupInfo> nodeGroupInfo = nodeGroups.Select(m => ApiNodeGroupInfo.Deserialize(m));
 				instance.SetNodeGroups(nodeGroupInfo);
