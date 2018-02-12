@@ -35,7 +35,8 @@ namespace ICD.Connect.API.Attributes
 				return BindingFlags.Instance |
 				       BindingFlags.Static |
 				       BindingFlags.NonPublic |
-				       BindingFlags.Public;
+				       BindingFlags.Public |
+				       BindingFlags.FlattenHierarchy;
 			}
 		}
 
