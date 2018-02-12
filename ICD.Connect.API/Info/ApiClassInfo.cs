@@ -52,6 +52,8 @@ namespace ICD.Connect.API.Info
 		public ApiClassInfo(ApiClassAttribute attribute, Type type, object instance)
 			: base(attribute)
 		{
+			type = instance == null ? type : instance.GetType();
+
 			IEnumerable<ApiMethodInfo> parameters = GetMethodInfo(type, instance);
 			m_Methods = new List<ApiMethodInfo>(parameters);
 
