@@ -19,7 +19,9 @@ namespace ICD.Connect.API.Info
 	{
 		private const string PROPERTY_NODES = "nodes";
 
-		private readonly Dictionary<uint, ApiClassInfo> m_Nodes;  
+		private readonly Dictionary<uint, ApiClassInfo> m_Nodes;
+
+		public ApiClassInfo this[uint key] { get { return m_Nodes[key]; } set { m_Nodes[key] = value; } }
 
 		/// <summary>
 		/// Constructor.
