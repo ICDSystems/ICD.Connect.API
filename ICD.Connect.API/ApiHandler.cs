@@ -62,6 +62,8 @@ namespace ICD.Connect.API
 			if (info == null)
 				throw new ArgumentNullException("info");
 
+			type = instance == null ? type : instance.GetType();
+
 			foreach (ApiMethodInfo method in info.GetMethods())
 				HandleRequest(method, type, instance);
 
@@ -83,6 +85,8 @@ namespace ICD.Connect.API
 		/// <param name="instance"></param>
 		private static void HandleRequest(ApiNodeInfo node, Type type, object instance)
 		{
+			type = instance == null ? type : instance.GetType();
+
 			PropertyInfo property = ApiNodeAttribute.GetProperty(node, type);
 
 			object nodeValue = property.GetValue(instance, new object [0]);
@@ -105,6 +109,8 @@ namespace ICD.Connect.API
 		/// <param name="instance"></param>
 		private static void HandleRequest(ApiNodeGroupInfo nodeGroup, Type type, object instance)
 		{
+			type = instance == null ? type : instance.GetType();
+
 			PropertyInfo property = ApiNodeGroupAttribute.GetProperty(nodeGroup, type);
 			IApiNodeGroup group = property.GetValue(instance, new object[0]) as IApiNodeGroup;
 
@@ -125,6 +131,8 @@ namespace ICD.Connect.API
 		/// <param name="instance"></param>
 		private static void HandleRequest(ApiMethodInfo info, Type type, object instance)
 		{
+			type = instance == null ? type : instance.GetType();
+
 			MethodInfo method = ApiMethodAttribute.GetMethod(info, type);
 			object[] parameters = info.GetParameters()
 			                          .Select(p => p.Value)
@@ -151,6 +159,8 @@ namespace ICD.Connect.API
 		/// <param name="instance"></param>
 		private static void HandleRequest(ApiPropertyInfo info, Type type, object instance)
 		{
+			type = instance == null ? type : instance.GetType();
+
 			PropertyInfo property = ApiPropertyAttribute.GetProperty(info, type);
 			object value = ChangeType(info.Value, property.PropertyType);
 

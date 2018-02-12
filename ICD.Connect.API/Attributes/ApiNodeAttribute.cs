@@ -80,10 +80,6 @@ namespace ICD.Connect.API.Attributes
 				if (attribute == null)
 					continue;
 
-				// Only care about nodes that have the ApiClass attribute.
-				if (ApiClassAttribute.GetClassAttributeForType(property.PropertyType) == null)
-					continue;
-
 				s_Cache[type].Add(attribute.Name, property);
 			}
 		}
