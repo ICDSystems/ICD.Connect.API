@@ -114,12 +114,13 @@ namespace ICD.Connect.API
 			PropertyInfo property = ApiNodeGroupAttribute.GetProperty(nodeGroup, type);
 			IApiNodeGroup group = property.GetValue(instance, new object[0]) as IApiNodeGroup;
 
-			foreach (KeyValuePair<uint, object> kvp in group)
+			foreach (KeyValuePair<uint, ApiClassInfo> kvp in nodeGroup)
 			{
-				ApiClassInfo classInfo = nodeGroup[kvp.Key];
-				Type classType = kvp.Value.GetType();
+				ApiClassInfo classInfo = kvp.Value;
+				object classInstance = group[kvp.Key];
+				Type classType = classInstance.GetType();
 
-				HandleRequest(classInfo, classType, kvp.Value);
+				HandleRequest(classInfo, classType, classInstance);
 			}
 		}
 

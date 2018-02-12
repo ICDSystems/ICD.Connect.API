@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
@@ -15,7 +16,7 @@ using ICD.Connect.API.Attributes;
 
 namespace ICD.Connect.API.Info
 {
-	public sealed class ApiNodeGroupInfo : AbstractApiInfo
+	public sealed class ApiNodeGroupInfo : AbstractApiInfo, IEnumerable<KeyValuePair<uint, ApiClassInfo>>
 	{
 		private const string PROPERTY_NODES = "nodes";
 
@@ -194,5 +195,15 @@ namespace ICD.Connect.API.Info
 		}
 
 		#endregion
+
+		public IEnumerator<KeyValuePair<uint, ApiClassInfo>> GetEnumerator()
+		{
+			return m_Nodes.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
 	}
 }

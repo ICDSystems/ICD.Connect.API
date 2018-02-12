@@ -6,6 +6,13 @@ namespace ICD.Connect.API.Nodes
 	public abstract class AbstractApiNodeGroup : IApiNodeGroup
 	{
 		/// <summary>
+		/// Gets the node at the given key.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public abstract object this[uint key] { get; }
+
+		/// <summary>
 		/// Gets the keyed nodes for this group.
 		/// </summary>
 		/// <returns></returns>

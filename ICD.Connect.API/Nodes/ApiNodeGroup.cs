@@ -8,16 +8,21 @@ namespace ICD.Connect.API.Nodes
 	{
 		private readonly Func<IEnumerable<T>> m_GetCollection;
 		private readonly Func<T, uint> m_GetKey;
+		private readonly Func<uint, T> m_GetValue;
+
+		public override object this[uint key] { get { return m_GetValue(key); } }
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="getCollection"></param>
 		/// <param name="getKey"></param>
-		public ApiNodeGroup(Func<IEnumerable<T>> getCollection, Func<T, uint> getKey)
+		/// <param name="getValue"></param>
+		public ApiNodeGroup(Func<IEnumerable<T>> getCollection, Func<T, uint> getKey, Func<uint, T> getValue)
 		{
 			m_GetCollection = getCollection;
 			m_GetKey = getKey;
+			m_GetValue = getValue;
 		}
 
 		/// <summary>
