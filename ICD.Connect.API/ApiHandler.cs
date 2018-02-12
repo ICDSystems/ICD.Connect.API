@@ -20,6 +20,9 @@ namespace ICD.Connect.API
 	[ApiClass("ICD", "Entry point for the Connect API.")]
 	public static class ApiHandler
 	{
+		[ApiNode("ControlSystem", "")]
+		public static object ControlSystem { get; set; }
+
 		#region Methods
 
 		/// <summary>
