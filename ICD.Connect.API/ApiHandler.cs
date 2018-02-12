@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -9,6 +10,7 @@ using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.API.Info;
+using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.API
 {
@@ -62,6 +64,48 @@ namespace ICD.Connect.API
 
 			foreach (ApiPropertyInfo property in info.GetProperties())
 				HandleRequest(property, type, instance);
+
+			foreach (ApiNodeInfo node in info.GetNodes())
+				HandleRequest(node, type, instance);
+
+			foreach (ApiNodeGroupInfo nodeGroup in info.GetNodeGroups())
+				HandleRequest(nodeGroup, type, instance);
+		}
+
+		/// <summary>
+		/// Interprets the incoming API request.
+		/// </summary>
+		/// <param name="node"></param>
+		/// <param name="type"></param>
+		/// <param name="instance"></param>
+		private static void HandleRequest(ApiNodeInfo node, Type type, object instance)
+		{
+			PropertyInfo property = ApiNodeAttribute.GetProperty(node, type);
+
+			object nodeValue = property.GetValue(instance, new object [0]);
+			Type nodeType = nodeValue == null ? property.PropertyType : nodeValue.GetType();
+
+			HandleRequest(node.Node, nodeType, nodeValue);
+		}
+
+		/// <summary>
+		/// Interprets the incoming API request.
+		/// </summary>
+		/// <param name="nodeGroup"></param>
+		/// <param name="type"></param>
+		/// <param name="instance"></param>
+		private static void HandleRequest(ApiNodeGroupInfo nodeGroup, Type type, object instance)
+		{
+			PropertyInfo property = ApiNodeGroupAttribute.GetProperty(nodeGroup, type);
+			IApiNodeGroup group = property.GetValue(instance, new object[0]) as IApiNodeGroup;
+
+			foreach (KeyValuePair<uint, object> kvp in group)
+			{
+				ApiClassInfo classInfo = nodeGroup[kvp.Key];
+				Type classType = kvp.Value.GetType();
+
+				HandleRequest(classInfo, classType, kvp.Value);
+			}
 		}
 
 		/// <summary>

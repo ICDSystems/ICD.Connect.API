@@ -53,7 +53,7 @@ namespace ICD.Connect.API.Attributes
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public static PropertyInfo GetProperty(ApiNodeInfo info, Type type)
+		public static PropertyInfo GetProperty(ApiNodeGroupInfo info, Type type)
 		{
 			if (!s_Cache.ContainsKey(type))
 				CacheType(type);
