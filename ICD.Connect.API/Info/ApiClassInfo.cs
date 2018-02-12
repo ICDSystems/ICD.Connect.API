@@ -306,12 +306,13 @@ namespace ICD.Connect.API.Info
 			}
 
 			// Node Groups
-			if (m_NodeGroups.Count > 0)
+			ApiNodeGroupInfo[] populated = m_NodeGroups.Where(g => g.Count > 0).ToArray();
+			if (populated.Length > 0)
 			{
 				writer.WritePropertyName(PROPERTY_NODEGROUPS);
 				writer.WriteStartArray();
 				{
-					foreach (ApiNodeGroupInfo nodeGroup in m_NodeGroups)
+					foreach (ApiNodeGroupInfo nodeGroup in populated)
 						nodeGroup.Serialize(writer);
 				}
 				writer.WriteEndArray();

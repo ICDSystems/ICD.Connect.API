@@ -23,6 +23,8 @@ namespace ICD.Connect.API.Info
 
 		public ApiClassInfo this[uint key] { get { return m_Nodes[key]; } set { m_Nodes[key] = value; } }
 
+		public int Count { get { return m_Nodes.Count; } }
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
