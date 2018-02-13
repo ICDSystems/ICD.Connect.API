@@ -94,7 +94,7 @@ namespace ICD.Connect.API.Info
 			if (Type != null)
 			{
 				writer.WritePropertyName(PROPERTY_TYPE);
-				writer.WriteValue(Type.Name);
+				writer.WriteValue(Type.FullName);
 			}
 
 			if (Value != null)
