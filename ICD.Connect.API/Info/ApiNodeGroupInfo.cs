@@ -60,6 +60,23 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
+		/// Creates a recursive copy of the API info.
+		/// </summary>
+		/// <returns></returns>
+		public ApiNodeGroupInfo DeepCopy()
+		{
+			ApiNodeGroupInfo output = new ApiNodeGroupInfo();
+
+			IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodesCopy =
+				GetNodes().Select(kvp => new KeyValuePair<uint, ApiClassInfo>(kvp.Key, kvp.Value.DeepCopy()));
+
+			output.SetNodes(nodesCopy);
+
+			DeepCopy(output);
+			return output;
+		}
+
+		/// <summary>
 		/// Gets the nodes class info for the given property.
 		/// </summary>
 		/// <param name="property"></param>

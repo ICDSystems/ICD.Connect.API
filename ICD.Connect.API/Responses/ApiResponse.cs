@@ -42,6 +42,20 @@ namespace ICD.Connect.API.Responses
 		#region Methods
 
 		/// <summary>
+		/// Creates a recursive copy of the API response.
+		/// </summary>
+		/// <returns></returns>
+		public ApiResponse DeepCopy()
+		{
+			return new ApiResponse
+			{
+				ErrorCode = ErrorCode,
+				Type = Type,
+				Value = Value
+			};
+		}
+
+		/// <summary>
 		/// Sets the value and type.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>

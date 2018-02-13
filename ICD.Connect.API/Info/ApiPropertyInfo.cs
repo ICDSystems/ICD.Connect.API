@@ -74,6 +74,24 @@ namespace ICD.Connect.API.Info
 		#region Methods
 
 		/// <summary>
+		/// Creates a recursive copy of the API info.
+		/// </summary>
+		/// <returns></returns>
+		public ApiPropertyInfo DeepCopy()
+		{
+			ApiPropertyInfo output = new ApiPropertyInfo
+			{
+				Type = Type,
+				Value = Value,
+				Read = Read,
+				Write = Write
+			};
+
+			DeepCopy(output);
+			return output;
+		}
+
+		/// <summary>
 		/// Sets the value and type.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>

@@ -46,6 +46,17 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
+		/// Creates a recursive copy of the API info.
+		/// </summary>
+		/// <returns></returns>
+		protected void DeepCopy(IApiInfo info)
+		{
+			info.Name = Name;
+			info.Help = Help;
+			info.Response = Response == null ? null : Response.DeepCopy();
+		}
+
+		/// <summary>
 		/// Serializes the instance to JSON.
 		/// </summary>
 		/// <returns></returns>

@@ -73,6 +73,23 @@ namespace ICD.Connect.API.Info
 
 		#region Methods
 
+		/// <summary>
+		/// Creates a recursive copy of the API info.
+		/// </summary>
+		/// <returns></returns>
+		public ApiClassInfo DeepCopy()
+		{
+			ApiClassInfo output = new ApiClassInfo();
+			DeepCopy(output);
+
+			output.SetMethods(GetMethods().Select(m => m.DeepCopy()));
+			output.SetProperties(GetProperties().Select(p => p.DeepCopy()));
+			output.SetNodes(GetNodes().Select(n => n.DeepCopy()));
+			output.SetNodeGroups(GetNodeGroups().Select(n => n.DeepCopy()));
+
+			return output;
+		}
+
 		#region Methods
 
 		/// <summary>

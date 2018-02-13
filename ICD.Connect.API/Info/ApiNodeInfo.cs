@@ -50,6 +50,21 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
+		/// Creates a recursive copy of the API info.
+		/// </summary>
+		/// <returns></returns>
+		public ApiNodeInfo DeepCopy()
+		{
+			ApiNodeInfo output = new ApiNodeInfo
+			{
+				Node = Node == null ? null : Node.DeepCopy()
+			};
+
+			DeepCopy(output);
+			return output;
+		}
+
+		/// <summary>
 		/// Gets the class info for the given properties value.
 		/// </summary>
 		/// <param name="property"></param>
