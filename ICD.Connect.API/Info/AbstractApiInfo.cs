@@ -1,5 +1,6 @@
 ﻿using ICD.Common.Utils.Json;
 using ICD.Connect.API.Attributes;
+using ICD.Connect.API.Responses;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -7,8 +8,9 @@ namespace ICD.Connect.API.Info
 {
 	public abstract class AbstractApiInfo : IApiInfo
 	{
-		private const string NAME_PROPERTY = "name";
-		private const string HELP_PROPERTY = "help";
+		private const string PROPERTY_NAME = "name";
+		private const string PROPERTY_HELP = "help";
+		private const string PROPERTY_RESPONSE = "response";
 
 		/// <summary>
 		/// Gets/sets the name for the API attribute.
@@ -19,6 +21,11 @@ namespace ICD.Connect.API.Info
 		/// Gets/sets the help for the API attribute.
 		/// </summary>
 		public string Help { get; set; }
+
+		/// <summary>
+		/// Gets/sets the response message for this request.
+		/// </summary>
+		public ApiResponse Response { get; set; }
 
 		/// <summary>
 		/// Constructor.
@@ -32,7 +39,7 @@ namespace ICD.Connect.API.Info
 		/// Constructor.
 		/// </summary>
 		/// <param name="attribute"></param>
-		protected AbstractApiInfo(AbstractApiAttribute attribute)
+		protected AbstractApiInfo(IApiAttribute attribute)
 		{
 			Name = attribute == null ? null : attribute.Name;
 			Help = attribute == null ? null : attribute.Help;
@@ -55,16 +62,25 @@ namespace ICD.Connect.API.Info
 		{
 			writer.WriteStartObject();
 			{
+				// Name
 				if (!string.IsNullOrEmpty(Name))
 				{
-					writer.WritePropertyName(NAME_PROPERTY);
+					writer.WritePropertyName(PROPERTY_NAME);
 					writer.WriteValue(Name);
 				}
 
+				// Help
 				if (!string.IsNullOrEmpty(Help))
 				{
-					writer.WritePropertyName(HELP_PROPERTY);
+					writer.WritePropertyName(PROPERTY_HELP);
 					writer.WriteValue(Help);
+				}
+
+				// Reponse
+				if (Response != null)
+				{
+					writer.WritePropertyName(PROPERTY_RESPONSE);
+					Response.Serialize(writer);
 				}
 
 				WriteProperties(writer);
@@ -87,8 +103,12 @@ namespace ICD.Connect.API.Info
 		/// <param name="token"></param>
 		protected static void Deserialize(AbstractApiInfo instance, JToken token)
 		{
-			instance.Name = (string)token[NAME_PROPERTY];
-			instance.Help = (string)token[HELP_PROPERTY];
+			instance.Name = (string)token[PROPERTY_NAME];
+			instance.Help = (string)token[PROPERTY_HELP];
+
+			JToken responseToken = token[PROPERTY_RESPONSE];
+			if (responseToken != null)
+				instance.Response = ApiResponse.Deserialize(responseToken);
 		}
 	}
 }
