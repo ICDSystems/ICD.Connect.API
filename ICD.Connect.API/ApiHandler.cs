@@ -163,9 +163,17 @@ namespace ICD.Connect.API
 			type = instance == null ? type : instance.GetType();
 
 			PropertyInfo property = ApiPropertyAttribute.GetProperty(info, type);
-			object value = ChangeType(info.Value, property.PropertyType);
 
-			property.SetValue(instance, value, new object[0]);
+			if (info.Write)
+			{
+				object value = ChangeType(info.Value, property.PropertyType);
+				property.SetValue(instance, value, new object[0]);
+			}
+
+			if (info.Read)
+			{
+				// TODO
+			}
 		}
 
 		/// <summary>

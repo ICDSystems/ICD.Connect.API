@@ -112,7 +112,8 @@ namespace ICD.Connect.API.Info
 				writer.WriteValue(Type.Name);
 			}
 
-			if (Value != null)
+			// We want to allow serializing null values in a write context
+			if (Write)
 			{
 				writer.WritePropertyName(PROPERTY_VALUE);
 				writer.WriteValue(Value);
