@@ -81,7 +81,9 @@ namespace ICD.Connect.API.Info
 		/// <param name="value"></param>
 		public void SetValue<T>(T value)
 		{
-			SetValue(typeof(T), value);
+// ReSharper disable once CompareNonConstrainedGenericWithNull
+			Type type = value == null ? typeof(T) : value.GetType();
+			SetValue(type, value);
 		}
 
 		/// <summary>
