@@ -1,4 +1,3 @@
-using ICD.Connect.API.Responses;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.API.Info
@@ -18,7 +17,7 @@ namespace ICD.Connect.API.Info
 		/// <summary>
 		/// Gets/sets the response message for this request.
 		/// </summary>
-		ApiResponse Response { get; set; }
+		ApiResult Result { get; set; }
 
 		/// <summary>
 		/// Serializes the instance to JSON.

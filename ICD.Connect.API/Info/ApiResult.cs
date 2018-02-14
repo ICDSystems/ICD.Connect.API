@@ -3,9 +3,9 @@ using ICD.Common.Utils.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace ICD.Connect.API.Responses
+namespace ICD.Connect.API.Info
 {
-	public sealed class ApiResponse
+	public sealed class ApiResult
 	{
 		private const string PROPERTY_ERRORCODE = "errorCode";
 		private const string PROPERTY_TYPE = "type";
@@ -45,9 +45,9 @@ namespace ICD.Connect.API.Responses
 		/// Creates a recursive copy of the API response.
 		/// </summary>
 		/// <returns></returns>
-		public ApiResponse DeepCopy()
+		public ApiResult DeepCopy()
 		{
-			return new ApiResponse
+			return new ApiResult
 			{
 				ErrorCode = ErrorCode,
 				Type = Type,
@@ -126,7 +126,7 @@ namespace ICD.Connect.API.Responses
 		/// </summary>
 		/// <param name="json"></param>
 		/// <returns></returns>
-		public static ApiResponse Deserialize(string json)
+		public static ApiResult Deserialize(string json)
 		{
 			JObject jObject = JObject.Parse(json);
 			return Deserialize(jObject);
@@ -137,9 +137,9 @@ namespace ICD.Connect.API.Responses
 		/// </summary>
 		/// <param name="token"></param>
 		/// <returns></returns>
-		public static ApiResponse Deserialize(JToken token)
+		public static ApiResult Deserialize(JToken token)
 		{
-			ApiResponse instance = new ApiResponse();
+			ApiResult instance = new ApiResult();
 			Deserialize(instance, token);
 			return instance;
 		}
@@ -150,7 +150,7 @@ namespace ICD.Connect.API.Responses
 		/// <param name="instance"></param>
 		/// <param name="token"></param>
 		/// <returns></returns>
-		public static void Deserialize(ApiResponse instance, JToken token)
+		public static void Deserialize(ApiResult instance, JToken token)
 		{
 			// Error Code
 			JToken errorCodeToken = token[PROPERTY_ERRORCODE];

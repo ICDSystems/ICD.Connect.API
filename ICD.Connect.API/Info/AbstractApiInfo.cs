@@ -1,6 +1,5 @@
 ﻿using ICD.Common.Utils.Json;
 using ICD.Connect.API.Attributes;
-using ICD.Connect.API.Responses;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -10,7 +9,7 @@ namespace ICD.Connect.API.Info
 	{
 		private const string PROPERTY_NAME = "name";
 		private const string PROPERTY_HELP = "help";
-		private const string PROPERTY_RESPONSE = "response";
+		private const string PROPERTY_RESULT = "result";
 
 		/// <summary>
 		/// Gets/sets the name for the API attribute.
@@ -25,7 +24,7 @@ namespace ICD.Connect.API.Info
 		/// <summary>
 		/// Gets/sets the response message for this request.
 		/// </summary>
-		public ApiResponse Response { get; set; }
+		public ApiResult Result { get; set; }
 
 		/// <summary>
 		/// Constructor.
@@ -53,7 +52,7 @@ namespace ICD.Connect.API.Info
 		{
 			info.Name = Name;
 			info.Help = Help;
-			info.Response = Response == null ? null : Response.DeepCopy();
+			info.Result = Result == null ? null : Result.DeepCopy();
 		}
 
 		/// <summary>
@@ -88,10 +87,10 @@ namespace ICD.Connect.API.Info
 				}
 
 				// Reponse
-				if (Response != null)
+				if (Result != null)
 				{
-					writer.WritePropertyName(PROPERTY_RESPONSE);
-					Response.Serialize(writer);
+					writer.WritePropertyName(PROPERTY_RESULT);
+					Result.Serialize(writer);
 				}
 
 				WriteProperties(writer);
@@ -117,9 +116,9 @@ namespace ICD.Connect.API.Info
 			instance.Name = (string)token[PROPERTY_NAME];
 			instance.Help = (string)token[PROPERTY_HELP];
 
-			JToken responseToken = token[PROPERTY_RESPONSE];
+			JToken responseToken = token[PROPERTY_RESULT];
 			if (responseToken != null)
-				instance.Response = ApiResponse.Deserialize(responseToken);
+				instance.Result = ApiResult.Deserialize(responseToken);
 		}
 	}
 }

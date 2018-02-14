@@ -103,7 +103,7 @@
     <Compile Include="Nodes\IConsoleNodeGroup.cs" />
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Responses\ApiResponse.cs" />
+    <Compile Include="Info\ApiResult.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
