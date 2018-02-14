@@ -11,8 +11,7 @@ namespace ICD.Connect.API.Tests.Info
 		[Test]
 		public void SerializeTest()
 		{
-			ApiClassAttribute attribute = typeof(ConcreteClass).GetTypeInfo().GetCustomAttribute<ApiClassAttribute>();
-			ApiClassInfo info = attribute.GetInfo(typeof(ConcreteClass)) as ApiClassInfo;
+			ApiClassInfo info = ApiClassAttribute.GetInfo(typeof(ConcreteClass));
 
 			string json = info.Serialize();
 
