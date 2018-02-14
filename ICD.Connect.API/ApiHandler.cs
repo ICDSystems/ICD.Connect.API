@@ -29,10 +29,12 @@ namespace ICD.Connect.API
 		/// Interprets the incoming API request.
 		/// </summary>
 		/// <param name="serialized"></param>
-		public static void HandleRequest(string serialized)
+		/// <returns></returns>
+		public static ApiClassInfo HandleRequest(string serialized)
 		{
 			ApiClassInfo info = ApiClassInfo.Deserialize(serialized);
 			HandleRequest(info);
+			return info;
 		}
 
 		/// <summary>
