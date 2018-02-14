@@ -366,13 +366,12 @@ namespace ICD.Connect.API.Info
 			}
 
 			// Node Groups
-			ApiNodeGroupInfo[] populated = m_NodeGroups.Where(g => g.Count > 0 || g.Result != null).ToArray();
-			if (populated.Length > 0)
+			if (m_NodeGroups.Count > 0)
 			{
 				writer.WritePropertyName(PROPERTY_NODEGROUPS);
 				writer.WriteStartArray();
 				{
-					foreach (ApiNodeGroupInfo nodeGroup in populated)
+					foreach (ApiNodeGroupInfo nodeGroup in m_NodeGroups)
 						nodeGroup.Serialize(writer);
 				}
 				writer.WriteEndArray();
