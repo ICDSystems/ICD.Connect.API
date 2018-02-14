@@ -1,27 +1,27 @@
 ﻿using System;
-using ICD.Connect.API.Responses;
+using ICD.Connect.API.Info;
 using NUnit.Framework;
 
-namespace ICD.Connect.API.Tests.Responses
+namespace ICD.Connect.API.Tests.Info
 {
 	[TestFixture]
-	public sealed class ApiResponseTest
+	public sealed class ApiResultTest
 	{
 		#region Properties
 
-		[TestCase(ApiResponse.eErrorCode.Ok)]
-		[TestCase(ApiResponse.eErrorCode.MissingMember)]
-		public void ErrorCodeTest(ApiResponse.eErrorCode code)
+		[TestCase(ApiResult.eErrorCode.Ok)]
+		[TestCase(ApiResult.eErrorCode.MissingMember)]
+		public void ErrorCodeTest(ApiResult.eErrorCode code)
 		{
-			Assert.AreEqual(code, new ApiResponse {ErrorCode = code}.ErrorCode);
+			Assert.AreEqual(code, new ApiResult {ErrorCode = code}.ErrorCode);
 		}
 
 		[TestCase(typeof(int))]
 		[TestCase(typeof(string))]
-		[TestCase(typeof(ApiResponseTest))]
+		[TestCase(typeof(ApiResultTest))]
 		public void TypeTest(Type type)
 		{
-			Assert.AreEqual(type, new ApiResponse {Type = type}.Type);
+			Assert.AreEqual(type, new ApiResult {Type = type}.Type);
 		}
 
 		[TestCase(10)]
@@ -29,7 +29,7 @@ namespace ICD.Connect.API.Tests.Responses
 		[TestCase(false)]
 		public void ValueTest(object value)
 		{
-			Assert.AreEqual(value, new ApiResponse {Value = value}.Value);
+			Assert.AreEqual(value, new ApiResult {Value = value}.Value);
 		}
 
 		#endregion
@@ -67,15 +67,15 @@ namespace ICD.Connect.API.Tests.Responses
 		[Test]
 		public void DeserializeTest()
 		{
-			ApiResponse a = new ApiResponse
+			ApiResult a = new ApiResult
 			{
-				ErrorCode = ApiResponse.eErrorCode.Exception,
+				ErrorCode = ApiResult.eErrorCode.Exception,
 				Type = typeof(string),
 				Value = "You dun goofed"
 			};
 
 			string json = a.Serialize();
-			ApiResponse b = ApiResponse.Deserialize(json);
+			ApiResult b = ApiResult.Deserialize(json);
 
 			Assert.AreEqual(a.ErrorCode, b.ErrorCode);
 			Assert.AreEqual(a.Type, b.Type);
