@@ -37,9 +37,10 @@ namespace ICD.Connect.API.Attributes
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
-		public ApiClassInfo GetInfo(Type type)
+		public static ApiClassInfo GetInfo(Type type)
 		{
-			return new ApiClassInfo(this, type);
+			ApiClassAttribute attribute = type == null ? null : GetAttribute(type);
+			return new ApiClassInfo(attribute, type);
 		}
 
 		/// <summary>
@@ -48,13 +49,14 @@ namespace ICD.Connect.API.Attributes
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <returns></returns>
-		public ApiClassInfo GetInfo(Type type, object instance)
+		public static ApiClassInfo GetInfo(Type type, object instance)
 		{
-			return new ApiClassInfo(this, type, instance);
+			ApiClassAttribute attribute = type == null ? null : GetAttribute(type);
+			return new ApiClassInfo(attribute, type, instance);
 		}
 
 		[CanBeNull]
-		public static ApiClassAttribute GetClassAttributeForType(Type type)
+		public static ApiClassAttribute GetAttribute(Type type)
 		{
 			return
 #if SIMPLSHARP

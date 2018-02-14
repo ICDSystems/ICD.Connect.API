@@ -74,6 +74,17 @@ namespace ICD.Connect.API.Info
 		#region Methods
 
 		/// <summary>
+		/// Clears methods, properties, nodes etc while leaving the name and help intact.
+		/// </summary>
+		public void ClearChildren()
+		{
+			ClearMethods();
+			ClearProperties();
+			ClearNodes();
+			ClearNodeGroups();
+		}
+
+		/// <summary>
 		/// Creates a recursive copy of the API info.
 		/// </summary>
 		/// <returns></returns>
@@ -91,6 +102,14 @@ namespace ICD.Connect.API.Info
 		}
 
 		#region Methods
+
+		/// <summary>
+		/// Clears the methods for this class.
+		/// </summary>
+		public void ClearMethods()
+		{
+			SetMethods(Enumerable.Empty<ApiMethodInfo>());
+		}
 
 		/// <summary>
 		/// Gets the methods for this class.
@@ -125,6 +144,14 @@ namespace ICD.Connect.API.Info
 		#region Properties
 
 		/// <summary>
+		/// Clears the properties for this class.
+		/// </summary>
+		public void ClearProperties()
+		{
+			SetProperties(Enumerable.Empty<ApiPropertyInfo>());
+		}
+
+		/// <summary>
 		/// Gets the properties for this class.
 		/// </summary>
 		/// <returns></returns>
@@ -157,6 +184,14 @@ namespace ICD.Connect.API.Info
 		#region Nodes
 
 		/// <summary>
+		/// Clears the nodes for this class.
+		/// </summary>
+		public void ClearNodes()
+		{
+			SetNodes(Enumerable.Empty<ApiNodeInfo>());
+		}
+
+		/// <summary>
 		/// Gets the nodes for this class.
 		/// </summary>
 		/// <returns></returns>
@@ -186,7 +221,15 @@ namespace ICD.Connect.API.Info
 
 		#endregion
 
-		#region Nodes
+		#region Node Groups
+
+		/// <summary>
+		/// Clears the node groups for this class.
+		/// </summary>
+		public void ClearNodeGroups()
+		{
+			SetNodeGroups(Enumerable.Empty<ApiNodeGroupInfo>());
+		}
 
 		/// <summary>
 		/// Gets the node groups for this class.
@@ -229,7 +272,7 @@ namespace ICD.Connect.API.Info
 
 			foreach (PropertyInfo property in ApiPropertyAttribute.GetProperties(type))
 			{
-				ApiPropertyAttribute attribute = ApiPropertyAttribute.GetPropertyAttributeForProperty(property);
+				ApiPropertyAttribute attribute = ApiPropertyAttribute.GetAttribute(property);
 				if (attribute != null)
 					yield return new ApiPropertyInfo(attribute, property, instance);
 			}
@@ -242,7 +285,7 @@ namespace ICD.Connect.API.Info
 
 			foreach (MethodInfo method in ApiMethodAttribute.GetMethods(type))
 			{
-				ApiMethodAttribute attribute = ApiMethodAttribute.GetMethodAttributeForMethod(method);
+				ApiMethodAttribute attribute = ApiMethodAttribute.GetAttribute(method);
 				if (attribute != null)
 					yield return new ApiMethodInfo(attribute, method, instance);
 			}
@@ -255,7 +298,7 @@ namespace ICD.Connect.API.Info
 
 			foreach (PropertyInfo property in ApiNodeAttribute.GetProperties(type))
 			{
-				ApiNodeAttribute attribute = ApiNodeAttribute.GetNodeAttributeForProperty(property);
+				ApiNodeAttribute attribute = ApiNodeAttribute.GetAttribute(property);
 				if (attribute != null)
 					yield return new ApiNodeInfo(attribute, property, instance);
 			}
@@ -268,7 +311,7 @@ namespace ICD.Connect.API.Info
 
 			foreach (PropertyInfo property in ApiNodeGroupAttribute.GetProperties(type))
 			{
-				ApiNodeGroupAttribute attribute = ApiNodeGroupAttribute.GetNodeGroupAttributeForProperty(property);
+				ApiNodeGroupAttribute attribute = ApiNodeGroupAttribute.GetAttribute(property);
 				if (attribute != null)
 					yield return new ApiNodeGroupInfo(attribute, property, instance);
 			}
@@ -323,7 +366,7 @@ namespace ICD.Connect.API.Info
 			}
 
 			// Node Groups
-			ApiNodeGroupInfo[] populated = m_NodeGroups.Where(g => g.Count > 0).ToArray();
+			ApiNodeGroupInfo[] populated = m_NodeGroups.Where(g => g.Count > 0 || g.Result != null).ToArray();
 			if (populated.Length > 0)
 			{
 				writer.WritePropertyName(PROPERTY_NODEGROUPS);

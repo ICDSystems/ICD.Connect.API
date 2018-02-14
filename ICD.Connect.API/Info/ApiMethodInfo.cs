@@ -66,6 +66,14 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
+		/// Clears the parameters for the method.
+		/// </summary>
+		public void ClearParameters()
+		{
+			SetParameters(Enumerable.Empty<ApiParameterInfo>());
+		}
+
+		/// <summary>
 		/// Gets the parameters for the method.
 		/// </summary>
 		/// <returns></returns>

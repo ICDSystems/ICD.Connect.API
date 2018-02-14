@@ -115,11 +115,8 @@ namespace ICD.Connect.API.Info
 				writer.WriteValue(Type.FullName);
 			}
 
-			if (Value != null)
-			{
-				writer.WritePropertyName(PROPERTY_VALUE);
-				writer.WriteValue(Value);
-			}
+			writer.WritePropertyName(PROPERTY_VALUE);
+			writer.WriteValue(Value);
 		}
 
 		/// <summary>

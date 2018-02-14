@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Linq;
+using ICD.Common.Properties;
+using ICD.Common.Utils.Extensions;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -25,9 +28,16 @@ namespace ICD.Connect.API.Attributes
 		/// Returns the info for the attribute.
 		/// </summary>
 		/// <returns></returns>
-		public ApiParameterInfo GetInfo(ParameterInfo parameterInfo)
+		public static ApiParameterInfo GetInfo(ParameterInfo parameter)
 		{
-			return new ApiParameterInfo(this, parameterInfo);
+			ApiParameterAttribute attribute = parameter == null ? null : GetAttribute(parameter);
+			return new ApiParameterInfo(attribute, parameter);
+		}
+
+		[CanBeNull]
+		public static ApiParameterAttribute GetAttribute(ParameterInfo parameter)
+		{
+			return parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault();
 		}
 	}
 }

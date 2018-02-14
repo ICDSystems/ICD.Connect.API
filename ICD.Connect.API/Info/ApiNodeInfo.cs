@@ -79,10 +79,7 @@ namespace ICD.Connect.API.Info
 			if (property == null || !property.CanRead)
 				return null;
 
-			ApiClassAttribute classAttribute = ApiClassAttribute.GetClassAttributeForType(property.PropertyType);
-			return classAttribute == null
-				       ? null
-				       : classAttribute.GetInfo(property.PropertyType, property.GetValue(instance, new object[0]));
+			return ApiClassAttribute.GetInfo(property.PropertyType, property.GetValue(instance, new object[0]));
 		}
 
 		#region Serialization

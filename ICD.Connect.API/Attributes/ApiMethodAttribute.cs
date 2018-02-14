@@ -42,9 +42,10 @@ namespace ICD.Connect.API.Attributes
 		/// </summary>
 		/// <param name="method"></param>
 		/// <returns></returns>
-		public ApiMethodInfo GetInfo(MethodInfo method)
+		public static ApiMethodInfo GetInfo(MethodInfo method)
 		{
-			return new ApiMethodInfo(this, method);
+			ApiMethodAttribute attribute = method == null ? null : GetAttribute(method);
+			return new ApiMethodInfo(attribute, method);
 		}
 
 		/// <summary>
@@ -53,12 +54,13 @@ namespace ICD.Connect.API.Attributes
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		public static MethodInfo GetMethod(ApiMethodInfo info, Type type)
 		{
 			if (!s_Cache.ContainsKey(type))
 				CacheType(type);
 
-			return s_Cache[type][info.Name];
+			return s_Cache[type].GetDefault(info.Name, null);
 		}
 
 		#endregion
@@ -74,7 +76,7 @@ namespace ICD.Connect.API.Attributes
 
 			foreach (MethodInfo method in GetMethods(type))
 			{
-				ApiMethodAttribute attribute = GetMethodAttributeForMethod(method);
+				ApiMethodAttribute attribute = GetAttribute(method);
 				if (attribute == null)
 					continue;
 
@@ -125,7 +127,7 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		[CanBeNull]
-		public static ApiMethodAttribute GetMethodAttributeForMethod(MethodInfo property)
+		public static ApiMethodAttribute GetAttribute(MethodInfo property)
 		{
 			return property.GetCustomAttributes<ApiMethodAttribute>(true).FirstOrDefault();
 		}

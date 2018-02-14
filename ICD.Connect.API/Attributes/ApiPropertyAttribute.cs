@@ -41,9 +41,10 @@ namespace ICD.Connect.API.Attributes
 		/// Returns the info for the attribute.
 		/// </summary>
 		/// <returns></returns>
-		public ApiPropertyInfo GetInfo(PropertyInfo memberInfo)
+		public static ApiPropertyInfo GetInfo(PropertyInfo property)
 		{
-			return new ApiPropertyInfo(this, memberInfo);
+			ApiPropertyAttribute attribute = property == null ? null : GetAttribute(property);
+			return new ApiPropertyInfo(attribute, property);
 		}
 
 		/// <summary>
@@ -52,12 +53,13 @@ namespace ICD.Connect.API.Attributes
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		public static PropertyInfo GetProperty(ApiPropertyInfo info, Type type)
 		{
 			if (!s_Cache.ContainsKey(type))
 				CacheType(type);
 
-			return s_Cache[type][info.Name];
+			return s_Cache[type].GetDefault(info.Name, null);
 		}
 
 		#endregion
@@ -73,7 +75,7 @@ namespace ICD.Connect.API.Attributes
 
 			foreach (PropertyInfo property in GetProperties(type))
 			{
-				ApiPropertyAttribute attribute = GetPropertyAttributeForProperty(property);
+				ApiPropertyAttribute attribute = GetAttribute(property);
 				if (attribute == null)
 					continue;
 
@@ -97,7 +99,7 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		[CanBeNull]
-		public static ApiPropertyAttribute GetPropertyAttributeForProperty(PropertyInfo property)
+		public static ApiPropertyAttribute GetAttribute(PropertyInfo property)
 		{
 			return property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
 		}

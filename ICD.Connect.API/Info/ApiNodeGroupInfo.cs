@@ -77,6 +77,14 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
+		/// Removes all of the nodes.
+		/// </summary>
+		public void ClearNodes()
+		{
+			SetNodes(Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>());
+		}
+
+		/// <summary>
 		/// Gets the nodes class info for the given property.
 		/// </summary>
 		/// <param name="property"></param>
@@ -100,9 +108,7 @@ namespace ICD.Connect.API.Info
 				                        uint key = kvp.Key;
 				                        object value = kvp.Value;
 				                        Type type = value == null ? null : value.GetType();
-
-				                        ApiClassAttribute attribute = ApiClassAttribute.GetClassAttributeForType(type);
-				                        ApiClassInfo info = attribute == null ? null : attribute.GetInfo(type, value);
+				                        ApiClassInfo info = ApiClassAttribute.GetInfo(type, value);
 
 				                        return new KeyValuePair<uint, ApiClassInfo>(key, info);
 			                        })
@@ -136,6 +142,16 @@ namespace ICD.Connect.API.Info
 		public void AddNode(uint key, ApiClassInfo node)
 		{
 			m_Nodes.Add(key, node);
+		}
+
+		/// <summary>
+		/// Removes the node from the group.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public bool RemoveNode(uint key)
+		{
+			return m_Nodes.Remove(key);
 		}
 
 		#region Serialization

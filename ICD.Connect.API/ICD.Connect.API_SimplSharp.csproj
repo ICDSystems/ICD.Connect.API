@@ -95,7 +95,6 @@
     <Compile Include="Info\ApiPropertyInfo.cs" />
     <Compile Include="Info\IApiInfo.cs" />
     <Compile Include="Nodes\AbstractApiNodeGroup.cs" />
-    <Compile Include="Nodes\ApiNodeGroup.cs" />
     <Compile Include="Nodes\ConsoleNodeGroup.cs" />
     <Compile Include="Nodes\IApiNodeGroup.cs" />
     <Compile Include="Nodes\IConsoleNode.cs" />

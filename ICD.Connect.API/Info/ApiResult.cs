@@ -100,14 +100,11 @@ namespace ICD.Connect.API.Info
 			writer.WriteStartObject();
 			{
 				// Error Code
-				if (ErrorCode != eErrorCode.Ok)
-				{
-					writer.WritePropertyName(PROPERTY_ERRORCODE);
-					writer.WriteValue(ErrorCode);
-				}
+				writer.WritePropertyName(PROPERTY_ERRORCODE);
+				writer.WriteValue(ErrorCode);
 
 				// Type
-				if (Type != null)
+				if (Value != null && Type != null)
 				{
 					writer.WritePropertyName(PROPERTY_TYPE);
 					writer.WriteValue(Type.FullName);
@@ -117,7 +114,12 @@ namespace ICD.Connect.API.Info
 				if (Value != null)
 				{
 					writer.WritePropertyName(PROPERTY_VALUE);
-					writer.WriteValue(Value);
+
+					IApiInfo info = Value as IApiInfo;
+					if (info == null)
+						writer.WriteValue(Value);
+					else
+						info.Serialize(writer);
 				}
 			}
 			writer.WriteEndObject();

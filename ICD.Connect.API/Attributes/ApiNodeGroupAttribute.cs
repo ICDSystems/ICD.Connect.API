@@ -53,12 +53,13 @@ namespace ICD.Connect.API.Attributes
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		public static PropertyInfo GetProperty(ApiNodeGroupInfo info, Type type)
 		{
 			if (!s_Cache.ContainsKey(type))
 				CacheType(type);
 
-			return s_Cache[type][info.Name];
+			return s_Cache[type].GetDefault(info.Name, null);
 		}
 
 		#endregion
@@ -80,7 +81,7 @@ namespace ICD.Connect.API.Attributes
 				if (!typeof(IApiNodeGroup).IsAssignableFrom(property.PropertyType))
 					continue;
 
-				ApiNodeGroupAttribute attribute = GetNodeGroupAttributeForProperty(property);
+				ApiNodeGroupAttribute attribute = GetAttribute(property);
 				if (attribute == null)
 					continue;
 
@@ -104,7 +105,7 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		[CanBeNull]
-		public static ApiNodeGroupAttribute GetNodeGroupAttributeForProperty(PropertyInfo property)
+		public static ApiNodeGroupAttribute GetAttribute(PropertyInfo property)
 		{
 			return property.GetCustomAttributes<ApiNodeGroupAttribute>(true).FirstOrDefault();
 		}
