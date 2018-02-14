@@ -2,11 +2,12 @@
 
 namespace ICD.Connect.API
 {
-	public sealed class ApiCommandBuilder : IApiClassBuilder, IApiMethodBuilder
+	public sealed class ApiCommandBuilder : IApiClassBuilder, IApiMethodBuilder, IApiNodeGroupBuilder
 	{
 		private readonly ApiClassInfo m_Root;
 		private ApiClassInfo m_CurrentClass;
 		private ApiMethodInfo m_CurrentMethod;
+		private ApiNodeGroupInfo m_CurrentNodeGroup;
 
 		/// <summary>
 		/// Constructor.
@@ -57,24 +58,46 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
+		/// Creates the node group with the given name and moves the builder.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		public IApiNodeGroupBuilder AtNodeGroup(string name)
+		{
+			m_CurrentNodeGroup = new ApiNodeGroupInfo
+			{
+				Name = name
+			};
+
+			m_CurrentClass.AddNodeGroup(m_CurrentNodeGroup);
+
+			return this;
+		}
+
+		/// <summary>
+		/// Adds the key to the current node group.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		public IApiClassBuilder AtKey(uint key)
+		{
+			m_CurrentClass = new ApiClassInfo();
+			m_CurrentNodeGroup.AddNode(key, m_CurrentClass);
+
+			m_CurrentNodeGroup = null;
+
+			return this;
+		}
+
+		/// <summary>
 		/// Creates the node group with the given name, creates a node at the given index and moves the builder.
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		public IApiClassBuilder AtNode(string name, uint key)
+		public IApiClassBuilder AtNodeGroupKey(string name, uint key)
 		{
-			ApiClassInfo nextClass = new ApiClassInfo();
-			ApiNodeGroupInfo nodeGroup = new ApiNodeGroupInfo
-			{
-				Name = name
-			};
-			nodeGroup[key] = nextClass;
-
-			m_CurrentClass.AddNodeGroup(nodeGroup);
-			m_CurrentClass = nextClass;
-
-			return this;
+			return AtNodeGroup(name).AtKey(key);
 		}
 
 		/// <summary>
@@ -167,12 +190,19 @@ namespace ICD.Connect.API
 		IApiClassBuilder AtNode(string name);
 
 		/// <summary>
+		/// Creates the node group with the given name and moves the builder.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		IApiNodeGroupBuilder AtNodeGroup(string name);
+
+		/// <summary>
 		/// Creates the node group with the given name, creates a node at the given index and moves the builder.
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		IApiClassBuilder AtNode(string name, uint key);
+		IApiClassBuilder AtNodeGroupKey(string name, uint key);
 
 		/// <summary>
 		/// Adds a get property command to the current node.
@@ -195,6 +225,16 @@ namespace ICD.Connect.API
 		/// <param name="name"></param>
 		/// <returns></returns>
 		IApiMethodBuilder CallMethod(string name);
+	}
+
+	public interface IApiNodeGroupBuilder : IApiCommandBuilder
+	{
+		/// <summary>
+		/// Adds the key to the current node group.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		IApiClassBuilder AtKey(uint key);
 	}
 
 	public interface IApiMethodBuilder : IApiCommandBuilder
