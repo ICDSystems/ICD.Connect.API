@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils;
+using ICD.Common.Utils.Extensions;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -65,18 +67,40 @@ namespace ICD.Connect.API
 				throw new ArgumentNullException("info");
 
 			type = instance == null ? type : instance.GetType();
+			bool handled = false;
 
 			foreach (ApiMethodInfo method in info.GetMethods())
+			{
+				handled = true;
 				HandleRequest(method, type, instance);
+			}
 
 			foreach (ApiPropertyInfo property in info.GetProperties())
+			{
+				handled = true;
 				HandleRequest(property, type, instance);
+			}
 
 			foreach (ApiNodeInfo node in info.GetNodes())
+			{
+				handled = true;
 				HandleRequest(node, type, instance);
+			}
 
 			foreach (ApiNodeGroupInfo nodeGroup in info.GetNodeGroups())
+			{
+				handled = true;
 				HandleRequest(nodeGroup, type, instance);
+			}
+
+			if (handled)
+				return;
+
+			// If there was nothing to handle we provide a response describing the features on this class
+			// TODO - Set depth on class info
+			ApiClassInfo resultData = ApiClassAttribute.GetInfo(type, instance);
+			info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
+			info.Result.SetValue(resultData);
 		}
 
 		/// <summary>
@@ -91,15 +115,27 @@ namespace ICD.Connect.API
 
 			PropertyInfo property = ApiNodeAttribute.GetProperty(node, type);
 
-			object nodeValue = property.GetValue(instance, new object [0]);
-			Type nodeType = nodeValue == null
-				                ?
-#if SIMPLSHARP
-				                (Type)
-#endif
-				                property.PropertyType
-				                : nodeValue.GetType();
+			// Couldn't find an ApiNodeAttribute for the given info
+			if (property == null)
+			{
+				node.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingMember};
+				node.Result.SetValue(string.Format("No node property with name {0}.", StringUtils.ToRepresentation(node.Name)));
+				node.Node = null;
+				return;
+			}
 
+			object nodeValue = property.GetValue(instance, new object [0]);
+
+			// Found the ApiNodeAttribute but the property value was null
+			if (nodeValue == null)
+			{
+				node.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingNode};
+				node.Result.SetValue(string.Format("The node at property {0} is null.", StringUtils.ToRepresentation(node.Name)));
+				node.Node = null;
+				return;
+			}
+
+			Type nodeType = nodeValue.GetType();
 			HandleRequest(node.Node, nodeType, nodeValue);
 		}
 
@@ -114,16 +150,68 @@ namespace ICD.Connect.API
 			type = instance == null ? type : instance.GetType();
 
 			PropertyInfo property = ApiNodeGroupAttribute.GetProperty(nodeGroup, type);
+
+			// Couldn't find an ApiNodeGroupAttribute for the given info
+			if (property == null)
+			{
+				nodeGroup.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingMember};
+				nodeGroup.Result.SetValue(string.Format("No node group property with name {0}.",
+				                                        StringUtils.ToRepresentation(nodeGroup.Name)));
+				nodeGroup.ClearNodes();
+				return;
+			}
+
 			IApiNodeGroup group = property.GetValue(instance, new object[0]) as IApiNodeGroup;
 
-			foreach (KeyValuePair<uint, ApiClassInfo> kvp in nodeGroup)
+			// Found the ApiNodeGroupAttribute but the property value was null
+			if (group == null)
 			{
+				nodeGroup.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingNode};
+				nodeGroup.Result.SetValue(string.Format("The node group at property {0} is null.",
+				                                        StringUtils.ToRepresentation(nodeGroup.Name)));
+				nodeGroup.ClearNodes();
+				return;
+			}
+
+			bool handled = false;
+
+			foreach (KeyValuePair<uint, ApiClassInfo> kvp in nodeGroup.ToArray(nodeGroup.Count))
+			{
+				handled = true;
+
 				ApiClassInfo classInfo = kvp.Value;
+
+				// The key for the group is invalid
+				if (!group.ContainsKey(kvp.Key))
+				{
+					classInfo.ClearChildren();
+					classInfo.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingNode};
+					classInfo.Result.SetValue(string.Format("The node group at property {0} does not contain a key at {1}.",
+					                                        StringUtils.ToRepresentation(nodeGroup.Name), kvp.Key));
+					continue;
+				}
+
 				object classInstance = group[kvp.Key];
+
+				// The instance at the given key is null
+				if (classInstance == null)
+				{
+					classInfo.ClearChildren();
+					classInfo.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingNode};
+					classInfo.Result.SetValue(string.Format("The node group at property {0} key {1} is null.",
+					                                        StringUtils.ToRepresentation(nodeGroup.Name), kvp.Key));
+					continue;
+				}
+
 				Type classType = classInstance.GetType();
 
 				HandleRequest(classInfo, classType, classInstance);
 			}
+
+			if (handled)
+				return;
+
+
 		}
 
 		/// <summary>
@@ -137,21 +225,80 @@ namespace ICD.Connect.API
 			type = instance == null ? type : instance.GetType();
 
 			MethodInfo method = ApiMethodAttribute.GetMethod(info, type);
-			object[] parameters = info.GetParameters()
-			                          .Select(p => p.Value)
-			                          .ToArray();
+
+			// Couldn't find an ApiMethodAttribute for the given info.
+			if (method == null)
+			{
+				info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.MissingMember };
+				info.Result.SetValue(string.Format("No method with name {0}.", StringUtils.ToRepresentation(info.Name)));
+				info.ClearParameters();
+				return;
+			}
+
+			ApiParameterInfo[] parameterInfos = info.GetParameters().ToArray();
+			object[] parameters = parameterInfos.Select(p => p.Value).ToArray(parameterInfos.Length);
 			Type[] types = method.GetParameters()
 			                     .Select(p =>
 #if SIMPLSHARP
 			                             (Type)
 #endif
 			                             p.ParameterType)
-			                     .ToArray();
+			                     .ToArray(parameterInfos.Length);
 
+			// Wrong number of parameters.
+			if (parameters.Length != types.Length)
+			{
+				info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.InvalidParameter };
+				info.Result.SetValue(string.Format("Parameters length {0} does not match method parameters length {1}.",
+				                                   parameters.Length, types.Length));
+				info.ClearParameters();
+				return;
+			}
+
+			bool converted = true;
 			for (int index = 0; index < parameters.Length; index++)
-				parameters[index] = ChangeType(parameters[index], types[index]);
+			{
+				try
+				{
+					parameters[index] = ChangeType(parameters[index], types[index]);
+				}
+				// Parameter is the incorrect type.
+				catch (Exception)
+				{
+					ApiParameterInfo parameterInfo = parameterInfos[index];
+					parameterInfo.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.InvalidParameter };
+					parameterInfo.Result.SetValue(string.Format("Failed to convert to {0}.", types[index].Name));
+					converted = false;
+				}
+			}
 
-			method.Invoke(instance, parameters);
+			// Failed to convert all of the parameters.
+			if (!converted)
+			{
+				info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.InvalidParameter};
+				info.Result.SetValue(string.Format("Failed to execute method {0} due to one or more invalid parameters.",
+				                                   StringUtils.ToRepresentation(info.Name)));
+				return;
+			}
+
+			object value;
+
+			try
+			{
+				value = method.Invoke(instance, parameters);
+			}
+			// Method failed to execute.
+			catch (Exception e)
+			{
+				info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
+				info.Result.SetValue(string.Format("Failed to execute method {0} due to {1} - {2}.",
+				                                   StringUtils.ToRepresentation(info.Name),
+				                                   e.GetType().Name, e.Message));
+				return;
+			}
+
+			info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
+			info.Result.SetValue(value);
 		}
 
 		/// <summary>
@@ -166,16 +313,58 @@ namespace ICD.Connect.API
 
 			PropertyInfo property = ApiPropertyAttribute.GetProperty(info, type);
 
-			if (info.Write)
+			// Couldn't find an ApiPropertyAttribute for the given info.
+			if (property == null)
 			{
-				object value = ChangeType(info.Value, property.PropertyType);
-				property.SetValue(instance, value, new object[0]);
+				info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingMember};
+				info.Result.SetValue(string.Format("No property with name {0}.", StringUtils.ToRepresentation(info.Name)));
+				return;
 			}
 
-			if (info.Read)
+			// Set the value
+			if (info.Write)
 			{
-				// TODO
+				// Trying to write to a readonly property.
+				if (!property.CanWrite)
+				{
+					info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingMember};
+					info.Result.SetValue(string.Format("Property {0} is readonly.", StringUtils.ToRepresentation(info.Name)));
+					return;
+				}
+
+				object value;
+
+				try
+				{
+					value = ChangeType(info.Value, property.PropertyType);
+				}
+				// Value is the incorrect type.
+				catch (Exception)
+				{
+					info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.InvalidParameter };
+					info.Result.SetValue(string.Format("Failed to convert to {0}.", property.PropertyType.Name));
+					return;
+				}
+
+				try
+				{
+					property.SetValue(instance, value, new object[0]);
+				}
+				// Property failed to execute.
+				catch (Exception e)
+				{
+					info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Exception};
+					info.Result.SetValue(string.Format("Failed to set property {0} due to {1} - {2}.",
+					                                   StringUtils.ToRepresentation(info.Name),
+					                                   e.GetType().Name, e.Message));
+					return;
+				}
 			}
+
+			// Add the response
+			info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
+			if (property.CanRead)
+				info.Result.SetValue(property.GetValue(instance, new object[0]));
 		}
 
 		/// <summary>
