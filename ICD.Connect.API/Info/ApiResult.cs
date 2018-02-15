@@ -155,7 +155,7 @@ namespace ICD.Connect.API.Info
 		/// <param name="instance"></param>
 		/// <param name="token"></param>
 		/// <returns></returns>
-		public static void Deserialize(ApiResult instance, JToken token)
+		private static void Deserialize(ApiResult instance, JToken token)
 		{
 			// Error Code
 			JToken errorCodeToken = token[PROPERTY_ERRORCODE];
@@ -166,7 +166,28 @@ namespace ICD.Connect.API.Info
 			instance.Type = typeName == null ? null : Type.GetType(typeName, false, true);
 
 			// Value
-			instance.Value = JsonUtils.Deserialize(instance.Type, token[PROPERTY_VALUE]);
+			JToken valueToken = token[PROPERTY_VALUE];
+			instance.Value = valueToken == null ? null : GetValueFromToken(instance.Type, valueToken);
+		}
+
+		private static object GetValueFromToken(Type type, JToken token)
+		{
+			if (type == typeof(ApiClassInfo))
+				return ApiClassInfo.Deserialize(token);
+
+			if (type == typeof(ApiNodeInfo))
+				return ApiNodeInfo.Deserialize(token);
+
+			if (type == typeof(ApiNodeGroupInfo))
+				return ApiNodeGroupInfo.Deserialize(token);
+
+			if (type == typeof(ApiMethodInfo))
+				return ApiMethodInfo.Deserialize(token);
+
+			if (type == typeof(ApiParameterInfo))
+				return ApiParameterInfo.Deserialize(token);
+
+			return JsonUtils.Deserialize(type, token);
 		}
 
 		#endregion
