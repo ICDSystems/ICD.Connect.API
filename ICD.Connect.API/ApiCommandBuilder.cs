@@ -147,9 +147,21 @@ namespace ICD.Connect.API
 		{
 			m_CurrentMethod = new ApiMethodInfo
 			{
-				Name = name
+				Name = name,
+				Execute = true
 			};
 			m_CurrentClass.AddMethod(m_CurrentMethod);
+
+			return this;
+		}
+
+		public IApiClassBuilder GetMethod(string name)
+		{
+			ApiMethodInfo method = new ApiMethodInfo
+			{
+				Name = name
+			};
+			m_CurrentClass.AddMethod(method);
 
 			return this;
 		}
@@ -225,6 +237,13 @@ namespace ICD.Connect.API
 		/// <param name="name"></param>
 		/// <returns></returns>
 		IApiMethodBuilder CallMethod(string name);
+
+		/// <summary>
+		/// Adds a get method command to the current node.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		IApiClassBuilder GetMethod(string name);
 	}
 
 	public interface IApiNodeGroupBuilder : IApiCommandBuilder

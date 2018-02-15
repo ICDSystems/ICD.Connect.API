@@ -130,8 +130,11 @@ namespace ICD.Connect.API.Info
 				writer.WriteValue(Type.FullName);
 			}
 
-			writer.WritePropertyName(PROPERTY_VALUE);
-			writer.WriteValue(Value);
+			if (Value != null)
+			{
+				writer.WritePropertyName(PROPERTY_VALUE);
+				writer.WriteValue(Value);
+			}
 		}
 
 		/// <summary>

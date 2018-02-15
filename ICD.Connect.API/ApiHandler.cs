@@ -237,6 +237,15 @@ namespace ICD.Connect.API
 				return;
 			}
 
+			// We're not executing the method so return info about the parameters.
+			if (!info.Execute)
+			{
+				ApiMethodInfo methodInfo = ApiMethodAttribute.GetInfo(method, instance, 3);
+				info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
+				info.Result.SetValue(methodInfo);
+				return;
+			}
+
 			ApiParameterInfo[] parameterInfos = info.GetParameters().ToArray();
 			object[] parameters = parameterInfos.Select(p => p.Value).ToArray(parameterInfos.Length);
 			Type[] types = method.GetParameters()

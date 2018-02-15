@@ -44,8 +44,31 @@ namespace ICD.Connect.API.Attributes
 		/// <returns></returns>
 		public static ApiMethodInfo GetInfo(MethodInfo method)
 		{
+			return GetInfo(method, null);
+		}
+
+		/// <summary>
+		/// Gets the method info for the given member.
+		/// </summary>
+		/// <param name="method"></param>
+		/// <param name="instance"></param>
+		/// <returns></returns>
+		public static ApiMethodInfo GetInfo(MethodInfo method, object instance)
+		{
+			return GetInfo(method, instance, int.MaxValue);
+		}
+
+		/// <summary>
+		/// Gets the method info for the given member.
+		/// </summary>
+		/// <param name="method"></param>
+		/// <param name="instance"></param>
+		/// <param name="depth"></param>
+		/// <returns></returns>
+		public static ApiMethodInfo GetInfo(MethodInfo method, object instance, int depth)
+		{
 			ApiMethodAttribute attribute = method == null ? null : GetAttribute(method);
-			return new ApiMethodInfo(attribute, method);
+			return new ApiMethodInfo(attribute, method, instance, depth);
 		}
 
 		/// <summary>

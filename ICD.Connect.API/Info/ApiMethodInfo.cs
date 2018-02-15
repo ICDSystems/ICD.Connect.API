@@ -15,8 +15,14 @@ namespace ICD.Connect.API.Info
 	public sealed class ApiMethodInfo : AbstractApiInfo
 	{
 		private const string PROPERTY_PARAMETERS = "params";
+		private const string PROPERTY_EXECUTE = "execute";
 
 		private readonly List<ApiParameterInfo> m_Parameters;
+
+		/// <summary>
+		/// Gets/sets whether or not this method is to be executed.
+		/// </summary>
+		public bool Execute { get; set; }
 
 		/// <summary>
 		/// Constructor.
@@ -155,6 +161,13 @@ namespace ICD.Connect.API.Info
 		{
 			base.WriteProperties(writer);
 
+			// Execute
+			if (Execute)
+			{
+				writer.WritePropertyName(PROPERTY_EXECUTE);
+				writer.WriteValue(Execute);
+			}
+
 			// Parameters
 			if (m_Parameters.Count > 0)
 			{
@@ -199,6 +212,10 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public static void Deserialize(ApiMethodInfo instance, JToken token)
 		{
+			// Execute
+			JToken executeToken = token[PROPERTY_EXECUTE];
+			instance.Execute = executeToken != null && (bool)executeToken;
+
 			// Parameters
 			JToken parameters = token[PROPERTY_PARAMETERS];
 			if (parameters != null)
