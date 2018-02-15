@@ -211,7 +211,10 @@ namespace ICD.Connect.API
 			if (handled)
 				return;
 
+			ApiNodeGroupInfo nodeGroupInfo = ApiNodeGroupAttribute.GetInfo(property, instance);
 
+			nodeGroup.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
+			nodeGroup.Result.SetValue(nodeGroupInfo);
 		}
 
 		/// <summary>
