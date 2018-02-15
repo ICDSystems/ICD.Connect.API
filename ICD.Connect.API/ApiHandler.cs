@@ -245,7 +245,7 @@ namespace ICD.Connect.API
 			                             (Type)
 #endif
 			                             p.ParameterType)
-			                     .ToArray(parameterInfos.Length);
+			                     .ToArray();
 
 			// Wrong number of parameters.
 			if (parameters.Length != types.Length)
