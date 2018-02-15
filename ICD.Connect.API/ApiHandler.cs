@@ -97,8 +97,7 @@ namespace ICD.Connect.API
 				return;
 
 			// If there was nothing to handle we provide a response describing the features on this class
-			// TODO - Set depth on class info
-			ApiClassInfo resultData = ApiClassAttribute.GetInfo(type, instance);
+			ApiClassInfo resultData = ApiClassAttribute.GetInfo(type, instance, 3);
 			info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
 			info.Result.SetValue(resultData);
 		}
@@ -211,8 +210,8 @@ namespace ICD.Connect.API
 			if (handled)
 				return;
 
-			ApiNodeGroupInfo nodeGroupInfo = ApiNodeGroupAttribute.GetInfo(property, instance);
-
+			// If there was nothing to handle we provide a response describing the features on this node group
+			ApiNodeGroupInfo nodeGroupInfo = ApiNodeGroupAttribute.GetInfo(property, instance, 3);
 			nodeGroup.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
 			nodeGroup.Result.SetValue(nodeGroupInfo);
 		}
