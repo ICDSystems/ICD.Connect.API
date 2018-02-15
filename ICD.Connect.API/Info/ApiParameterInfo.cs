@@ -1,4 +1,5 @@
 ﻿using System;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -127,7 +128,7 @@ namespace ICD.Connect.API.Info
 			if (Type != null)
 			{
 				writer.WritePropertyName(PROPERTY_TYPE);
-				writer.WriteValue(Type.FullName);
+				writer.WriteType(Type);
 			}
 
 			if (Value != null)
