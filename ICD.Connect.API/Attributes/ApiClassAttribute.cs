@@ -39,8 +39,7 @@ namespace ICD.Connect.API.Attributes
 		/// <returns></returns>
 		public static ApiClassInfo GetInfo(Type type)
 		{
-			ApiClassAttribute attribute = type == null ? null : GetAttribute(type);
-			return new ApiClassInfo(attribute, type);
+			return GetInfo(type, null);
 		}
 
 		/// <summary>
@@ -51,8 +50,20 @@ namespace ICD.Connect.API.Attributes
 		/// <returns></returns>
 		public static ApiClassInfo GetInfo(Type type, object instance)
 		{
+			return GetInfo(type, instance, int.MaxValue);
+		}
+
+		/// <summary>
+		/// Gets the class info for the given type.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="instance"></param>
+		/// <param name="depth"></param>
+		/// <returns></returns>
+		public static ApiClassInfo GetInfo(Type type, object instance, int depth)
+		{
 			ApiClassAttribute attribute = type == null ? null : GetAttribute(type);
-			return new ApiClassInfo(attribute, type, instance);
+			return new ApiClassInfo(attribute, type, instance, depth);
 		}
 
 		[CanBeNull]

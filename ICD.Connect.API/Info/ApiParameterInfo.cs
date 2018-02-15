@@ -51,8 +51,23 @@ namespace ICD.Connect.API.Info
 		/// <param name="parameter"></param>
 		/// <param name="instance"></param>
 		public ApiParameterInfo(ApiParameterAttribute attribute, ParameterInfo parameter, object instance)
+			: this(attribute, parameter, instance, int.MaxValue)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
+		/// <param name="parameter"></param>
+		/// <param name="instance"></param>
+		/// <param name="depth"></param>
+		public ApiParameterInfo(ApiParameterAttribute attribute, ParameterInfo parameter, object instance, int depth)
 			: base(attribute)
 		{
+			if (depth <= 0)
+				return;
+
 			Type = parameter == null ? null : parameter.ParameterType;
 		}
 

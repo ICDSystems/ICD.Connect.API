@@ -42,10 +42,28 @@ namespace ICD.Connect.API.Attributes
 		/// Returns the info for the attribute.
 		/// </summary>
 		/// <returns></returns>
+		public static ApiNodeGroupInfo GetInfo(PropertyInfo property)
+		{
+			return GetInfo(property, null);
+		}
+
+		/// <summary>
+		/// Returns the info for the attribute.
+		/// </summary>
+		/// <returns></returns>
 		public static ApiNodeGroupInfo GetInfo(PropertyInfo property, object instance)
 		{
+			return GetInfo(property, instance, int.MaxValue);
+		}
+
+		/// <summary>
+		/// Returns the info for the attribute.
+		/// </summary>
+		/// <returns></returns>
+		public static ApiNodeGroupInfo GetInfo(PropertyInfo property, object instance, int depth)
+		{
 			ApiNodeGroupAttribute attribute = property == null ? null : GetAttribute(property);
-			return new ApiNodeGroupInfo(attribute, property, instance);
+			return new ApiNodeGroupInfo(attribute, property, instance, depth);
 		}
 
 		/// <summary>

@@ -43,10 +43,27 @@ namespace ICD.Connect.API.Info
 		/// <param name="method"></param>
 		/// <param name="instance"></param>
 		public ApiMethodInfo(ApiMethodAttribute attribute, MethodInfo method, object instance)
+			: this(attribute, method, instance, int.MaxValue)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
+		/// <param name="method"></param>
+		/// <param name="instance"></param>
+		/// <param name="depth"></param>
+		public ApiMethodInfo(ApiMethodAttribute attribute, MethodInfo method, object instance, int depth)
 			: base(attribute)
 		{
-			IEnumerable<ApiParameterInfo> parameters = GetParameterInfo(method, instance);
-			m_Parameters = new List<ApiParameterInfo>(parameters);
+			m_Parameters = new List<ApiParameterInfo>();
+
+			if (depth <= 0)
+				return;
+
+			IEnumerable<ApiParameterInfo> parameters = GetParameterInfo(method, instance, depth - 1);
+			SetParameters(parameters);
 		}
 
 		#region Methods
@@ -105,15 +122,18 @@ namespace ICD.Connect.API.Info
 
 		#region Private Methods
 
-		private IEnumerable<ApiParameterInfo> GetParameterInfo(MethodInfo method, object instance)
+		private IEnumerable<ApiParameterInfo> GetParameterInfo(MethodInfo method, object instance, int depth)
 		{
 			if (method == null)
+				yield break;
+
+			if (depth <= 0)
 				yield break;
 
 			foreach (ParameterInfo parameter in method.GetParameters())
 			{
 				ApiParameterAttribute attribute = GetParameterAttributeForParameter(parameter);
-				yield return new ApiParameterInfo(attribute, parameter, instance);
+				yield return new ApiParameterInfo(attribute, parameter, instance, depth - 1);
 			}
 		}
 

@@ -50,25 +50,43 @@ namespace ICD.Connect.API.Info
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		public ApiClassInfo(ApiClassAttribute attribute, Type type, object instance)
+			: this(attribute, type, instance, int.MaxValue)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
+		/// <param name="type"></param>
+		/// <param name="instance"></param>
+		/// <param name="depth"></param>
+		public ApiClassInfo(ApiClassAttribute attribute, Type type, object instance, int depth)
 			: base(attribute)
 		{
-			type = instance == null ? type : instance.GetType();
+			m_Methods = new List<ApiMethodInfo>();
+			m_Properties = new List<ApiPropertyInfo>();
+			m_Nodes = new List<ApiNodeInfo>();
+			m_NodeGroups = new List<ApiNodeGroupInfo>();
 
-			IEnumerable<ApiMethodInfo> parameters = GetMethodInfo(type, instance);
-			m_Methods = new List<ApiMethodInfo>(parameters);
-
-			IEnumerable<ApiPropertyInfo> properties = GetPropertyInfo(type, instance);
-			m_Properties = new List<ApiPropertyInfo>(properties);
-
-			IEnumerable<ApiNodeInfo> nodes = GetNodeInfo(type, instance);
-			m_Nodes = new List<ApiNodeInfo>(nodes);
-
-			IEnumerable<ApiNodeGroupInfo> nodeGroups = GetNodeGroupInfo(type, instance);
-			m_NodeGroups = new List<ApiNodeGroupInfo>(nodeGroups);
+			if (depth <= 0)
+				return;
 
 			// Pull the name from the instance
 			if ((attribute == null || string.IsNullOrEmpty(attribute.Name)) && instance != null)
 				Name = instance.GetType().Name;
+
+			type = instance == null ? type : instance.GetType();
+
+			IEnumerable<ApiMethodInfo> methods = GetMethodInfo(type, instance, depth - 1);
+			IEnumerable<ApiPropertyInfo> properties = GetPropertyInfo(type, instance, depth - 1);
+			IEnumerable<ApiNodeInfo> nodes = GetNodeInfo(type, instance, depth - 1);
+			IEnumerable<ApiNodeGroupInfo> nodeGroups = GetNodeGroupInfo(type, instance, depth - 1);
+
+			SetMethods(methods);
+			SetProperties(properties);
+			SetNodes(nodes);
+			SetNodeGroups(nodeGroups);
 		}
 
 		#region Methods
@@ -265,55 +283,67 @@ namespace ICD.Connect.API.Info
 
 		#region Private Methods
 
-		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance)
+		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance, int depth)
 		{
 			if (type == null)
+				yield break;
+
+			if (depth <= 0)
 				yield break;
 
 			foreach (PropertyInfo property in ApiPropertyAttribute.GetProperties(type))
 			{
 				ApiPropertyAttribute attribute = ApiPropertyAttribute.GetAttribute(property);
 				if (attribute != null)
-					yield return new ApiPropertyInfo(attribute, property, instance);
+					yield return new ApiPropertyInfo(attribute, property, instance, depth - 1);
 			}
 		}
 
-		private IEnumerable<ApiMethodInfo> GetMethodInfo(Type type, object instance)
+		private IEnumerable<ApiMethodInfo> GetMethodInfo(Type type, object instance, int depth)
 		{
 			if (type == null)
+				yield break;
+
+			if (depth <= 0)
 				yield break;
 
 			foreach (MethodInfo method in ApiMethodAttribute.GetMethods(type))
 			{
 				ApiMethodAttribute attribute = ApiMethodAttribute.GetAttribute(method);
 				if (attribute != null)
-					yield return new ApiMethodInfo(attribute, method, instance);
+					yield return new ApiMethodInfo(attribute, method, instance, depth - 1);
 			}
 		}
 
-		private IEnumerable<ApiNodeInfo> GetNodeInfo(Type type, object instance)
+		private IEnumerable<ApiNodeInfo> GetNodeInfo(Type type, object instance, int depth)
 		{
 			if (type == null)
+				yield break;
+
+			if (depth <= 0)
 				yield break;
 
 			foreach (PropertyInfo property in ApiNodeAttribute.GetProperties(type))
 			{
 				ApiNodeAttribute attribute = ApiNodeAttribute.GetAttribute(property);
 				if (attribute != null)
-					yield return new ApiNodeInfo(attribute, property, instance);
+					yield return new ApiNodeInfo(attribute, property, instance, depth - 1);
 			}
 		}
 
-		private IEnumerable<ApiNodeGroupInfo> GetNodeGroupInfo(Type type, object instance)
+		private IEnumerable<ApiNodeGroupInfo> GetNodeGroupInfo(Type type, object instance, int depth)
 		{
 			if (type == null)
+				yield break;
+
+			if (depth <= 0)
 				yield break;
 
 			foreach (PropertyInfo property in ApiNodeGroupAttribute.GetProperties(type))
 			{
 				ApiNodeGroupAttribute attribute = ApiNodeGroupAttribute.GetAttribute(property);
 				if (attribute != null)
-					yield return new ApiNodeGroupInfo(attribute, property, instance);
+					yield return new ApiNodeGroupInfo(attribute, property, instance, depth - 1);
 			}
 		}
 

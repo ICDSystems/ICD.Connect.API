@@ -63,8 +63,23 @@ namespace ICD.Connect.API.Info
 		/// <param name="property"></param>
 		/// <param name="instance"></param>
 		public ApiPropertyInfo(ApiPropertyAttribute attribute, PropertyInfo property, object instance)
+			: this(attribute, property, instance, int.MaxValue)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
+		/// <param name="property"></param>
+		/// <param name="instance"></param>
+		/// <param name="depth"></param>
+		public ApiPropertyInfo(ApiPropertyAttribute attribute, PropertyInfo property, object instance, int depth)
 			: base(attribute)
 		{
+			if (depth <= 0)
+				return;
+
 			Type = property == null ? null : property.PropertyType;
 			Read = property != null && property.CanRead;
 			Write = property != null && property.CanWrite;

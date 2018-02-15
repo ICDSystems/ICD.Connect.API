@@ -44,9 +44,24 @@ namespace ICD.Connect.API.Info
 		/// <param name="property"></param>
 		/// <param name="instance"></param>
 		public ApiNodeInfo(ApiNodeAttribute attribute, PropertyInfo property, object instance)
+			: this(attribute, property, instance, int.MaxValue)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
+		/// <param name="property"></param>
+		/// <param name="instance"></param>
+		/// <param name="depth"></param>
+		public ApiNodeInfo(ApiNodeAttribute attribute, PropertyInfo property, object instance, int depth)
 			: base(attribute)
 		{
-			Node = GetClassInfo(property, instance);
+			if (depth <= 0)
+				return;
+
+			Node = GetClassInfo(property, instance, depth - 1);
 		}
 
 		/// <summary>
@@ -69,17 +84,21 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="property"></param>
 		/// <param name="instance"></param>
+		/// <param name="depth"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		private ApiClassInfo GetClassInfo(PropertyInfo property, object instance)
+		private ApiClassInfo GetClassInfo(PropertyInfo property, object instance, int depth)
 		{
 			if (instance == null)
+				return null;
+
+			if (depth <= 0)
 				return null;
 
 			if (property == null || !property.CanRead)
 				return null;
 
-			return ApiClassAttribute.GetInfo(property.PropertyType, property.GetValue(instance, new object[0]));
+			return ApiClassAttribute.GetInfo(property.PropertyType, property.GetValue(instance, new object[0]), depth - 1);
 		}
 
 		#region Serialization

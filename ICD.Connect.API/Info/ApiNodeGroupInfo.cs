@@ -51,11 +51,26 @@ namespace ICD.Connect.API.Info
 		/// <param name="property"></param>
 		/// <param name="instance"></param>
 		public ApiNodeGroupInfo(ApiNodeGroupAttribute attribute, PropertyInfo property, object instance)
+			: this(attribute, property, instance, int.MaxValue)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="attribute"></param>
+		/// <param name="property"></param>
+		/// <param name="instance"></param>
+		/// <param name="depth"></param>
+		public ApiNodeGroupInfo(ApiNodeGroupAttribute attribute, PropertyInfo property, object instance, int depth)
 			: base(attribute)
 		{
 			m_Nodes = new Dictionary<uint, ApiClassInfo>();
 
-			IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodes = GetNodes(property, instance);
+			if (depth <= 0)
+				return;
+
+			IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodes = GetNodes(property, instance, depth - 1);
 			SetNodes(nodes);
 		}
 
@@ -89,30 +104,37 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="property"></param>
 		/// <param name="instance"></param>
+		/// <param name="depth"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		private IEnumerable<KeyValuePair<uint, ApiClassInfo>> GetNodes(PropertyInfo property, object instance)
+		private IEnumerable<KeyValuePair<uint, ApiClassInfo>> GetNodes(PropertyInfo property, object instance, int depth)
 		{
 			if (instance == null)
-				return Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>();
+				yield break;
+
+			if (depth <= 0)
+				yield break;
 
 			if (property == null || !property.CanRead)
-				return Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>();
+				yield break;
 
 			IApiNodeGroup nodeGroup = property.GetValue(instance, new object[0]) as IApiNodeGroup;
 			if (nodeGroup == null)
-				return Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>();
+				yield break;
 
-			return nodeGroup.Select(kvp =>
-			                        {
-				                        uint key = kvp.Key;
-				                        object value = kvp.Value;
-				                        Type type = value == null ? null : value.GetType();
-				                        ApiClassInfo info = ApiClassAttribute.GetInfo(type, value);
+			foreach (KeyValuePair<uint, object> kvp in nodeGroup)
+			{
+				uint key = kvp.Key;
 
-				                        return new KeyValuePair<uint, ApiClassInfo>(key, info);
-			                        })
-			                .Where(kvp => kvp.Value != null);
+				object value = kvp.Value;
+				if (value == null)
+					continue;
+
+				Type type = value.GetType();
+				ApiClassInfo info = ApiClassAttribute.GetInfo(type, value, depth - 1);
+
+				yield return new KeyValuePair<uint, ApiClassInfo>(key, info);
+			}
 		}
 
 		/// <summary>
