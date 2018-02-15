@@ -188,7 +188,8 @@ namespace ICD.Connect.API.Info
 			instance.Type = typeName == null ? null : Type.GetType(typeName, false, true);
 
 			// Value
-			instance.Value = JsonUtils.Deserialize(instance.Type, token[PROPERTY_VALUE]);
+			JToken valueToken = token[PROPERTY_VALUE];
+			instance.Value = valueToken == null ? null : JsonUtils.Deserialize(instance.Type, valueToken);
 
 			// Read
 			JToken read = token[PROPERTY_READ];
