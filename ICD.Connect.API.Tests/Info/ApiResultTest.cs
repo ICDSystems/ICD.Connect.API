@@ -49,51 +49,5 @@ namespace ICD.Connect.API.Tests.Info
 		}
 
 		#endregion
-
-		#region Serialization
-
-		[Test]
-		public void SerializeTest()
-		{
-			Assert.Inconclusive();
-		}
-
-		[Test]
-		public void SerializeWriterTest()
-		{
-			Assert.Inconclusive();
-		}
-
-		[Test]
-		public void DeserializeTest()
-		{
-			ApiResult a = new ApiResult
-			{
-				ErrorCode = ApiResult.eErrorCode.Exception,
-				Type = typeof(string),
-				Value = "You dun goofed"
-			};
-
-			string json = a.Serialize();
-			ApiResult b = ApiResult.Deserialize(json);
-
-			Assert.AreEqual(a.ErrorCode, b.ErrorCode);
-			Assert.AreEqual(a.Type, b.Type);
-			Assert.AreEqual(a.Value, b.Value);
-		}
-
-		[Test]
-		public void DeserializeToken()
-		{
-			Assert.Inconclusive();
-		}
-
-		[Test]
-		public void DeserializeInstanceTest()
-		{
-			Assert.Inconclusive();
-		}
-
-		#endregion
 	}
 }

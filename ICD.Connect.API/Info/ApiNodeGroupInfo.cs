@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Info.Converters;
 using ICD.Connect.API.Nodes;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -16,10 +16,9 @@ using ICD.Connect.API.Attributes;
 
 namespace ICD.Connect.API.Info
 {
+	[JsonConverter(typeof(ApiNodeGroupInfoConverter))]
 	public sealed class ApiNodeGroupInfo : AbstractApiInfo, IEnumerable<KeyValuePair<uint, ApiClassInfo>>
 	{
-		private const string PROPERTY_NODES = "nodes";
-
 		private readonly Dictionary<uint, ApiClassInfo> m_Nodes;
 
 		public ApiClassInfo this[uint key] { get { return m_Nodes[key]; } set { m_Nodes[key] = value; } }
@@ -175,81 +174,6 @@ namespace ICD.Connect.API.Info
 		{
 			return m_Nodes.Remove(key);
 		}
-
-		#region Serialization
-
-		/// <summary>
-		/// Override to serialize additional properties to the JSON.
-		/// </summary>
-		/// <param name="writer"></param>
-		protected override void WriteProperties(JsonWriter writer)
-		{
-			base.WriteProperties(writer);
-
-			// Nodes
-			if (m_Nodes.Count != 0)
-			{
-				writer.WritePropertyName(PROPERTY_NODES);
-				writer.WriteStartObject();
-				{
-					foreach (KeyValuePair<uint, ApiClassInfo> kvp in m_Nodes.OrderByKey())
-					{
-						writer.WritePropertyName(kvp.Key.ToString());
-						kvp.Value.Serialize(writer);
-					}
-				}
-				writer.WriteEndObject();
-			}
-		}
-
-		/// <summary>
-		/// Deserializes the JSON string to an ApiNodeGroupInfo instance.
-		/// </summary>
-		/// <param name="json"></param>
-		/// <returns></returns>
-		public static ApiNodeGroupInfo Deserialize(string json)
-		{
-			JObject jObject = JObject.Parse(json);
-			return Deserialize(jObject);
-		}
-
-		/// <summary>
-		/// Instanties a new instance and applies the JSON object.
-		/// </summary>
-		/// <param name="token"></param>
-		/// <returns></returns>
-		public static ApiNodeGroupInfo Deserialize(JToken token)
-		{
-			ApiNodeGroupInfo instance = new ApiNodeGroupInfo();
-			Deserialize(instance, token);
-			return instance;
-		}
-
-		/// <summary>
-		/// Applies the JSON object info to the given instance.
-		/// </summary>
-		/// <param name="instance"></param>
-		/// <param name="token"></param>
-		/// <returns></returns>
-		public static void Deserialize(ApiNodeGroupInfo instance, JToken token)
-		{
-			// Nodes
-			JObject nodes = token[PROPERTY_NODES] as JObject;
-			if (nodes != null)
-			{
-				foreach (KeyValuePair<string, JToken> kvp in nodes)
-				{
-					uint key = uint.Parse(kvp.Key);
-					ApiClassInfo value = ApiClassInfo.Deserialize(kvp.Value);
-
-					instance.AddNode(key, value);
-				}
-			}
-
-			AbstractApiInfo.Deserialize(instance, token);
-		}
-
-		#endregion
 
 		public IEnumerator<KeyValuePair<uint, ApiClassInfo>> GetEnumerator()
 		{

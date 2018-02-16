@@ -1,6 +1,6 @@
-﻿using System.Reflection;
-using ICD.Connect.API.Attributes;
+﻿using ICD.Connect.API.Attributes;
 using ICD.Connect.API.Info;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace ICD.Connect.API.Tests.Info
@@ -12,8 +12,7 @@ namespace ICD.Connect.API.Tests.Info
 		public void SerializeTest()
 		{
 			ApiClassInfo info = ApiClassAttribute.GetInfo(typeof(ConcreteClass));
-
-			string json = info.Serialize();
+			string json = JsonConvert.SerializeObject(info);
 
 			Assert.Inconclusive();
 		}

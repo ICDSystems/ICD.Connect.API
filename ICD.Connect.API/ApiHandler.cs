@@ -13,6 +13,7 @@ using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.API.Info;
 using ICD.Connect.API.Nodes;
+using Newtonsoft.Json;
 
 namespace ICD.Connect.API
 {
@@ -34,7 +35,7 @@ namespace ICD.Connect.API
 		/// <returns></returns>
 		public static ApiClassInfo HandleRequest(string serialized)
 		{
-			ApiClassInfo info = ApiClassInfo.Deserialize(serialized);
+			ApiClassInfo info = JsonConvert.DeserializeObject<ApiClassInfo>(serialized);
 			HandleRequest(info);
 			return info;
 		}

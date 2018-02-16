@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Connect.API.Attributes;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Info.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 #if SIMPLSHARP
@@ -13,13 +14,9 @@ using System.Reflection;
 
 namespace ICD.Connect.API.Info
 {
+	[JsonConverter(typeof(ApiClassInfoConverter))]
 	public sealed class ApiClassInfo : AbstractApiInfo
 	{
-		private const string PROPERTY_METHODS = "methods";
-		private const string PROPERTY_PROPERTIES = "properties";
-		private const string PROPERTY_NODES = "nodes";
-		private const string PROPERTY_NODEGROUPS = "nodeGroups";
-
 		private readonly List<ApiMethodInfo> m_Methods;
 		private readonly List<ApiPropertyInfo> m_Properties;
 		private readonly List<ApiNodeInfo> m_Nodes;
@@ -345,133 +342,6 @@ namespace ICD.Connect.API.Info
 				if (attribute != null)
 					yield return new ApiNodeGroupInfo(attribute, property, instance, depth - 1);
 			}
-		}
-
-		#endregion
-
-		#region Serialization
-
-		/// <summary>
-		/// Override to serialize additional properties to the JSON.
-		/// </summary>
-		/// <param name="writer"></param>
-		protected override void WriteProperties(JsonWriter writer)
-		{
-			base.WriteProperties(writer);
-
-			// Methods
-			if (m_Methods.Count > 0)
-			{
-				writer.WritePropertyName(PROPERTY_METHODS);
-				writer.WriteStartArray();
-				{
-					foreach (ApiMethodInfo method in m_Methods)
-						method.Serialize(writer);
-				}
-				writer.WriteEndArray();
-			}
-
-			// Properties
-			if (m_Properties.Count > 0)
-			{
-				writer.WritePropertyName(PROPERTY_PROPERTIES);
-				writer.WriteStartArray();
-				{
-					foreach (ApiPropertyInfo property in m_Properties)
-						property.Serialize(writer);
-				}
-				writer.WriteEndArray();
-			}
-
-			// Nodes
-			if (m_Nodes.Count > 0)
-			{
-				writer.WritePropertyName(PROPERTY_NODES);
-				writer.WriteStartArray();
-				{
-					foreach (ApiNodeInfo node in m_Nodes)
-						node.Serialize(writer);
-				}
-				writer.WriteEndArray();
-			}
-
-			// Node Groups
-			if (m_NodeGroups.Count > 0)
-			{
-				writer.WritePropertyName(PROPERTY_NODEGROUPS);
-				writer.WriteStartArray();
-				{
-					foreach (ApiNodeGroupInfo nodeGroup in m_NodeGroups)
-						nodeGroup.Serialize(writer);
-				}
-				writer.WriteEndArray();
-			}
-		}
-
-		/// <summary>
-		/// Deserializes the JSON string to an ApiClassInfo instance.
-		/// </summary>
-		/// <param name="json"></param>
-		/// <returns></returns>
-		public static ApiClassInfo Deserialize(string json)
-		{
-			JObject jObject = JObject.Parse(json);
-			return Deserialize(jObject);
-		}
-
-		/// <summary>
-		/// Instanties a new instance and applies the JSON object.
-		/// </summary>
-		/// <param name="token"></param>
-		/// <returns></returns>
-		public static ApiClassInfo Deserialize(JToken token)
-		{
-			ApiClassInfo instance = new ApiClassInfo();
-			Deserialize(instance, token);
-			return instance;
-		}
-
-		/// <summary>
-		/// Applies the JSON object info to the given instance.
-		/// </summary>
-		/// <param name="instance"></param>
-		/// <param name="token"></param>
-		/// <returns></returns>
-		public static void Deserialize(ApiClassInfo instance, JToken token)
-		{
-			// Methods
-			JToken methods = token[PROPERTY_METHODS];
-			if (methods != null)
-			{
-				IEnumerable<ApiMethodInfo> methodInfo = methods.Select(m => ApiMethodInfo.Deserialize(m));
-				instance.SetMethods(methodInfo);
-			}
-
-			// Properties
-			JToken properties = token[PROPERTY_PROPERTIES];
-			if (properties != null)
-			{
-				IEnumerable<ApiPropertyInfo> propertyInfo = properties.Select(p => ApiPropertyInfo.Deserialize(p));
-				instance.SetProperties(propertyInfo);
-			}
-
-			// Nodes
-			JToken nodes = token[PROPERTY_NODES];
-			if (nodes != null)
-			{
-				IEnumerable<ApiNodeInfo> nodeInfo = nodes.Select(m => ApiNodeInfo.Deserialize(m));
-				instance.SetNodes(nodeInfo);
-			}
-
-			// Node Groups
-			JToken nodeGroups = token[PROPERTY_NODEGROUPS];
-			if (nodeGroups != null)
-			{
-				IEnumerable<ApiNodeGroupInfo> nodeGroupInfo = nodeGroups.Select(m => ApiNodeGroupInfo.Deserialize(m));
-				instance.SetNodeGroups(nodeGroupInfo);
-			}
-
-			AbstractApiInfo.Deserialize(instance, token);
 		}
 
 		#endregion

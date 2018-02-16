@@ -2,8 +2,8 @@
 using System.Linq;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Attributes;
+using ICD.Connect.API.Info.Converters;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -12,11 +12,9 @@ using System.Reflection;
 
 namespace ICD.Connect.API.Info
 {
+	[JsonConverter(typeof(ApiMethodInfoConverter))]
 	public sealed class ApiMethodInfo : AbstractApiInfo
 	{
-		private const string PROPERTY_PARAMETERS = "params";
-		private const string PROPERTY_EXECUTE = "execute";
-
 		private readonly List<ApiParameterInfo> m_Parameters;
 
 		/// <summary>
@@ -147,84 +145,6 @@ namespace ICD.Connect.API.Info
 		{
 			return parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault() ??
 			       new ApiParameterAttribute(parameter.Name, null);
-		}
-
-		#endregion
-
-		#region Serialization
-
-		/// <summary>
-		/// Override to serialize additional properties to the JSON.
-		/// </summary>
-		/// <param name="writer"></param>
-		protected override void WriteProperties(JsonWriter writer)
-		{
-			base.WriteProperties(writer);
-
-			// Execute
-			if (Execute)
-			{
-				writer.WritePropertyName(PROPERTY_EXECUTE);
-				writer.WriteValue(Execute);
-			}
-
-			// Parameters
-			if (m_Parameters.Count > 0)
-			{
-				writer.WritePropertyName(PROPERTY_PARAMETERS);
-				writer.WriteStartArray();
-				{
-					foreach (ApiParameterInfo parameter in m_Parameters)
-						parameter.Serialize(writer);
-				}
-				writer.WriteEndArray();
-			}
-		}
-
-		/// <summary>
-		/// Deserializes the JSON string to an ApiMethodInfo instance.
-		/// </summary>
-		/// <param name="json"></param>
-		/// <returns></returns>
-		public static ApiMethodInfo Deserialize(string json)
-		{
-			JObject jObject = JObject.Parse(json);
-			return Deserialize(jObject);
-		}
-
-		/// <summary>
-		/// Instanties a new instance and applies the JSON object.
-		/// </summary>
-		/// <param name="token"></param>
-		/// <returns></returns>
-		public static ApiMethodInfo Deserialize(JToken token)
-		{
-			ApiMethodInfo instance = new ApiMethodInfo();
-			Deserialize(instance, token);
-			return instance;
-		}
-
-		/// <summary>
-		/// Applies the JSON object info to the given instance.
-		/// </summary>
-		/// <param name="instance"></param>
-		/// <param name="token"></param>
-		/// <returns></returns>
-		public static void Deserialize(ApiMethodInfo instance, JToken token)
-		{
-			// Execute
-			JToken executeToken = token[PROPERTY_EXECUTE];
-			instance.Execute = executeToken != null && (bool)executeToken;
-
-			// Parameters
-			JToken parameters = token[PROPERTY_PARAMETERS];
-			if (parameters != null)
-			{
-				IEnumerable<ApiParameterInfo> parameterInfo = parameters.Select(m => ApiParameterInfo.Deserialize(m));
-				instance.SetParameters(parameterInfo);
-			}
-
-			AbstractApiInfo.Deserialize(instance, token);
 		}
 
 		#endregion

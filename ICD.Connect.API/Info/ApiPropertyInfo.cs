@@ -1,24 +1,18 @@
 ﻿using System;
-using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Json;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
 using System.Reflection;
 #endif
 using ICD.Connect.API.Attributes;
+using ICD.Connect.API.Info.Converters;
 
 namespace ICD.Connect.API.Info
 {
+	[JsonConverter(typeof(ApiPropertyInfoConverter))]
 	public sealed class ApiPropertyInfo : AbstractApiInfo
 	{
-		private const string PROPERTY_TYPE = "type";
-		private const string PROPERTY_VALUE = "value";
-		private const string PROPERTY_READ = "read";
-		private const string PROPERTY_WRITE = "write";
-
 		/// <summary>
 		/// Gets/sets the type for this property.
 		/// </summary>
@@ -128,94 +122,6 @@ namespace ICD.Connect.API.Info
 		{
 			Type = type;
 			Value = value;
-		}
-
-		#endregion
-
-		#region Serialization
-
-		/// <summary>
-		/// Override to serialize additional properties to the JSON.
-		/// </summary>
-		/// <param name="writer"></param>
-		protected override void WriteProperties(JsonWriter writer)
-		{
-			base.WriteProperties(writer);
-
-			if (Type != null)
-			{
-				writer.WritePropertyName(PROPERTY_TYPE);
-				writer.WriteType(Type);
-			}
-
-			// We want to allow serializing null values in a write context
-			if (Write)
-			{
-				writer.WritePropertyName(PROPERTY_VALUE);
-				writer.WriteValue(Value);
-			}
-
-			if (Read)
-			{
-				writer.WritePropertyName(PROPERTY_READ);
-				writer.WriteValue(Read);
-			}
-
-			if (Write)
-			{
-				writer.WritePropertyName(PROPERTY_WRITE);
-				writer.WriteValue(Write);
-			}
-		}
-
-		/// <summary>
-		/// Deserializes the JSON string to an ApiPropertyInfo instance.
-		/// </summary>
-		/// <param name="json"></param>
-		/// <returns></returns>
-		public static ApiPropertyInfo Deserialize(string json)
-		{
-			JObject jObject = JObject.Parse(json);
-			return Deserialize(jObject);
-		}
-
-		/// <summary>
-		/// Instanties a new instance and applies the JSON object.
-		/// </summary>
-		/// <param name="token"></param>
-		/// <returns></returns>
-		public static ApiPropertyInfo Deserialize(JToken token)
-		{
-			ApiPropertyInfo instance = new ApiPropertyInfo();
-			Deserialize(instance, token);
-			return instance;
-		}
-
-		/// <summary>
-		/// Applies the JSON object info to the given instance.
-		/// </summary>
-		/// <param name="instance"></param>
-		/// <param name="token"></param>
-		/// <returns></returns>
-		public static void Deserialize(ApiPropertyInfo instance, JToken token)
-		{
-			// Type
-			string typeName = (string)token[PROPERTY_TYPE];
-			instance.Type = typeName == null ? null : Type.GetType(typeName, false, true);
-
-			// Value
-			JToken valueToken = token[PROPERTY_VALUE];
-			instance.Value = valueToken == null ? null : JsonUtils.Deserialize(instance.Type, valueToken);
-
-			// Read
-			JToken read = token[PROPERTY_READ];
-			instance.Read = read != null && (bool)read;
-
-			// Write
-			JToken write = token[PROPERTY_WRITE];
-			instance.Write = write != null && (bool)write;
-
-			AbstractApiInfo.Deserialize(instance, token);
 		}
 
 		#endregion

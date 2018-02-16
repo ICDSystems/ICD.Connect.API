@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-
 namespace ICD.Connect.API.Info
 {
 	public interface IApiInfo
@@ -18,17 +16,5 @@ namespace ICD.Connect.API.Info
 		/// Gets/sets the response message for this request.
 		/// </summary>
 		ApiResult Result { get; set; }
-
-		/// <summary>
-		/// Serializes the instance to JSON.
-		/// </summary>
-		/// <returns></returns>
-		string Serialize();
-
-		/// <summary>
-		/// Serializes the instance to JSON.
-		/// </summary>
-		/// <param name="writer"></param>
-		void Serialize(JsonWriter writer);
 	}
 }
