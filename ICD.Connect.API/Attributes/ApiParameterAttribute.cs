@@ -37,6 +37,9 @@ namespace ICD.Connect.API.Attributes
 		[CanBeNull]
 		public static ApiParameterAttribute GetAttribute(ParameterInfo parameter)
 		{
+			if (parameter == null)
+				throw new ArgumentNullException("parameter");
+
 			return parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault();
 		}
 	}

@@ -69,6 +69,9 @@ namespace ICD.Connect.API.Attributes
 		[CanBeNull]
 		public static ApiClassAttribute GetAttribute(Type type)
 		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+
 			return
 #if SIMPLSHARP
 				((CType)type)

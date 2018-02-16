@@ -101,6 +101,9 @@ namespace ICD.Connect.API.Attributes
 		[CanBeNull]
 		public static ApiPropertyAttribute GetAttribute(PropertyInfo property)
 		{
+			if (property == null)
+				throw new ArgumentNullException("property");
+
 			return property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
 		}
 

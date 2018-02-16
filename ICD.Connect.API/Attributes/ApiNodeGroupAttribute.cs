@@ -126,6 +126,9 @@ namespace ICD.Connect.API.Attributes
 		[CanBeNull]
 		public static ApiNodeGroupAttribute GetAttribute(PropertyInfo property)
 		{
+			if (property == null)
+				throw new ArgumentNullException("property");
+
 			return property.GetCustomAttributes<ApiNodeGroupAttribute>(true).FirstOrDefault();
 		}
 

@@ -150,9 +150,12 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		[CanBeNull]
-		public static ApiMethodAttribute GetAttribute(MethodInfo property)
+		public static ApiMethodAttribute GetAttribute(MethodInfo method)
 		{
-			return property.GetCustomAttributes<ApiMethodAttribute>(true).FirstOrDefault();
+			if (method == null)
+				throw new ArgumentNullException("method");
+
+			return method.GetCustomAttributes<ApiMethodAttribute>(true).FirstOrDefault();
 		}
 
 		#endregion
