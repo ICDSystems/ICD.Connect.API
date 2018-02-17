@@ -78,11 +78,7 @@ namespace ICD.Connect.API.Info.Converters
 			while (reader.Read())
 			{
 				if (reader.TokenType == JsonToken.Null || reader.TokenType == JsonToken.EndObject)
-				{
-					// Read out of the object
-					reader.Read();
 					break;
-				}
 
 				output = output ?? Instantiate();
 

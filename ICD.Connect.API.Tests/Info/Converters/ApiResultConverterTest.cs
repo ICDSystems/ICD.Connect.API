@@ -19,7 +19,11 @@ namespace ICD.Connect.API.Tests.Info.Converters
 
 			string json = JsonConvert.SerializeObject(result);
 
-			Assert.Inconclusive();
+			result = JsonConvert.DeserializeObject<ApiResult>(json);
+
+			Assert.AreEqual(ApiResult.eErrorCode.MissingMember, result.ErrorCode);
+			Assert.AreEqual(typeof(string), result.Type);
+			Assert.AreEqual("Test", result.Value);
 		}
 
 		[Test]

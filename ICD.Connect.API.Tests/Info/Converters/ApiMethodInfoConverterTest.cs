@@ -11,7 +11,7 @@ namespace ICD.Connect.API.Tests.Info.Converters
 		[Test]
 		public override void WriteJsonTest()
 		{
-			ApiMethodInfo info = new ApiMethodInfo
+			ApiMethodInfo methodInfo = new ApiMethodInfo
 			{
 				Execute = true,
 				Name = "Test",
@@ -34,11 +34,11 @@ namespace ICD.Connect.API.Tests.Info.Converters
 				}
 			};
 
-			info.SetParameters(parameters);
+			methodInfo.SetParameters(parameters);
 
-			string json = JsonConvert.SerializeObject(info);
+			string json = JsonConvert.SerializeObject(methodInfo);
 
-			Assert.Inconclusive();
+			Assert.AreEqual("{\"name\":\"Test\",\"help\":\"Test test.\",\"execute\":true,\"params\":[{\"name\":\"Param1\"},{\"name\":\"Param2\"},{\"name\":\"Param3\"}]}", json);
 		}
 
 		[Test]
@@ -52,6 +52,9 @@ namespace ICD.Connect.API.Tests.Info.Converters
 			Assert.AreEqual("Test", methodInfo.Name);
 			Assert.AreEqual("Test test.", methodInfo.Help);
 			Assert.AreEqual(3, methodInfo.GetParameters().Count());
+			Assert.AreEqual("Param1", methodInfo.GetParameters().ElementAt(0).Name);
+			Assert.AreEqual("Param2", methodInfo.GetParameters().ElementAt(1).Name);
+			Assert.AreEqual("Param3", methodInfo.GetParameters().ElementAt(2).Name);
 		}
 	}
 }
