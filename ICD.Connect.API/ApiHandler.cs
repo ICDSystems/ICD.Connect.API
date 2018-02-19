@@ -54,6 +54,133 @@ namespace ICD.Connect.API
 
 		#endregion
 
+		#region Results
+
+		/// <summary>
+		/// Executes the given callback for each result in the given command tree.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="readResult"></param>
+		public static void ReadResultsRecursive(ApiClassInfo info, Action<ApiResult> readResult)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (readResult == null)
+				throw new ArgumentNullException("readResult");
+
+			if (info.Result != null)
+				readResult(info.Result);
+
+			foreach (ApiPropertyInfo property in info.GetProperties())
+				ReadResultsRecursive(property, readResult);
+
+			foreach (ApiMethodInfo method in info.GetMethods())
+				ReadResultsRecursive(method, readResult);
+
+			foreach (ApiNodeInfo node in info.GetNodes())
+				ReadResultsRecursive(node, readResult);
+
+			foreach (ApiNodeGroupInfo nodeGroup in info.GetNodeGroups())
+				ReadResultsRecursive(nodeGroup, readResult);
+		}
+
+		/// <summary>
+		/// Executes the given callback for each result in the given command tree.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="readResult"></param>
+		private static void ReadResultsRecursive(ApiPropertyInfo info, Action<ApiResult> readResult)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (readResult == null)
+				throw new ArgumentNullException("readResult");
+
+			if (info.Result != null)
+				readResult(info.Result);
+		}
+
+		/// <summary>
+		/// Executes the given callback for each result in the given command tree.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="readResult"></param>
+		private static void ReadResultsRecursive(ApiMethodInfo info, Action<ApiResult> readResult)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (readResult == null)
+				throw new ArgumentNullException("readResult");
+
+			if (info.Result != null)
+				readResult(info.Result);
+
+			foreach (ApiParameterInfo parameter in info.GetParameters())
+				ReadResultsRecursive(parameter, readResult);
+		}
+
+		/// <summary>
+		/// Executes the given callback for each result in the given command tree.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="readResult"></param>
+		private static void ReadResultsRecursive(ApiParameterInfo info, Action<ApiResult> readResult)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (readResult == null)
+				throw new ArgumentNullException("readResult");
+
+			if (info.Result != null)
+				readResult(info.Result);
+		}
+
+		/// <summary>
+		/// Executes the given callback for each result in the given command tree.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="readResult"></param>
+		private static void ReadResultsRecursive(ApiNodeInfo info, Action<ApiResult> readResult)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (readResult == null)
+				throw new ArgumentNullException("readResult");
+
+			if (info.Result != null)
+				readResult(info.Result);
+
+			if (info.Node != null)
+				ReadResultsRecursive(info.Node, readResult);
+		}
+
+		/// <summary>
+		/// Executes the given callback for each result in the given command tree.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="readResult"></param>
+		private static void ReadResultsRecursive(ApiNodeGroupInfo info, Action<ApiResult> readResult)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (readResult == null)
+				throw new ArgumentNullException("readResult");
+
+			if (info.Result != null)
+				readResult(info.Result);
+
+			foreach (KeyValuePair<uint, ApiClassInfo> item in info.GetNodes().Where(kvp => kvp.Value != null))
+				ReadResultsRecursive(item.Value, readResult);
+		}
+
+		#endregion
+
 		#region Private Methods
 
 		/// <summary>
