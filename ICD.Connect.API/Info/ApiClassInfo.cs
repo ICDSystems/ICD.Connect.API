@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Connect.API.Attributes;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info.Converters;
@@ -17,10 +18,10 @@ namespace ICD.Connect.API.Info
 	public sealed class ApiClassInfo : AbstractApiInfo
 	{
 		private readonly List<Type> m_ProxyTypes;
-		private readonly List<ApiMethodInfo> m_Methods;
-		private readonly List<ApiPropertyInfo> m_Properties;
-		private readonly List<ApiNodeInfo> m_Nodes;
-		private readonly List<ApiNodeGroupInfo> m_NodeGroups; 
+		private readonly Dictionary<string, ApiMethodInfo> m_Methods;
+		private readonly Dictionary<string, ApiPropertyInfo> m_Properties;
+		private readonly Dictionary<string, ApiNodeInfo> m_Nodes;
+		private readonly Dictionary<string, ApiNodeGroupInfo> m_NodeGroups; 
 
 		/// <summary>
 		/// Constructor.
@@ -62,10 +63,10 @@ namespace ICD.Connect.API.Info
 			: base(attribute)
 		{
 			m_ProxyTypes = new List<Type>();
-			m_Methods = new List<ApiMethodInfo>();
-			m_Properties = new List<ApiPropertyInfo>();
-			m_Nodes = new List<ApiNodeInfo>();
-			m_NodeGroups = new List<ApiNodeGroupInfo>();
+			m_Methods = new Dictionary<string, ApiMethodInfo>();
+			m_Properties = new Dictionary<string, ApiPropertyInfo>();
+			m_Nodes = new Dictionary<string, ApiNodeInfo>();
+			m_NodeGroups = new Dictionary<string, ApiNodeGroupInfo>();
 
 			if (depth <= 0)
 				return;
@@ -176,7 +177,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiMethodInfo> GetMethods()
 		{
-			return m_Methods.ToArray(m_Methods.Count);
+			return m_Methods.Select(kvp => kvp.Value).ToArray(m_Methods.Count);
 		}
 
 		/// <summary>
@@ -186,7 +187,7 @@ namespace ICD.Connect.API.Info
 		public void SetMethods(IEnumerable<ApiMethodInfo> methods)
 		{
 			m_Methods.Clear();
-			m_Methods.AddRange(methods);
+			m_Methods.AddRange(methods, m => m.Name);
 		}
 
 		/// <summary>
@@ -195,7 +196,7 @@ namespace ICD.Connect.API.Info
 		/// <param name="method"></param>
 		public void AddMethod(ApiMethodInfo method)
 		{
-			m_Methods.Add(method);
+			m_Methods.Add(method.Name, method);
 		}
 
 		#endregion
@@ -216,7 +217,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiPropertyInfo> GetProperties()
 		{
-			return m_Properties.ToArray(m_Properties.Count);
+			return m_Properties.Select(kvp => kvp.Value).ToArray(m_Properties.Count);
 		}
 
 		/// <summary>
@@ -226,7 +227,7 @@ namespace ICD.Connect.API.Info
 		public void SetProperties(IEnumerable<ApiPropertyInfo> properties)
 		{
 			m_Properties.Clear();
-			m_Properties.AddRange(properties);
+			m_Properties.AddRange(properties, p => p.Name);
 		}
 
 		/// <summary>
@@ -235,7 +236,7 @@ namespace ICD.Connect.API.Info
 		/// <param name="property"></param>
 		public void AddProperty(ApiPropertyInfo property)
 		{
-			m_Properties.Add(property);
+			m_Properties.Add(property.Name, property);
 		}
 
 		#endregion
@@ -256,7 +257,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiNodeInfo> GetNodes()
 		{
-			return m_Nodes.ToArray(m_Nodes.Count);
+			return m_Nodes.Select(kvp => kvp.Value).ToArray(m_Nodes.Count);
 		}
 
 		/// <summary>
@@ -266,7 +267,7 @@ namespace ICD.Connect.API.Info
 		public void SetNodes(IEnumerable<ApiNodeInfo> nodes)
 		{
 			m_Nodes.Clear();
-			m_Nodes.AddRange(nodes);
+			m_Nodes.AddRange(nodes, n => n.Name);
 		}
 
 		/// <summary>
@@ -275,7 +276,30 @@ namespace ICD.Connect.API.Info
 		/// <param name="node"></param>
 		public void AddNode(ApiNodeInfo node)
 		{
-			m_Nodes.Add(node);
+			m_Nodes.Add(node.Name, node);
+		}
+
+		/// <summary>
+		/// Gets the node with the given name, returns null if the node doesn't exist.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		[CanBeNull]
+		public ApiNodeInfo GetNode(string name)
+		{
+			return m_Nodes.GetDefault(name, null);
+		}
+
+		/// <summary>
+		/// Gets the class info at the node with the given name, returns null if the node or class don't exist.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		[CanBeNull]
+		public ApiClassInfo GetNodeClass(string name)
+		{
+			ApiNodeInfo node = GetNode(name);
+			return node == null ? null : node.Node;
 		}
 
 		#endregion
@@ -296,7 +320,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiNodeGroupInfo> GetNodeGroups()
 		{
-			return m_NodeGroups.ToArray(m_NodeGroups.Count);
+			return m_NodeGroups.Select(kvp => kvp.Value).ToArray(m_NodeGroups.Count);
 		}
 
 		/// <summary>
@@ -306,7 +330,7 @@ namespace ICD.Connect.API.Info
 		public void SetNodeGroups(IEnumerable<ApiNodeGroupInfo> nodeGroups)
 		{
 			m_NodeGroups.Clear();
-			m_NodeGroups.AddRange(nodeGroups);
+			m_NodeGroups.AddRange(nodeGroups, n => n.Name);
 		}
 
 		/// <summary>
@@ -315,7 +339,18 @@ namespace ICD.Connect.API.Info
 		/// <param name="nodeGroup"></param>
 		public void AddNodeGroup(ApiNodeGroupInfo nodeGroup)
 		{
-			m_NodeGroups.Add(nodeGroup);
+			m_NodeGroups.Add(nodeGroup.Name, nodeGroup);
+		}
+
+		/// <summary>
+		/// Gets the node group with the given name, returns null if the node group doesn't exist.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		[CanBeNull]
+		public ApiNodeGroupInfo GetNodeGroup(string name)
+		{
+			return m_NodeGroups.GetDefault(name, null);
 		}
 
 		#endregion
