@@ -73,11 +73,11 @@ namespace ICD.Connect.API.Info.Converters
 				switch (property)
 				{
 					case PROPERTY_ERRORCODE:
-						output.ErrorCode = (ApiResult.eErrorCode)Enum.ToObject(typeof(ApiResult.eErrorCode), reader.Value);
+						output.ErrorCode = reader.GetValueAsEnum<ApiResult.eErrorCode>();
 						break;
 
 					case PROPERTY_TYPE:
-						output.Type = Type.GetType((string)reader.Value, false, true);
+						output.Type = reader.GetValueAsType();
 						break;
 
 					case PROPERTY_VALUE:

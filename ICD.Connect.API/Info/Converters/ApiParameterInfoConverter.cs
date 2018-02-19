@@ -54,7 +54,7 @@ namespace ICD.Connect.API.Info.Converters
 			switch (property)
 			{
 				case PROPERTY_TYPE:
-					instance.Type = Type.GetType((string)reader.Value, false, true);
+					instance.Type = reader.GetValueAsType();
 					break;
 
 				case PROPERTY_VALUE:
