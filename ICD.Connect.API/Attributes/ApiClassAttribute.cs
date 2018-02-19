@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils.Extensions;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
 using System.Reflection;
 #endif
-using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.Attributes
@@ -14,11 +15,14 @@ namespace ICD.Connect.API.Attributes
 	[AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 	public sealed class ApiClassAttribute : AbstractApiAttribute
 	{
+		private readonly Type[] m_ProxyTypes;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		public ApiClassAttribute()
-			: this(null, null)
+		/// <param name="proxyTypes"></param>
+		public ApiClassAttribute(params Type[] proxyTypes)
+			: this(null, null, proxyTypes)
 		{
 		}
 
@@ -27,9 +31,20 @@ namespace ICD.Connect.API.Attributes
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="help"></param>
-		public ApiClassAttribute(string name, string help)
+		/// <param name="proxyTypes"></param>
+		public ApiClassAttribute(string name, string help, params Type[] proxyTypes)
 			: base(name, help)
 		{
+			m_ProxyTypes = proxyTypes.Distinct().ToArray();
+		}
+
+		/// <summary>
+		/// Gets the proxy types that can control this class.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<Type> GetProxyTypes()
+		{
+			return m_ProxyTypes.ToArray(m_ProxyTypes.Length);
 		}
 
 		/// <summary>

@@ -16,6 +16,7 @@ namespace ICD.Connect.API.Info
 	[JsonConverter(typeof(ApiClassInfoConverter))]
 	public sealed class ApiClassInfo : AbstractApiInfo
 	{
+		private readonly List<Type> m_ProxyTypes;
 		private readonly List<ApiMethodInfo> m_Methods;
 		private readonly List<ApiPropertyInfo> m_Properties;
 		private readonly List<ApiNodeInfo> m_Nodes;
@@ -60,6 +61,7 @@ namespace ICD.Connect.API.Info
 		public ApiClassInfo(ApiClassAttribute attribute, Type type, object instance, int depth)
 			: base(attribute)
 		{
+			m_ProxyTypes = new List<Type>();
 			m_Methods = new List<ApiMethodInfo>();
 			m_Properties = new List<ApiPropertyInfo>();
 			m_Nodes = new List<ApiNodeInfo>();
@@ -74,11 +76,13 @@ namespace ICD.Connect.API.Info
 
 			type = instance == null ? type : instance.GetType();
 
+			IEnumerable<Type> proxyTypes = GetProxyTypes(attribute);
 			IEnumerable<ApiMethodInfo> methods = GetMethodInfo(type, instance, depth - 1);
 			IEnumerable<ApiPropertyInfo> properties = GetPropertyInfo(type, instance, depth - 1);
 			IEnumerable<ApiNodeInfo> nodes = GetNodeInfo(type, instance, depth - 1);
 			IEnumerable<ApiNodeGroupInfo> nodeGroups = GetNodeGroupInfo(type, instance, depth - 1);
 
+			SetProxyTypes(proxyTypes);
 			SetMethods(methods);
 			SetProperties(properties);
 			SetNodes(nodes);
@@ -114,6 +118,47 @@ namespace ICD.Connect.API.Info
 
 			return output;
 		}
+
+		#region ProxyTypes
+
+		/// <summary>
+		/// Clears the proxyTypes for this class.
+		/// </summary>
+		public void ClearProxyTypes()
+		{
+			SetProxyTypes(Enumerable.Empty<Type>());
+		}
+
+		/// <summary>
+		/// Gets the proxyTypes for this class.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<Type> GetProxyTypes()
+		{
+			return m_ProxyTypes.ToArray(m_ProxyTypes.Count);
+		}
+
+		/// <summary>
+		/// Sets the proxyTypes for this class.
+		/// </summary>
+		/// <param name="proxyTypes"></param>
+		public void SetProxyTypes(IEnumerable<Type> proxyTypes)
+		{
+			m_ProxyTypes.Clear();
+			m_ProxyTypes.AddRange(proxyTypes.Distinct());
+		}
+
+		/// <summary>
+		/// Adds the proxyType to the collection.
+		/// </summary>
+		/// <param name="proxyType"></param>
+		public void AddProxyType(Type proxyType)
+		{
+			if (!m_ProxyTypes.Contains(proxyType))
+				m_ProxyTypes.Add(proxyType);
+		}
+
+		#endregion
 
 		#region Methods
 
@@ -278,6 +323,11 @@ namespace ICD.Connect.API.Info
 		#endregion
 
 		#region Private Methods
+
+		private IEnumerable<Type> GetProxyTypes(ApiClassAttribute attribute)
+		{
+			return attribute == null ? Enumerable.Empty<Type>() : attribute.GetProxyTypes().Distinct();
+		}
 
 		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance, int depth)
 		{

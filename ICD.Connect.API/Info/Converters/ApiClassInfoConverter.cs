@@ -1,4 +1,5 @@
-﻿using ICD.Common.Utils.Extensions;
+﻿using System;
+using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiClassInfoConverter : AbstractApiInfoConverter<ApiClassInfo>
 	{
+		private const string PROPERTY_PROXYTYPES = "proxyTypes";
 		private const string PROPERTY_METHODS = "methods";
 		private const string PROPERTY_PROPERTIES = "properties";
 		private const string PROPERTY_NODES = "nodes";
@@ -30,6 +32,14 @@ namespace ICD.Connect.API.Info.Converters
 		protected override void WriteProperties(JsonWriter writer, ApiClassInfo value, JsonSerializer serializer)
 		{
 			base.WriteProperties(writer, value, serializer);
+
+			// Proxy Types
+			Type[] types = value.GetProxyTypes().ToArray();
+			if (types.Length > 0)
+			{
+				writer.WritePropertyName(PROPERTY_PROXYTYPES);
+				serializer.SerializeArray(writer, types, (s, w, item) => w.WriteType(item));
+			}
 
 			// Methods
 			ApiMethodInfo[] methods = value.GetMethods().ToArray();
@@ -76,6 +86,11 @@ namespace ICD.Connect.API.Info.Converters
 		{
 			switch (property)
 			{
+				case PROPERTY_PROXYTYPES:
+					IEnumerable<Type> proxyTypes = serializer.DeserializeArray(reader, (s, r) => r.GetValueAsType());
+					instance.SetProxyTypes(proxyTypes);
+					break;
+
 				case PROPERTY_METHODS:
 					IEnumerable<ApiMethodInfo> methods = serializer.DeserializeArray<ApiMethodInfo>(reader);
 					instance.SetMethods(methods);
