@@ -77,7 +77,7 @@ namespace ICD.Connect.API.Info
 
 			type = instance == null ? type : instance.GetType();
 
-			IEnumerable<Type> proxyTypes = GetProxyTypes(attribute);
+			IEnumerable<Type> proxyTypes = GetProxyTypes(type);
 			IEnumerable<ApiMethodInfo> methods = GetMethodInfo(type, instance, depth - 1);
 			IEnumerable<ApiPropertyInfo> properties = GetPropertyInfo(type, instance, depth - 1);
 			IEnumerable<ApiNodeInfo> nodes = GetNodeInfo(type, instance, depth - 1);
@@ -359,9 +359,18 @@ namespace ICD.Connect.API.Info
 
 		#region Private Methods
 
-		private IEnumerable<Type> GetProxyTypes(ApiClassAttribute attribute)
+		private IEnumerable<Type> GetProxyTypes(Type type)
 		{
-			return attribute == null ? Enumerable.Empty<Type>() : attribute.GetProxyTypes().Distinct();
+			if (type == null)
+				return Enumerable.Empty<Type>();
+
+			// Get all of the proxy types from every type in the inheritance chain
+			return type.GetBaseTypes()
+			           .Prepend(type)
+			           .Select(t => ApiClassAttribute.GetAttribute(t))
+			           .Where(a => a != null)
+			           .SelectMany(a => a.GetProxyTypes())
+			           .Distinct();
 		}
 
 		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance, int depth)
