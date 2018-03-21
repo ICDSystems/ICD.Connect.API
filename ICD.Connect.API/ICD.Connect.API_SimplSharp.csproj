@@ -75,6 +75,8 @@
     <Compile Include="Attributes\ApiNodeAttribute.cs" />
     <Compile Include="Attributes\ApiNodeGroupAttribute.cs" />
     <Compile Include="Attributes\IApiAttribute.cs" />
+    <Compile Include="Comparers\MethodInfoApiEqualityComparer.cs" />
+    <Compile Include="Comparers\PropertyInfoApiEqualityComparer.cs" />
     <Compile Include="Info\AbstractApiInfo.cs" />
     <Compile Include="Attributes\AbstractApiAttribute.cs" />
     <Compile Include="Attributes\ApiClassAttribute.cs" />
