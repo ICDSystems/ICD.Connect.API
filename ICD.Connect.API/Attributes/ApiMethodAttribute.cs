@@ -130,16 +130,18 @@ namespace ICD.Connect.API.Attributes
 			{
 				MethodInfo[] methods =
 					type.GetBaseTypes()
-						.Prepend(type)
-						.SelectMany(t =>
+					    .Prepend(type)
+					    .SelectMany(t =>
 #if SIMPLSHARP
-				                ((CType)t)
+					                ((CType)t)
 #else
 										t.GetTypeInfo()
 #endif
-										 .GetMethods(BindingFlags))
-						.Distinct(MethodInfoApiEqualityComparer.Instance)
-						.ToArray();
+						                .GetMethods(BindingFlags))
+					    .Where(m => !m.IsGenericMethod)
+					    .Where(m => GetAttribute(m) != null)
+					    .Distinct(MethodInfoApiEqualityComparer.Instance)
+					    .ToArray();
 
 				s_TypeToMethods.Add(type, methods);
 			}

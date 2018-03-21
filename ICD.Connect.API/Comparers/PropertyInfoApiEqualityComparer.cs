@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace ICD.Connect.API.Comparers
 {
-	public class PropertyInfoApiEqualityComparer : IEqualityComparer<PropertyInfo>
+	public sealed class PropertyInfoApiEqualityComparer : IEqualityComparer<PropertyInfo>
 	{
 		private static readonly PropertyInfoApiEqualityComparer s_Instance;
 

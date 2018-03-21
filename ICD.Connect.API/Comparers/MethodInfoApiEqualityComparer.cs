@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace ICD.Connect.API.Comparers
 {
-	public class MethodInfoApiEqualityComparer : IEqualityComparer<MethodInfo>
+	public sealed class MethodInfoApiEqualityComparer : IEqualityComparer<MethodInfo>
 	{
 		private static readonly MethodInfoApiEqualityComparer s_Instance;
 

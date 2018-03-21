@@ -131,16 +131,17 @@ namespace ICD.Connect.API.Attributes
 			{
 				PropertyInfo[] properties =
 					type.GetBaseTypes()
-						.Prepend(type)
-						.SelectMany(t =>
+					    .Prepend(type)
+					    .SelectMany(t =>
 #if SIMPLSHARP
-										((CType)t)
+					                ((CType)t)
 #else
 										t.GetTypeInfo()
 #endif
-										 .GetProperties(BindingFlags))
-						.Distinct(PropertyInfoApiEqualityComparer.Instance)
-						.ToArray();
+						                .GetProperties(BindingFlags))
+					    .Where(p => GetAttribute(p) != null)
+					    .Distinct(PropertyInfoApiEqualityComparer.Instance)
+					    .ToArray();
 
 				s_TypeToProperties.Add(type, properties);
 			}
