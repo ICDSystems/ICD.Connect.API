@@ -134,17 +134,12 @@ namespace ICD.Connect.API.Info
 			if (depth <= 0)
 				yield break;
 
-			foreach (ParameterInfo parameter in method.GetParameters())
+			foreach (ParameterInfo parameter in ApiParameterAttribute.GetParameters(method))
 			{
-				ApiParameterAttribute attribute = GetParameterAttributeForParameter(parameter);
-				yield return new ApiParameterInfo(attribute, parameter, instance, depth - 1);
+				ApiParameterAttribute attribute = ApiParameterAttribute.GetAttribute(parameter);
+				if (attribute != null)
+					yield return new ApiParameterInfo(attribute, parameter, instance, depth - 1);
 			}
-		}
-
-		private ApiParameterAttribute GetParameterAttributeForParameter(ParameterInfo parameter)
-		{
-			return parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault() ??
-			       new ApiParameterAttribute(parameter.Name, null);
 		}
 
 		#endregion

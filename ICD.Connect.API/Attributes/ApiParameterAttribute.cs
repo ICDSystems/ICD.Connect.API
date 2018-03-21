@@ -15,6 +15,7 @@ namespace ICD.Connect.API.Attributes
 	public sealed class ApiParameterAttribute : AbstractApiAttribute
 	{
 		private static readonly Dictionary<ParameterInfo, ApiParameterAttribute> s_ParameterToAttribute;
+		private static readonly Dictionary<MethodInfo, ParameterInfo[]> s_MethodToParameters;
 
 		/// <summary>
 		/// Static constructor.
@@ -22,6 +23,7 @@ namespace ICD.Connect.API.Attributes
 		static ApiParameterAttribute()
 		{
 			s_ParameterToAttribute = new Dictionary<ParameterInfo, ApiParameterAttribute>();
+			s_MethodToParameters = new Dictionary<MethodInfo, ParameterInfo[]>();
 		}
 
 		/// <summary>
@@ -42,6 +44,20 @@ namespace ICD.Connect.API.Attributes
 		{
 			ApiParameterAttribute attribute = parameter == null ? null : GetAttribute(parameter);
 			return new ApiParameterInfo(attribute, parameter);
+		}
+
+		public static IEnumerable<ParameterInfo> GetParameters(MethodInfo method)
+		{
+			if (method == null)
+				throw new ArgumentNullException("method");
+
+			if (!s_MethodToParameters.ContainsKey(method))
+			{
+				ParameterInfo[] parameters = method.GetParameters().ToArray();
+				s_MethodToParameters.Add(method, parameters);
+			}
+
+			return s_MethodToParameters[method];
 		}
 
 		[CanBeNull]
