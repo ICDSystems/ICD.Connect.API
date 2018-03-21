@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Comparers;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -119,35 +120,10 @@ namespace ICD.Connect.API.Attributes
 						        t.GetTypeInfo()
 #endif
 					                .GetMethods(BindingFlags))
-				    .Distinct(MethodComparer, GetMethodHashCode);
+				    .Distinct(ApiMethodInfoEqualityComparer.Instance);
 		}
 
-		private static bool MethodComparer(MethodInfo a, MethodInfo b)
-		{
-			return a.Name == b.Name && a.GetParameters().SequenceEqual(b.GetParameters(), ParamComparer);
-		}
-
-		private static bool ParamComparer(ParameterInfo arg1, ParameterInfo arg2)
-		{
-			return arg1.Position == arg2.Position && arg1.ParameterType == arg2.ParameterType;
-		}
-
-		private static int GetMethodHashCode(MethodInfo info)
-		{
-			unchecked
-			{
-				int hash = 17;
-				hash = hash * 23 + info.Name.GetHashCode();
-
-				foreach (ParameterInfo param in info.GetParameters())
-				{
-					hash = hash * 23 + param.Position;
-					hash = hash * 23 + param.ParameterType.GetHashCode();
-				}
-
-				return hash;
-			}
-		}
+		
 
 		[CanBeNull]
 		public static ApiMethodAttribute GetAttribute(MethodInfo method)

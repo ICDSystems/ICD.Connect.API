@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Comparers;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -95,7 +96,7 @@ namespace ICD.Connect.API.Attributes
 						        t.GetTypeInfo()
 #endif
 					                .GetProperties(BindingFlags))
-				    .Distinct((a, b) => a.Name == b.Name, p => p.Name.GetHashCode());
+				    .Distinct(ApiPropertyInfoEqualityComparer.Instance);
 		}
 
 		[CanBeNull]
