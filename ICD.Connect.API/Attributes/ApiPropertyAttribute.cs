@@ -16,14 +16,18 @@ namespace ICD.Connect.API.Attributes
 	[AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
 	public sealed class ApiPropertyAttribute : AbstractApiAttribute
 	{
-		private static readonly Dictionary<Type, Dictionary<string, PropertyInfo>> s_Cache;
+		private static readonly Dictionary<Type, Dictionary<string, PropertyInfo>> s_AttributeNameToProperty;
+		private static readonly Dictionary<Type, PropertyInfo[]> s_TypeToProperties;
+		private static readonly Dictionary<PropertyInfo, ApiPropertyAttribute> s_PropertyToAttribute;
 
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
 		static ApiPropertyAttribute()
 		{
-			s_Cache = new Dictionary<Type, Dictionary<string, PropertyInfo>>();
+			s_AttributeNameToProperty = new Dictionary<Type, Dictionary<string, PropertyInfo>>();
+			s_TypeToProperties = new Dictionary<Type, PropertyInfo[]>();
+			s_PropertyToAttribute = new Dictionary<PropertyInfo, ApiPropertyAttribute>();
 		}
 
 		/// <summary>
@@ -57,10 +61,16 @@ namespace ICD.Connect.API.Attributes
 		[CanBeNull]
 		public static PropertyInfo GetProperty(ApiPropertyInfo info, Type type)
 		{
-			if (!s_Cache.ContainsKey(type))
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (!s_AttributeNameToProperty.ContainsKey(type))
 				CacheType(type);
 
-			return s_Cache[type].GetDefault(info.Name, null);
+			return s_AttributeNameToProperty[type].GetDefault(info.Name, null);
 		}
 
 		#endregion
@@ -69,10 +79,13 @@ namespace ICD.Connect.API.Attributes
 
 		private static void CacheType(Type type)
 		{
-			if (s_Cache.ContainsKey(type))
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (s_AttributeNameToProperty.ContainsKey(type))
 				return;
 
-			s_Cache[type] = new Dictionary<string, PropertyInfo>();
+			s_AttributeNameToProperty[type] = new Dictionary<string, PropertyInfo>();
 
 			foreach (PropertyInfo property in GetProperties(type))
 			{
@@ -80,23 +93,34 @@ namespace ICD.Connect.API.Attributes
 				if (attribute == null)
 					continue;
 
-				s_Cache[type].Add(attribute.Name, property);
+				s_AttributeNameToProperty[type].Add(attribute.Name, property);
 			}
 		}
 
 		public static IEnumerable<PropertyInfo> GetProperties(Type type)
 		{
-			return
-				type.GetBaseTypes()
-				    .Prepend(type)
-				    .SelectMany(t =>
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (!s_TypeToProperties.ContainsKey(type))
+			{
+				PropertyInfo[] properties =
+					type.GetBaseTypes()
+						.Prepend(type)
+						.SelectMany(t =>
 #if SIMPLSHARP
-				                ((CType)t)
+										((CType)t)
 #else
-						        t.GetTypeInfo()
+										t.GetTypeInfo()
 #endif
-					                .GetProperties(BindingFlags))
-				    .Distinct(PropertyInfoApiEqualityComparer.Instance);
+										 .GetProperties(BindingFlags))
+						.Distinct(PropertyInfoApiEqualityComparer.Instance)
+						.ToArray();
+
+				s_TypeToProperties.Add(type, properties);
+			}
+
+			return s_TypeToProperties[type];
 		}
 
 		[CanBeNull]
@@ -105,7 +129,13 @@ namespace ICD.Connect.API.Attributes
 			if (property == null)
 				throw new ArgumentNullException("property");
 
-			return property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
+			if (!s_PropertyToAttribute.ContainsKey(property))
+			{
+				ApiPropertyAttribute attribute = property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
+				s_PropertyToAttribute.Add(property, attribute);
+			}
+
+			return s_PropertyToAttribute[property];
 		}
 
 		#endregion

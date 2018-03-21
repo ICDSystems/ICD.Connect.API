@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
-using ICD.Common.Utils.Extensions;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -14,6 +14,16 @@ namespace ICD.Connect.API.Attributes
 	[AttributeUsage(AttributeTargets.Parameter, Inherited = true, AllowMultiple = false)]
 	public sealed class ApiParameterAttribute : AbstractApiAttribute
 	{
+		private static readonly Dictionary<ParameterInfo, ApiParameterAttribute> s_ParameterToAttribute;
+
+		/// <summary>
+		/// Static constructor.
+		/// </summary>
+		static ApiParameterAttribute()
+		{
+			s_ParameterToAttribute = new Dictionary<ParameterInfo, ApiParameterAttribute>();
+		}
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -40,7 +50,13 @@ namespace ICD.Connect.API.Attributes
 			if (parameter == null)
 				throw new ArgumentNullException("parameter");
 
-			return parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault();
+			if (!s_ParameterToAttribute.ContainsKey(parameter))
+			{
+				ApiParameterAttribute attribute = parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault();
+				s_ParameterToAttribute.Add(parameter, attribute);
+			}
+
+			return s_ParameterToAttribute[parameter];
 		}
 	}
 }

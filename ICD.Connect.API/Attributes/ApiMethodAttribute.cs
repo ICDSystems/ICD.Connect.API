@@ -16,14 +16,18 @@ namespace ICD.Connect.API.Attributes
 	[AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
 	public sealed class ApiMethodAttribute : AbstractApiAttribute
 	{
-		private static readonly Dictionary<Type, Dictionary<string, MethodInfo>> s_Cache;
+		private static readonly Dictionary<Type, Dictionary<string, MethodInfo>> s_AttributeNameToMethod;
+		private static readonly Dictionary<Type, MethodInfo[]> s_TypeToMethods;
+		private static readonly Dictionary<MethodInfo, ApiMethodAttribute> s_MethodToAttribute;
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		static ApiMethodAttribute()
 		{
-			s_Cache = new Dictionary<Type, Dictionary<string, MethodInfo>>();
+			s_AttributeNameToMethod = new Dictionary<Type, Dictionary<string, MethodInfo>>();
+			s_TypeToMethods = new Dictionary<Type, MethodInfo[]>();
+			s_MethodToAttribute = new Dictionary<MethodInfo, ApiMethodAttribute>();
 		}
 
 		/// <summary>
@@ -81,10 +85,16 @@ namespace ICD.Connect.API.Attributes
 		[CanBeNull]
 		public static MethodInfo GetMethod(ApiMethodInfo info, Type type)
 		{
-			if (!s_Cache.ContainsKey(type))
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (!s_AttributeNameToMethod.ContainsKey(type))
 				CacheType(type);
 
-			return s_Cache[type].GetDefault(info.Name, null);
+			return s_AttributeNameToMethod[type].GetDefault(info.Name, null);
 		}
 
 		#endregion
@@ -93,10 +103,13 @@ namespace ICD.Connect.API.Attributes
 
 		private static void CacheType(Type type)
 		{
-			if (s_Cache.ContainsKey(type))
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (s_AttributeNameToMethod.ContainsKey(type))
 				return;
 
-			s_Cache[type] = new Dictionary<string, MethodInfo>();
+			s_AttributeNameToMethod[type] = new Dictionary<string, MethodInfo>();
 
 			foreach (MethodInfo method in GetMethods(type))
 			{
@@ -104,26 +117,35 @@ namespace ICD.Connect.API.Attributes
 				if (attribute == null)
 					continue;
 
-				s_Cache[type].Add(attribute.Name, method);
+				s_AttributeNameToMethod[type].Add(attribute.Name, method);
 			}
 		}
 
 		public static IEnumerable<MethodInfo> GetMethods(Type type)
 		{
-			return
-				type.GetBaseTypes()
-				    .Prepend(type)
-				    .SelectMany(t =>
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (!s_TypeToMethods.ContainsKey(type))
+			{
+				MethodInfo[] methods =
+					type.GetBaseTypes()
+						.Prepend(type)
+						.SelectMany(t =>
 #if SIMPLSHARP
 				                ((CType)t)
 #else
-						        t.GetTypeInfo()
+										t.GetTypeInfo()
 #endif
-					                .GetMethods(BindingFlags))
-				    .Distinct(MethodInfoApiEqualityComparer.Instance);
-		}
+										 .GetMethods(BindingFlags))
+						.Distinct(MethodInfoApiEqualityComparer.Instance)
+						.ToArray();
 
-		
+				s_TypeToMethods.Add(type, methods);
+			}
+
+			return s_TypeToMethods[type];
+		}
 
 		[CanBeNull]
 		public static ApiMethodAttribute GetAttribute(MethodInfo method)
@@ -131,7 +153,13 @@ namespace ICD.Connect.API.Attributes
 			if (method == null)
 				throw new ArgumentNullException("method");
 
-			return method.GetCustomAttributes<ApiMethodAttribute>(true).FirstOrDefault();
+			if (!s_MethodToAttribute.ContainsKey(method))
+			{
+				ApiMethodAttribute attribute = method.GetCustomAttributes<ApiMethodAttribute>(true).FirstOrDefault();
+				s_MethodToAttribute.Add(method, attribute);
+			}
+
+			return s_MethodToAttribute[method];
 		}
 
 		#endregion

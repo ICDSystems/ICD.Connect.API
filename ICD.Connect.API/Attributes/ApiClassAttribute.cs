@@ -15,7 +15,17 @@ namespace ICD.Connect.API.Attributes
 	[AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
 	public sealed class ApiClassAttribute : AbstractApiAttribute
 	{
+		private static readonly Dictionary<Type, ApiClassAttribute> s_AttributeCache;
+
 		private readonly Type[] m_ProxyTypes;
+
+		/// <summary>
+		/// Static constructor.
+		/// </summary>
+		static ApiClassAttribute()
+		{
+			s_AttributeCache = new Dictionary<Type, ApiClassAttribute>();
+		}
 
 		/// <summary>
 		/// Constructor.
@@ -87,13 +97,21 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			return
+			if (!s_AttributeCache.ContainsKey(type))
+			{
+				ApiClassAttribute attribute =
 #if SIMPLSHARP
-				((CType)type)
+					((CType)type)
 #else
-				type
+					type
 #endif
-					.GetCustomAttributes<ApiClassAttribute>(true).FirstOrDefault();
+						.GetCustomAttributes<ApiClassAttribute>(true)
+						.FirstOrDefault();
+
+				s_AttributeCache.Add(type, attribute);
+			}
+
+			return s_AttributeCache[type];
 		}
 	}
 }
