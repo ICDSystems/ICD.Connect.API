@@ -8,18 +8,18 @@ using System.Reflection;
 
 namespace ICD.Connect.API.Comparers
 {
-	public class ApiMethodInfoEqualityComparer : IEqualityComparer<MethodInfo>
+	public class MethodInfoApiEqualityComparer : IEqualityComparer<MethodInfo>
 	{
-		private static readonly ApiMethodInfoEqualityComparer s_Instance;
+		private static readonly MethodInfoApiEqualityComparer s_Instance;
 
-		public static ApiMethodInfoEqualityComparer Instance { get { return s_Instance; } }
+		public static MethodInfoApiEqualityComparer Instance { get { return s_Instance; } }
 
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
-		static ApiMethodInfoEqualityComparer()
+		static MethodInfoApiEqualityComparer()
 		{
-			s_Instance = new ApiMethodInfoEqualityComparer();
+			s_Instance = new MethodInfoApiEqualityComparer();
 		}
 
 		public bool Equals(MethodInfo a, MethodInfo b)

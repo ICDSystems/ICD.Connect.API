@@ -7,18 +7,18 @@ using System.Reflection;
 
 namespace ICD.Connect.API.Comparers
 {
-	public class ApiPropertyInfoEqualityComparer : IEqualityComparer<PropertyInfo>
+	public class PropertyInfoApiEqualityComparer : IEqualityComparer<PropertyInfo>
 	{
-		private static readonly ApiPropertyInfoEqualityComparer s_Instance;
+		private static readonly PropertyInfoApiEqualityComparer s_Instance;
 
-		public static ApiPropertyInfoEqualityComparer Instance { get { return s_Instance; } }
+		public static PropertyInfoApiEqualityComparer Instance { get { return s_Instance; } }
 
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
-		static ApiPropertyInfoEqualityComparer()
+		static PropertyInfoApiEqualityComparer()
 		{
-			s_Instance = new ApiPropertyInfoEqualityComparer();
+			s_Instance = new PropertyInfoApiEqualityComparer();
 		}
 
 		public bool Equals(PropertyInfo a, PropertyInfo b)

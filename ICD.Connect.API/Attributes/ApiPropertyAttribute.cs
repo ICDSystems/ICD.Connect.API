@@ -96,7 +96,7 @@ namespace ICD.Connect.API.Attributes
 						        t.GetTypeInfo()
 #endif
 					                .GetProperties(BindingFlags))
-				    .Distinct(ApiPropertyInfoEqualityComparer.Instance);
+				    .Distinct(PropertyInfoApiEqualityComparer.Instance);
 		}
 
 		[CanBeNull]

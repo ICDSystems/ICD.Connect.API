@@ -120,7 +120,7 @@ namespace ICD.Connect.API.Attributes
 						        t.GetTypeInfo()
 #endif
 					                .GetMethods(BindingFlags))
-				    .Distinct(ApiMethodInfoEqualityComparer.Instance);
+				    .Distinct(MethodInfoApiEqualityComparer.Instance);
 		}
 
 		
