@@ -32,11 +32,6 @@ namespace ICD.Connect.API.Tests.Info
 			{
 				
 			}
-
-			[ApiMethod("TestMethodA", "Empty test method without parameters.")]
-			public void TestMethodB()
-			{
-			}
 		}
 	}
 }
