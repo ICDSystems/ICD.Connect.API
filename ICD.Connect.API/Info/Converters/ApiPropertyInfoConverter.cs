@@ -36,12 +36,8 @@ namespace ICD.Connect.API.Info.Converters
 				writer.WriteType(value.Type);
 			}
 
-			// We want to allow serializing null values in a write context
-			if (value.Write)
-			{
-				writer.WritePropertyName(PROPERTY_VALUE);
-				serializer.Serialize(writer, value.Value);
-			}
+			writer.WritePropertyName(PROPERTY_VALUE);
+			serializer.Serialize(writer, value.Value);
 
 			if (value.Read)
 			{
