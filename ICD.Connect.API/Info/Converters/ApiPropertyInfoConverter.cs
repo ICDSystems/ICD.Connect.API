@@ -1,6 +1,5 @@
 ﻿using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
-using System;
 
 namespace ICD.Connect.API.Info.Converters
 {
