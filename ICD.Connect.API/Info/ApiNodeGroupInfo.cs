@@ -121,7 +121,7 @@ namespace ICD.Connect.API.Info
 			if (nodeGroup == null)
 				yield break;
 
-			foreach (KeyValuePair<uint, object> kvp in nodeGroup)
+			foreach (KeyValuePair<uint, object> kvp in nodeGroup.GetKeyedNodes())
 			{
 				uint key = kvp.Key;
 

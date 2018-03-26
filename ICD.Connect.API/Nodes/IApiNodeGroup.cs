@@ -2,7 +2,7 @@
 
 namespace ICD.Connect.API.Nodes
 {
-	public interface IApiNodeGroup : IEnumerable<KeyValuePair<uint, object>>
+	public interface IApiNodeGroup
 	{
 		/// <summary>
 		/// Gets the instance for the given key.
@@ -17,5 +17,11 @@ namespace ICD.Connect.API.Nodes
 		/// <param name="key"></param>
 		/// <returns></returns>
 		bool ContainsKey(uint key);
+
+		/// <summary>
+		/// Gets a sequence of keyed nodes.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<KeyValuePair<uint, object>> GetKeyedNodes();
 	}
 }
