@@ -130,8 +130,7 @@ namespace ICD.Connect.API.Attributes
 			if (!s_TypeToProperties.ContainsKey(type))
 			{
 				PropertyInfo[] properties =
-					type.GetBaseTypes()
-					    .Prepend(type)
+					type.GetAllTypes()
 					    .SelectMany(t =>
 #if SIMPLSHARP
 					                ((CType)t)

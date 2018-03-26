@@ -365,8 +365,7 @@ namespace ICD.Connect.API.Info
 				return Enumerable.Empty<Type>();
 
 			// Get all of the proxy types from every type in the inheritance chain
-			return type.GetBaseTypes()
-			           .Prepend(type)
+			return type.GetAllTypes()
 			           .Select(t => ApiClassAttribute.GetAttribute(t))
 			           .Where(a => a != null)
 			           .SelectMany(a => a.GetProxyTypes())
