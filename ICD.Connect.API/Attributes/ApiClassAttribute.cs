@@ -12,7 +12,7 @@ using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.Attributes
 {
-	[AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, Inherited = true, AllowMultiple = false)]
 	public sealed class ApiClassAttribute : AbstractApiAttribute
 	{
 		private static readonly Dictionary<Type, ApiClassAttribute> s_AttributeCache;
