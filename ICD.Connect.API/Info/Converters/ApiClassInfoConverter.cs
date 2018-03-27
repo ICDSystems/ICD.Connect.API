@@ -87,7 +87,7 @@ namespace ICD.Connect.API.Info.Converters
 			switch (property)
 			{
 				case PROPERTY_PROXYTYPES:
-					IEnumerable<Type> proxyTypes = serializer.DeserializeArray(reader, (s, r) => r.GetValueAsType()).Except((Type)null);
+					IEnumerable<Type> proxyTypes = serializer.DeserializeArray(reader, (s, r) => r.GetValueAsType());
 					instance.SetProxyTypes(proxyTypes);
 					break;
 

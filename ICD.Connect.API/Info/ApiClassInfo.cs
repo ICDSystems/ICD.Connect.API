@@ -146,7 +146,7 @@ namespace ICD.Connect.API.Info
 		public void SetProxyTypes(IEnumerable<Type> proxyTypes)
 		{
 			m_ProxyTypes.Clear();
-			m_ProxyTypes.AddRange(proxyTypes.Distinct());
+			m_ProxyTypes.AddRange(proxyTypes.Except((Type)null).Distinct());
 		}
 
 		/// <summary>
