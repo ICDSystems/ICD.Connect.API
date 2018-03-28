@@ -16,8 +16,15 @@ namespace ICD.Connect.API.Attributes
 	public sealed class ApiClassAttribute : AbstractApiAttribute
 	{
 		private static readonly Dictionary<Type, ApiClassAttribute> s_AttributeCache;
+		private static readonly Dictionary<Type, Type[]> s_TypeProxyTypes;
 
-		private readonly Type[] m_ProxyTypes;
+		private readonly Type m_ProxyType;
+
+		/// <summary>
+		/// Gets the proxy type that can represent the decorated class.
+		/// </summary>
+		[CanBeNull]
+		public Type ProxyType { get { return m_ProxyType; } }
 
 		/// <summary>
 		/// Static constructor.
@@ -25,14 +32,22 @@ namespace ICD.Connect.API.Attributes
 		static ApiClassAttribute()
 		{
 			s_AttributeCache = new Dictionary<Type, ApiClassAttribute>();
+			s_TypeProxyTypes = new Dictionary<Type, Type[]>();
 		}
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		/// <param name="proxyTypes"></param>
-		public ApiClassAttribute(params Type[] proxyTypes)
-			: this(null, null, proxyTypes)
+		public ApiClassAttribute()
+			: this(null)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		public ApiClassAttribute(Type proxyType)
+			: this(null, null, proxyType)
 		{
 		}
 
@@ -41,20 +56,61 @@ namespace ICD.Connect.API.Attributes
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="help"></param>
-		/// <param name="proxyTypes"></param>
-		public ApiClassAttribute(string name, string help, params Type[] proxyTypes)
-			: base(name, help)
+		public ApiClassAttribute(string name, string help)
+			: this(name, help, null)
 		{
-			m_ProxyTypes = proxyTypes.Distinct().ToArray();
 		}
 
 		/// <summary>
-		/// Gets the proxy types that can control this class.
+		/// Constructor.
 		/// </summary>
-		/// <returns></returns>
-		public IEnumerable<Type> GetProxyTypes()
+		/// <param name="name"></param>
+		/// <param name="help"></param>
+		/// <param name="proxyType"></param>
+		public ApiClassAttribute(string name, string help, Type proxyType)
+			: base(name, help)
 		{
-			return m_ProxyTypes.ToArray(m_ProxyTypes.Length);
+			m_ProxyType = proxyType;
+		}
+
+		public static IEnumerable<Type> GetProxyTypes(Type type)
+		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (!s_TypeProxyTypes.ContainsKey(type))
+			{
+				// First get the proxy type for the immediate type
+				ApiClassAttribute attribute = GetAttribute(type);
+				Type typeProxyType = attribute == null ? null : attribute.ProxyType;
+
+				// Then get the interface proxy types
+				IEnumerable<Type> interfaceProxyTypes =
+					type.GetMinimalInterfaces()
+					    .SelectMany(i => GetProxyTypes(i));
+
+				// Finally get the proxy types from base classes
+				IEnumerable<Type> classProxyTypes =
+					type.IsClass
+						? type.GetBaseTypes()
+						      .Prepend(type)
+						      .Select(t => GetAttribute(t))
+						      .Where(a => a != null)
+						      .Select(a => a.ProxyType)
+						: Enumerable.Empty<Type>();
+
+				// Class defined proxy types override interface proxy types
+				Type[] proxyTypes =
+					classProxyTypes.Concat(interfaceProxyTypes)
+					               .Prepend(typeProxyType)
+					               .Where(t => t != null)
+					               .Distinct()
+					               .ToArray();
+
+				s_TypeProxyTypes.Add(type, proxyTypes);
+			}
+
+			return s_TypeProxyTypes[type];
 		}
 
 		/// <summary>
@@ -92,7 +148,7 @@ namespace ICD.Connect.API.Attributes
 		}
 
 		[CanBeNull]
-		public static ApiClassAttribute GetAttribute(Type type)
+		private static ApiClassAttribute GetAttribute(Type type)
 		{
 			if (type == null)
 				throw new ArgumentNullException("type");

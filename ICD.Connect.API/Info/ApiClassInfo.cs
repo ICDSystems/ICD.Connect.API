@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils.Comparers;
 using ICD.Connect.API.Attributes;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info.Converters;
@@ -364,12 +365,7 @@ namespace ICD.Connect.API.Info
 			if (type == null)
 				return Enumerable.Empty<Type>();
 
-			// Get all of the proxy types from every type in the inheritance chain
-			return type.GetAllTypes()
-			           .Select(t => ApiClassAttribute.GetAttribute(t))
-			           .Where(a => a != null)
-			           .SelectMany(a => a.GetProxyTypes())
-			           .Distinct();
+			return ApiClassAttribute.GetProxyTypes(type);
 		}
 
 		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance, int depth)
