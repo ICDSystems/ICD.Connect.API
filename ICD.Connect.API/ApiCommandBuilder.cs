@@ -192,6 +192,17 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
+		/// Appends the given methods, parameters, etc to the current class.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <returns></returns>
+		public IApiClassBuilder Append(ApiClassInfo info)
+		{
+			m_CurrentClass.Update(info);
+			return this;
+		}
+
+		/// <summary>
 		/// Adds the parameter to the current method.
 		/// </summary>
 		/// <param name="value"></param>
@@ -302,6 +313,13 @@ namespace ICD.Connect.API
 		/// <param name="name"></param>
 		/// <returns></returns>
 		IApiClassBuilder GetMethod(string name);
+
+		/// <summary>
+		/// Appends the given methods, parameters, etc to the current class.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <returns></returns>
+		IApiClassBuilder Append(ApiClassInfo info);
 	}
 
 	public interface IApiNodeGroupBuilder : IApiCommandBuilder

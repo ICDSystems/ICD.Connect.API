@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
-using ICD.Common.Utils.Comparers;
 using ICD.Connect.API.Attributes;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info.Converters;
@@ -111,14 +110,24 @@ namespace ICD.Connect.API.Info
 		public ApiClassInfo DeepCopy()
 		{
 			ApiClassInfo output = new ApiClassInfo();
-			DeepCopy(output);
-
-			output.SetMethods(GetMethods().Select(m => m.DeepCopy()));
-			output.SetProperties(GetProperties().Select(p => p.DeepCopy()));
-			output.SetNodes(GetNodes().Select(n => n.DeepCopy()));
-			output.SetNodeGroups(GetNodeGroups().Select(n => n.DeepCopy()));
-
+			output.Update(this);
 			return output;
+		}
+
+		/// <summary>
+		/// Copies the values from the other instance.
+		/// </summary>
+		/// <param name="info"></param>
+		public void Update(ApiClassInfo info)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			SetProxyTypes(info.GetProxyTypes());
+			SetMethods(info.GetMethods().Select(m => m.DeepCopy()));
+			SetProperties(info.GetProperties().Select(p => p.DeepCopy()));
+			SetNodes(info.GetNodes().Select(n => n.DeepCopy()));
+			SetNodeGroups(info.GetNodeGroups().Select(n => n.DeepCopy()));
 		}
 
 		#region ProxyTypes
