@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -16,9 +17,11 @@ namespace ICD.Connect.API.Attributes
 	public sealed class ApiClassAttribute : AbstractApiAttribute
 	{
 		private static readonly Dictionary<Type, ApiClassAttribute> s_AttributeCache;
+		private static readonly Dictionary<Type, ApiClassAttribute[]> s_TypeAttributes;
 		private static readonly Dictionary<Type, Type[]> s_TypeProxyTypes;
 
 		private readonly Type m_ProxyType;
+		private readonly Type m_Overrides;
 
 		/// <summary>
 		/// Gets the proxy type that can represent the decorated class.
@@ -27,11 +30,20 @@ namespace ICD.Connect.API.Attributes
 		public Type ProxyType { get { return m_ProxyType; } }
 
 		/// <summary>
+		/// Used to enforce an inheritance tree through both classes and interfaces.
+		/// </summary>
+		[CanBeNull]
+		public Type Overrides { get { return m_Overrides; } }
+
+		#region Constructors
+
+		/// <summary>
 		/// Static constructor.
 		/// </summary>
 		static ApiClassAttribute()
 		{
 			s_AttributeCache = new Dictionary<Type, ApiClassAttribute>();
+			s_TypeAttributes = new Dictionary<Type, ApiClassAttribute[]>();
 			s_TypeProxyTypes = new Dictionary<Type, Type[]>();
 		}
 
@@ -47,7 +59,17 @@ namespace ICD.Connect.API.Attributes
 		/// Constructor.
 		/// </summary>
 		public ApiClassAttribute(Type proxyType)
-			: this(null, null, proxyType)
+			: this(proxyType, null)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="proxyType"></param>
+		/// <param name="overrides"></param>
+		public ApiClassAttribute(Type proxyType, Type overrides)
+			: this(null, null, proxyType, overrides)
 		{
 		}
 
@@ -66,52 +88,29 @@ namespace ICD.Connect.API.Attributes
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="help"></param>
+		/// <param name="overrides"></param>
+		public ApiClassAttribute(string name, string help, Type overrides)
+			: this(name, help, null, overrides)
+		{
+		}
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="help"></param>
 		/// <param name="proxyType"></param>
-		public ApiClassAttribute(string name, string help, Type proxyType)
+		/// <param name="overrides"></param>
+		public ApiClassAttribute(string name, string help, Type proxyType, Type overrides)
 			: base(name, help)
 		{
 			m_ProxyType = proxyType;
+			m_Overrides = overrides;
 		}
 
-		public static IEnumerable<Type> GetProxyTypes(Type type)
-		{
-			if (type == null)
-				throw new ArgumentNullException("type");
+		#endregion
 
-			if (!s_TypeProxyTypes.ContainsKey(type))
-			{
-				// First get the proxy type for the immediate type
-				ApiClassAttribute attribute = GetAttribute(type);
-				Type typeProxyType = attribute == null ? null : attribute.ProxyType;
-
-				// Then get the interface proxy types
-				IEnumerable<Type> interfaceProxyTypes =
-					type.GetMinimalInterfaces()
-					    .SelectMany(i => GetProxyTypes(i));
-
-				// Finally get the proxy types from base classes
-				IEnumerable<Type> classProxyTypes =
-					type.IsClass
-						? type.GetBaseTypes()
-						      .Prepend(type)
-						      .Select(t => GetAttribute(t))
-						      .Where(a => a != null)
-						      .Select(a => a.ProxyType)
-						: Enumerable.Empty<Type>();
-
-				// Class defined proxy types override interface proxy types
-				Type[] proxyTypes =
-					classProxyTypes.Concat(interfaceProxyTypes)
-					               .Prepend(typeProxyType)
-					               .Where(t => t != null)
-					               .Distinct()
-					               .ToArray();
-
-				s_TypeProxyTypes.Add(type, proxyTypes);
-			}
-
-			return s_TypeProxyTypes[type];
-		}
+		#region Methods
 
 		/// <summary>
 		/// Gets the class info for the given type.
@@ -143,8 +142,69 @@ namespace ICD.Connect.API.Attributes
 		/// <returns></returns>
 		public static ApiClassInfo GetInfo(Type type, object instance, int depth)
 		{
-			ApiClassAttribute attribute = type == null ? null : GetAttribute(type);
+			ApiClassAttribute attribute = type == null ? null : GetAttributes(type).FirstOrDefault();
 			return new ApiClassInfo(attribute, type, instance, depth);
+		}
+
+		/// <summary>
+		/// Returns an ordered sequence of proxy types for the given type.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public static IEnumerable<Type> GetProxyTypes(Type type)
+		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (!s_TypeProxyTypes.ContainsKey(type))
+			{
+				Type[] proxyTypes =
+					GetAttributes(type).Select(a => a.ProxyType)
+					                   .Where(t => t != null)
+					                   .Distinct()
+					                   .ToArray();
+
+				s_TypeProxyTypes.Add(type, proxyTypes);
+			}
+
+			return s_TypeProxyTypes[type];
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		/// <summary>
+		/// Returns the ordered inheritance tree of class attributes.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		private static IEnumerable<ApiClassAttribute> GetAttributes(Type type)
+		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (!s_TypeAttributes.ContainsKey(type))
+			{
+				List<ApiClassAttribute> attributes = new List<ApiClassAttribute>();
+
+				// Get the attribute for the immediate type.
+				ApiClassAttribute attribute = GetAttribute(type);
+				if (attribute != null)
+					attributes.Add(attribute);
+
+				// Recurse over the overridden types.
+				Type overrides = attribute == null ? null : attribute.Overrides;
+				if (overrides == type)
+					throw new InvalidOperationException(string.Format("Cyclic override of {0}", type.Name));
+
+				if (overrides != null)
+					attributes.AddRange(GetAttributes(overrides));
+
+				s_TypeAttributes.Add(type, attributes.ToArray(attributes.Count));
+			}
+
+			return s_TypeAttributes[type];
 		}
 
 		[CanBeNull]
@@ -155,6 +215,7 @@ namespace ICD.Connect.API.Attributes
 
 			if (!s_AttributeCache.ContainsKey(type))
 			{
+				// First see if we can find an attribute on the class
 				ApiClassAttribute attribute =
 #if SIMPLSHARP
 					((CType)type)
@@ -164,10 +225,35 @@ namespace ICD.Connect.API.Attributes
 						.GetCustomAttributes<ApiClassAttribute>(true)
 						.FirstOrDefault();
 
+				// Try walking the interfaces
+				if (attribute == null)
+				{
+					IEnumerable<Type> interfaces =
+						RecursionUtils.BreadthFirstSearch(type, t => t.GetMinimalInterfaces())
+						              .Except(type);
+
+					foreach (Type item in interfaces)
+					{
+						attribute =
+#if SIMPLSHARP
+							((CType)item)
+#else
+							item
+#endif
+								.GetCustomAttributes<ApiClassAttribute>(false)
+								.FirstOrDefault();
+
+						if (attribute != null)
+							break;
+					}
+				}
+
 				s_AttributeCache.Add(type, attribute);
 			}
 
 			return s_AttributeCache[type];
 		}
+
+		#endregion
 	}
 }
