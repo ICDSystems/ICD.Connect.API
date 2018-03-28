@@ -146,7 +146,9 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<Type> GetProxyTypes()
 		{
-			return m_ProxyTypes.ToArray(m_ProxyTypes.Count);
+			return m_ProxyTypes.Count == 0
+				       ? Enumerable.Empty<Type>()
+				       : m_ProxyTypes.ToArray(m_ProxyTypes.Count);
 		}
 
 		/// <summary>
@@ -187,7 +189,9 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiMethodInfo> GetMethods()
 		{
-			return m_Methods.Select(kvp => kvp.Value).ToArray(m_Methods.Count);
+			return m_Methods.Count == 0
+				       ? Enumerable.Empty<ApiMethodInfo>()
+				       : m_Methods.Select(kvp => kvp.Value).ToArray(m_Methods.Count);
 		}
 
 		/// <summary>
@@ -227,7 +231,9 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiPropertyInfo> GetProperties()
 		{
-			return m_Properties.Select(kvp => kvp.Value).ToArray(m_Properties.Count);
+			return m_Properties.Count == 0
+				       ? Enumerable.Empty<ApiPropertyInfo>()
+				       : m_Properties.Select(kvp => kvp.Value).ToArray(m_Properties.Count);
 		}
 
 		/// <summary>
@@ -267,7 +273,9 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiNodeInfo> GetNodes()
 		{
-			return m_Nodes.Select(kvp => kvp.Value).ToArray(m_Nodes.Count);
+			return m_Nodes == null
+				       ? Enumerable.Empty<ApiNodeInfo>()
+				       : m_Nodes.Select(kvp => kvp.Value).ToArray(m_Nodes.Count);
 		}
 
 		/// <summary>
@@ -330,7 +338,9 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiNodeGroupInfo> GetNodeGroups()
 		{
-			return m_NodeGroups.Select(kvp => kvp.Value).ToArray(m_NodeGroups.Count);
+			return m_NodeGroups.Count == 0
+				       ? Enumerable.Empty<ApiNodeGroupInfo>()
+				       : m_NodeGroups.Select(kvp => kvp.Value).ToArray(m_NodeGroups.Count);
 		}
 
 		/// <summary>
