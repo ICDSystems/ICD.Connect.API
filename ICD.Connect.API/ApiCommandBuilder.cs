@@ -1,4 +1,5 @@
-﻿using ICD.Connect.API.Info;
+﻿using System;
+using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API
 {
@@ -19,6 +20,8 @@ namespace ICD.Connect.API
 			m_CurrentClass = m_Root;
 		}
 
+		#region Factories
+
 		/// <summary>
 		/// Starts building a new command.
 		/// </summary>
@@ -29,11 +32,33 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
+		/// Builds a CallMethod command with the given name.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="parameters"></param>
+		/// <returns></returns>
+		public static ApiClassInfo CallMethodCommand(string name, params object[] parameters)
+		{
+			IApiMethodBuilder builder = NewCommand().CallMethod(name);
+
+			foreach (object param in parameters)
+				builder.AddParameter(param);
+
+			return builder.Complete();
+		}
+
+		#endregion
+
+		#region Methods
+
+		/// <summary>
 		/// Finishes building and returns the command info.
 		/// </summary>
 		/// <returns></returns>
 		public ApiClassInfo Complete()
 		{
+			CompleteMethod();
+
 			return m_Root;
 		}
 
@@ -182,6 +207,37 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
+		/// Adds the parameter to the current method.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public IApiMethodBuilder AddParameter(Type type, object value)
+		{
+			ApiParameterInfo parameter = new ApiParameterInfo();
+			parameter.SetValue(type, value);
+
+			m_CurrentMethod.AddParameter(parameter);
+
+			return this;
+		}
+
+		/// <summary>
+		/// Adds the parameter to the current method.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public IApiMethodBuilder AddParameter(object value)
+		{
+			ApiParameterInfo parameter = new ApiParameterInfo();
+			parameter.SetValue(value);
+
+			m_CurrentMethod.AddParameter(parameter);
+
+			return this;
+		}
+
+		/// <summary>
 		/// Finish adding parameters to the current method and return to the parent node.
 		/// </summary>
 		/// <returns></returns>
@@ -190,6 +246,8 @@ namespace ICD.Connect.API
 			m_CurrentMethod = null;
 			return this;
 		}
+
+		#endregion
 	}
 
 	public interface IApiClassBuilder : IApiCommandBuilder
@@ -264,6 +322,21 @@ namespace ICD.Connect.API
 		/// <param name="value"></param>
 		/// <returns></returns>
 		IApiMethodBuilder AddParameter<T>(T value);
+
+		/// <summary>
+		/// Adds the parameter to the current method.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		IApiMethodBuilder AddParameter(Type type, object value);
+
+		/// <summary>
+		/// Adds the parameter to the current method.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		IApiMethodBuilder AddParameter(object value);
 
 		/// <summary>
 		/// Finish adding parameters to the current method and return to the parent node.
