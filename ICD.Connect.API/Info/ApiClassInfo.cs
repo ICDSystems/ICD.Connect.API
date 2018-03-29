@@ -17,11 +17,17 @@ namespace ICD.Connect.API.Info
 	[JsonConverter(typeof(ApiClassInfoConverter))]
 	public sealed class ApiClassInfo : AbstractApiInfo
 	{
-		private readonly List<Type> m_ProxyTypes;
-		private readonly Dictionary<string, ApiMethodInfo> m_Methods;
-		private readonly Dictionary<string, ApiPropertyInfo> m_Properties;
-		private readonly Dictionary<string, ApiNodeInfo> m_Nodes;
-		private readonly Dictionary<string, ApiNodeGroupInfo> m_NodeGroups; 
+		[CanBeNull]
+		private List<Type> m_ProxyTypes;
+
+		[CanBeNull]
+		private Dictionary<string, ApiMethodInfo> m_Methods;
+		[CanBeNull]
+		private Dictionary<string, ApiPropertyInfo> m_Properties;
+		[CanBeNull]
+		private Dictionary<string, ApiNodeInfo> m_Nodes;
+		[CanBeNull]
+		private Dictionary<string, ApiNodeGroupInfo> m_NodeGroups; 
 
 		/// <summary>
 		/// Constructor.
@@ -62,12 +68,6 @@ namespace ICD.Connect.API.Info
 		public ApiClassInfo(ApiClassAttribute attribute, Type type, object instance, int depth)
 			: base(attribute)
 		{
-			m_ProxyTypes = new List<Type>();
-			m_Methods = new Dictionary<string, ApiMethodInfo>();
-			m_Properties = new Dictionary<string, ApiPropertyInfo>();
-			m_Nodes = new Dictionary<string, ApiNodeInfo>();
-			m_NodeGroups = new Dictionary<string, ApiNodeGroupInfo>();
-
 			if (depth <= 0)
 				return;
 
@@ -76,6 +76,9 @@ namespace ICD.Connect.API.Info
 				Name = instance.GetType().Name;
 
 			type = instance == null ? type : instance.GetType();
+
+			if (type == null)
+				return;
 
 			IEnumerable<Type> proxyTypes = GetProxyTypes(type);
 			IEnumerable<ApiMethodInfo> methods = GetMethodInfo(type, instance, depth - 1);
@@ -123,11 +126,20 @@ namespace ICD.Connect.API.Info
 			if (info == null)
 				throw new ArgumentNullException("info");
 
-			SetProxyTypes(info.m_ProxyTypes);
-			SetMethods(info.m_Methods.Values.Select(m => m.DeepCopy()));
-			SetProperties(info.m_Properties.Values.Select(p => p.DeepCopy()));
-			SetNodes(info.m_Nodes.Values.Select(n => n.DeepCopy()));
-			SetNodeGroups(info.m_NodeGroups.Values.Select(n => n.DeepCopy()));
+			if (info.m_ProxyTypes != null)
+				SetProxyTypes(info.m_ProxyTypes);
+
+			if (info.m_Methods != null)
+				SetMethods(info.m_Methods.Values.Select(m => m.DeepCopy()));
+
+			if (info.m_Properties != null)
+				SetProperties(info.m_Properties.Values.Select(p => p.DeepCopy()));
+
+			if (info.m_Nodes != null)
+				SetNodes(info.m_Nodes.Values.Select(n => n.DeepCopy()));
+
+			if (info.m_NodeGroups != null)
+				SetNodeGroups(info.m_NodeGroups.Values.Select(n => n.DeepCopy()));
 		}
 
 		#region ProxyTypes
@@ -146,7 +158,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<Type> GetProxyTypes()
 		{
-			return m_ProxyTypes.Count == 0
+			return m_ProxyTypes == null
 				       ? Enumerable.Empty<Type>()
 				       : m_ProxyTypes.ToArray(m_ProxyTypes.Count);
 		}
@@ -157,8 +169,10 @@ namespace ICD.Connect.API.Info
 		/// <param name="proxyTypes"></param>
 		public void SetProxyTypes(IEnumerable<Type> proxyTypes)
 		{
-			m_ProxyTypes.Clear();
-			m_ProxyTypes.AddRange(proxyTypes.Except((Type)null).Distinct());
+			if (proxyTypes == null)
+				throw new ArgumentNullException("proxyTypes");
+
+			m_ProxyTypes = proxyTypes.Except((Type)null).Distinct().ToList();
 		}
 
 		/// <summary>
@@ -167,7 +181,12 @@ namespace ICD.Connect.API.Info
 		/// <param name="proxyType"></param>
 		public void AddProxyType(Type proxyType)
 		{
-			if (!m_ProxyTypes.Contains(proxyType))
+			if (proxyType == null)
+				throw new ArgumentNullException("proxyType");
+
+			if (m_ProxyTypes == null)
+				m_ProxyTypes = new List<Type> {proxyType};
+			else if (!m_ProxyTypes.Contains(proxyType))
 				m_ProxyTypes.Add(proxyType);
 		}
 
@@ -189,7 +208,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiMethodInfo> GetMethods()
 		{
-			return m_Methods.Count == 0
+			return m_Methods == null
 				       ? Enumerable.Empty<ApiMethodInfo>()
 				       : m_Methods.Select(kvp => kvp.Value).ToArray(m_Methods.Count);
 		}
@@ -200,8 +219,10 @@ namespace ICD.Connect.API.Info
 		/// <param name="methods"></param>
 		public void SetMethods(IEnumerable<ApiMethodInfo> methods)
 		{
-			m_Methods.Clear();
-			m_Methods.AddRange(methods, m => m.Name);
+			if (methods == null)
+				throw new ArgumentNullException("methods");
+
+			m_Methods = methods.ToDictionary(m => m.Name);
 		}
 
 		/// <summary>
@@ -210,7 +231,13 @@ namespace ICD.Connect.API.Info
 		/// <param name="method"></param>
 		public void AddMethod(ApiMethodInfo method)
 		{
-			m_Methods.Add(method.Name, method);
+			if (method == null)
+				throw new ArgumentNullException("method");
+
+			if (m_Methods == null)
+				m_Methods = new Dictionary<string, ApiMethodInfo> {{method.Name, method}};
+			else
+				m_Methods.Add(method.Name, method);
 		}
 
 		#endregion
@@ -231,7 +258,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiPropertyInfo> GetProperties()
 		{
-			return m_Properties.Count == 0
+			return m_Properties == null
 				       ? Enumerable.Empty<ApiPropertyInfo>()
 				       : m_Properties.Select(kvp => kvp.Value).ToArray(m_Properties.Count);
 		}
@@ -242,8 +269,10 @@ namespace ICD.Connect.API.Info
 		/// <param name="properties"></param>
 		public void SetProperties(IEnumerable<ApiPropertyInfo> properties)
 		{
-			m_Properties.Clear();
-			m_Properties.AddRange(properties, p => p.Name);
+			if (properties == null)
+				throw new ArgumentNullException("properties");
+
+			m_Properties = properties.ToDictionary(m => m.Name);
 		}
 
 		/// <summary>
@@ -252,7 +281,13 @@ namespace ICD.Connect.API.Info
 		/// <param name="property"></param>
 		public void AddProperty(ApiPropertyInfo property)
 		{
-			m_Properties.Add(property.Name, property);
+			if (property == null)
+				throw new ArgumentNullException("property");
+
+			if (m_Properties == null)
+				m_Properties = new Dictionary<string, ApiPropertyInfo> { { property.Name, property } };
+			else
+				m_Properties.Add(property.Name, property);
 		}
 
 		#endregion
@@ -284,8 +319,10 @@ namespace ICD.Connect.API.Info
 		/// <param name="nodes"></param>
 		public void SetNodes(IEnumerable<ApiNodeInfo> nodes)
 		{
-			m_Nodes.Clear();
-			m_Nodes.AddRange(nodes, n => n.Name);
+			if (nodes == null)
+				throw new ArgumentNullException("nodes");
+
+			m_Nodes = nodes.ToDictionary(m => m.Name);
 		}
 
 		/// <summary>
@@ -294,7 +331,13 @@ namespace ICD.Connect.API.Info
 		/// <param name="node"></param>
 		public void AddNode(ApiNodeInfo node)
 		{
-			m_Nodes.Add(node.Name, node);
+			if (node == null)
+				throw new ArgumentNullException("node");
+
+			if (m_Nodes == null)
+				m_Nodes = new Dictionary<string, ApiNodeInfo> { { node.Name, node } };
+			else
+				m_Nodes.Add(node.Name, node);
 		}
 
 		/// <summary>
@@ -305,7 +348,7 @@ namespace ICD.Connect.API.Info
 		[CanBeNull]
 		public ApiNodeInfo GetNode(string name)
 		{
-			return m_Nodes.GetDefault(name, null);
+			return m_Nodes == null ? null : m_Nodes.GetDefault(name, null);
 		}
 
 		/// <summary>
@@ -338,7 +381,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiNodeGroupInfo> GetNodeGroups()
 		{
-			return m_NodeGroups.Count == 0
+			return m_NodeGroups == null
 				       ? Enumerable.Empty<ApiNodeGroupInfo>()
 				       : m_NodeGroups.Select(kvp => kvp.Value).ToArray(m_NodeGroups.Count);
 		}
@@ -349,8 +392,10 @@ namespace ICD.Connect.API.Info
 		/// <param name="nodeGroups"></param>
 		public void SetNodeGroups(IEnumerable<ApiNodeGroupInfo> nodeGroups)
 		{
-			m_NodeGroups.Clear();
-			m_NodeGroups.AddRange(nodeGroups, n => n.Name);
+			if (nodeGroups == null)
+				throw new ArgumentNullException("nodeGroups");
+
+			m_NodeGroups = nodeGroups.ToDictionary(m => m.Name);
 		}
 
 		/// <summary>
@@ -359,7 +404,13 @@ namespace ICD.Connect.API.Info
 		/// <param name="nodeGroup"></param>
 		public void AddNodeGroup(ApiNodeGroupInfo nodeGroup)
 		{
-			m_NodeGroups.Add(nodeGroup.Name, nodeGroup);
+			if (nodeGroup == null)
+				throw new ArgumentNullException("nodeGroup");
+
+			if (m_NodeGroups == null)
+				m_NodeGroups = new Dictionary<string, ApiNodeGroupInfo> { { nodeGroup.Name, nodeGroup } };
+			else
+				m_NodeGroups.Add(nodeGroup.Name, nodeGroup);
 		}
 
 		/// <summary>
@@ -370,7 +421,7 @@ namespace ICD.Connect.API.Info
 		[CanBeNull]
 		public ApiNodeGroupInfo GetNodeGroup(string name)
 		{
-			return m_NodeGroups.GetDefault(name, null);
+			return m_NodeGroups == null ? null : m_NodeGroups.GetDefault(name, null);
 		}
 
 		#endregion
@@ -381,10 +432,7 @@ namespace ICD.Connect.API.Info
 
 		private IEnumerable<Type> GetProxyTypes(Type type)
 		{
-			if (type == null)
-				return Enumerable.Empty<Type>();
-
-			return ApiClassAttribute.GetProxyTypes(type);
+			return type == null ? Enumerable.Empty<Type>() : ApiClassAttribute.GetProxyTypes(type);
 		}
 
 		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance, int depth)

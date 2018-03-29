@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.API.Info.Converters;
@@ -15,7 +17,8 @@ namespace ICD.Connect.API.Info
 	[JsonConverter(typeof(ApiMethodInfoConverter))]
 	public sealed class ApiMethodInfo : AbstractApiInfo
 	{
-		private readonly List<ApiParameterInfo> m_Parameters;
+		[CanBeNull]
+		private List<ApiParameterInfo> m_Parameters;
 
 		/// <summary>
 		/// Gets/sets whether or not this method is to be executed.
@@ -61,9 +64,10 @@ namespace ICD.Connect.API.Info
 		public ApiMethodInfo(ApiMethodAttribute attribute, MethodInfo method, object instance, int depth)
 			: base(attribute)
 		{
-			m_Parameters = new List<ApiParameterInfo>();
-
 			if (depth <= 0)
+				return;
+
+			if (method == null)
 				return;
 
 			IEnumerable<ApiParameterInfo> parameters = GetParameterInfo(method, instance, depth - 1);
@@ -100,7 +104,9 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiParameterInfo> GetParameters()
 		{
-			return m_Parameters.ToArray(m_Parameters.Count);
+			return m_Parameters == null
+				? Enumerable.Empty<ApiParameterInfo>()
+				: m_Parameters.ToArray(m_Parameters.Count);
 		}
 
 		/// <summary>
@@ -109,8 +115,10 @@ namespace ICD.Connect.API.Info
 		/// <param name="parameters"></param>
 		public void SetParameters(IEnumerable<ApiParameterInfo> parameters)
 		{
-			m_Parameters.Clear();
-			m_Parameters.AddRange(parameters);
+			if (parameters == null)
+				throw new ArgumentNullException("parameters");
+
+			m_Parameters = parameters.ToList();
 		}
 
 		/// <summary>
@@ -119,7 +127,13 @@ namespace ICD.Connect.API.Info
 		/// <param name="parameter"></param>
 		public void AddParameter(ApiParameterInfo parameter)
 		{
-			m_Parameters.Add(parameter);
+			if (parameter == null)
+				throw new ArgumentNullException("parameter");
+
+			if (m_Parameters == null)
+				m_Parameters = new List<ApiParameterInfo> {parameter};
+			else
+				m_Parameters.Add(parameter);
 		}
 
 		#endregion

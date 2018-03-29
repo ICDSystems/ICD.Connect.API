@@ -19,11 +19,10 @@ namespace ICD.Connect.API.Info
 	[JsonConverter(typeof(ApiNodeGroupInfoConverter))]
 	public sealed class ApiNodeGroupInfo : AbstractApiInfo, IEnumerable<KeyValuePair<uint, ApiClassInfo>>
 	{
-		private readonly Dictionary<uint, ApiClassInfo> m_Nodes;
+		[CanBeNull]
+		private Dictionary<uint, ApiClassInfo> m_Nodes;
 
-		public ApiClassInfo this[uint key] { get { return m_Nodes[key]; } set { m_Nodes[key] = value; } }
-
-		public int Count { get { return m_Nodes.Count; } }
+		public int Count { get { return m_Nodes == null ? 0 : m_Nodes.Count; } }
 
 		/// <summary>
 		/// Constructor.
@@ -64,9 +63,10 @@ namespace ICD.Connect.API.Info
 		public ApiNodeGroupInfo(ApiNodeGroupAttribute attribute, PropertyInfo property, object instance, int depth)
 			: base(attribute)
 		{
-			m_Nodes = new Dictionary<uint, ApiClassInfo>();
-
 			if (depth <= 0)
+				return;
+
+			if (property == null)
 				return;
 
 			IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodes = GetNodes(property, instance, depth - 1);
@@ -106,7 +106,7 @@ namespace ICD.Connect.API.Info
 		/// <param name="depth"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		private IEnumerable<KeyValuePair<uint, ApiClassInfo>> GetNodes(PropertyInfo property, object instance, int depth)
+		private static IEnumerable<KeyValuePair<uint, ApiClassInfo>> GetNodes(PropertyInfo property, object instance, int depth)
 		{
 			if (instance == null)
 				yield break;
@@ -142,7 +142,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<KeyValuePair<uint, ApiClassInfo>> GetNodes()
 		{
-			return m_Nodes.ToArray(m_Nodes.Count);
+			return m_Nodes == null ? Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>() : m_Nodes.ToArray(m_Nodes.Count);
 		}
 
 		/// <summary>
@@ -151,8 +151,10 @@ namespace ICD.Connect.API.Info
 		/// <param name="nodes"></param>
 		public void SetNodes(IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodes)
 		{
-			m_Nodes.Clear();
-			m_Nodes.AddRange(nodes);
+			if (nodes == null)
+				throw new ArgumentNullException("nodes");
+
+			m_Nodes = nodes.ToDictionary();
 		}
 
 		/// <summary>
@@ -162,7 +164,13 @@ namespace ICD.Connect.API.Info
 		/// <param name="node"></param>
 		public void AddNode(uint key, ApiClassInfo node)
 		{
-			m_Nodes.Add(key, node);
+			if (node == null)
+				throw new ArgumentNullException("node");
+
+			if (m_Nodes == null)
+				m_Nodes = new Dictionary<uint, ApiClassInfo> {{key, node}};
+			else
+				m_Nodes.Add(key, node);
 		}
 
 		/// <summary>
@@ -172,12 +180,14 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public bool RemoveNode(uint key)
 		{
-			return m_Nodes.Remove(key);
+			return m_Nodes != null && m_Nodes.Remove(key);
 		}
 
 		public IEnumerator<KeyValuePair<uint, ApiClassInfo>> GetEnumerator()
 		{
-			return m_Nodes.GetEnumerator();
+			return m_Nodes == null
+				       ? Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>().GetEnumerator()
+				       : m_Nodes.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
