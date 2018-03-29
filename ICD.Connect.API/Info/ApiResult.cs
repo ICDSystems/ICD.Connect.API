@@ -1,4 +1,5 @@
 ﻿using System;
+using ICD.Common.Utils;
 using ICD.Connect.API.Info.Converters;
 using Newtonsoft.Json;
 
@@ -72,6 +73,21 @@ namespace ICD.Connect.API.Info
 		{
 			Type = type;
 			Value = value;
+		}
+
+		/// <summary>
+		/// Gets the string representation for this instance.
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString()
+		{
+			ReprBuilder builder = new ReprBuilder(this);
+
+			builder.AppendProperty("ErrorCode", ErrorCode);
+			builder.AppendProperty("Type", Type);
+			builder.AppendProperty("Value", Value);
+
+			return builder.ToString();
 		}
 
 		#endregion

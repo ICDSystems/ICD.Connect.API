@@ -1,4 +1,5 @@
-﻿using ICD.Connect.API.Attributes;
+﻿using ICD.Common.Utils;
+using ICD.Connect.API.Attributes;
 
 namespace ICD.Connect.API.Info
 {
@@ -38,6 +39,19 @@ namespace ICD.Connect.API.Info
 			info.Name = Name;
 			info.Help = Help;
 			info.Result = Result == null ? null : Result.DeepCopy();
+		}
+
+		/// <summary>
+		/// Gets the string representation for this instance.
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString()
+		{
+			ReprBuilder builder = new ReprBuilder(this);
+
+			builder.AppendProperty("Name", Name);
+
+			return builder.ToString();
 		}
 	}
 }
