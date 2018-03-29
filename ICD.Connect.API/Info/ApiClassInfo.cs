@@ -123,11 +123,11 @@ namespace ICD.Connect.API.Info
 			if (info == null)
 				throw new ArgumentNullException("info");
 
-			SetProxyTypes(info.GetProxyTypes());
-			SetMethods(info.GetMethods().Select(m => m.DeepCopy()));
-			SetProperties(info.GetProperties().Select(p => p.DeepCopy()));
-			SetNodes(info.GetNodes().Select(n => n.DeepCopy()));
-			SetNodeGroups(info.GetNodeGroups().Select(n => n.DeepCopy()));
+			SetProxyTypes(info.m_ProxyTypes);
+			SetMethods(info.m_Methods.Values.Select(m => m.DeepCopy()));
+			SetProperties(info.m_Properties.Values.Select(p => p.DeepCopy()));
+			SetNodes(info.m_Nodes.Values.Select(n => n.DeepCopy()));
+			SetNodeGroups(info.m_NodeGroups.Values.Select(n => n.DeepCopy()));
 		}
 
 		#region ProxyTypes
