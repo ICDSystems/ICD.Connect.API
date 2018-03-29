@@ -106,7 +106,20 @@ namespace ICD.Connect.API
 		/// <returns></returns>
 		public IApiClassBuilder AtKey(uint key)
 		{
-			m_CurrentClass = new ApiClassInfo();
+			return AddKey(key, new ApiClassInfo());
+		}
+
+		/// <summary>
+		/// Adds the key and value to the current node group.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="value"></param>
+		public IApiClassBuilder AddKey(uint key, ApiClassInfo value)
+		{
+			if (value == null)
+				throw new ArgumentNullException("value");
+
+			m_CurrentClass = value;
 			m_CurrentNodeGroup.AddNode(key, m_CurrentClass);
 
 			m_CurrentNodeGroup = null;
@@ -188,17 +201,6 @@ namespace ICD.Connect.API
 			};
 			m_CurrentClass.AddMethod(method);
 
-			return this;
-		}
-
-		/// <summary>
-		/// Appends the given methods, parameters, etc to the current class.
-		/// </summary>
-		/// <param name="info"></param>
-		/// <returns></returns>
-		public IApiClassBuilder Append(ApiClassInfo info)
-		{
-			m_CurrentClass.Update(info);
 			return this;
 		}
 
@@ -313,13 +315,6 @@ namespace ICD.Connect.API
 		/// <param name="name"></param>
 		/// <returns></returns>
 		IApiClassBuilder GetMethod(string name);
-
-		/// <summary>
-		/// Appends the given methods, parameters, etc to the current class.
-		/// </summary>
-		/// <param name="info"></param>
-		/// <returns></returns>
-		IApiClassBuilder Append(ApiClassInfo info);
 	}
 
 	public interface IApiNodeGroupBuilder : IApiCommandBuilder
@@ -330,6 +325,13 @@ namespace ICD.Connect.API
 		/// <param name="key"></param>
 		/// <returns></returns>
 		IApiClassBuilder AtKey(uint key);
+
+		/// <summary>
+		/// Adds the key and value to the current node group.
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="value"></param>
+		IApiClassBuilder AddKey(uint key, ApiClassInfo value);
 	}
 
 	public interface IApiMethodBuilder : IApiCommandBuilder
