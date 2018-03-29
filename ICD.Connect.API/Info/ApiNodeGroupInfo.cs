@@ -22,7 +22,7 @@ namespace ICD.Connect.API.Info
 		[CanBeNull]
 		private Dictionary<uint, ApiClassInfo> m_Nodes;
 
-		public int Count { get { return m_Nodes == null ? 0 : m_Nodes.Count; } }
+		public int NodeCount { get { return m_Nodes == null ? 0 : m_Nodes.Count; } }
 
 		/// <summary>
 		/// Constructor.

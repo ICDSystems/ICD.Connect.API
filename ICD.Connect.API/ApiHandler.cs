@@ -302,7 +302,7 @@ namespace ICD.Connect.API
 
 			bool handled = false;
 
-			foreach (KeyValuePair<uint, ApiClassInfo> kvp in nodeGroup.ToArray(nodeGroup.Count))
+			foreach (KeyValuePair<uint, ApiClassInfo> kvp in nodeGroup.ToArray(nodeGroup.NodeCount))
 			{
 				handled = true;
 

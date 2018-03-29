@@ -27,7 +27,21 @@ namespace ICD.Connect.API.Info
 		[CanBeNull]
 		private Dictionary<string, ApiNodeInfo> m_Nodes;
 		[CanBeNull]
-		private Dictionary<string, ApiNodeGroupInfo> m_NodeGroups; 
+		private Dictionary<string, ApiNodeGroupInfo> m_NodeGroups;
+
+		#region Properties
+
+		public int ProxyTypeCount { get { return m_ProxyTypes == null ? 0 : m_ProxyTypes.Count; } }
+
+		public int MethodCount { get { return m_Methods == null ? 0 : m_Methods.Count; } }
+
+		public int PropertyCount { get { return m_Properties == null ? 0 : m_Properties.Count; } }
+
+		public int NodeCount { get { return m_Nodes == null ? 0 : m_Nodes.Count; } }
+
+		public int NodeGroupCount { get { return m_NodeGroups == null ? 0 : m_NodeGroups.Count; } }
+
+		#endregion
 
 		/// <summary>
 		/// Constructor.

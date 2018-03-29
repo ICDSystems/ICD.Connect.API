@@ -25,6 +25,8 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		public bool Execute { get; set; }
 
+		public int ParameterCount { get { return m_Parameters == null ? 0 : m_Parameters.Count; } }
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>

@@ -2,7 +2,6 @@
 using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ICD.Connect.API.Info.Converters
 {
@@ -34,43 +33,38 @@ namespace ICD.Connect.API.Info.Converters
 			base.WriteProperties(writer, value, serializer);
 
 			// Proxy Types
-			Type[] types = value.GetProxyTypes().ToArray();
-			if (types.Length > 0)
+			if (value.ProxyTypeCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_PROXYTYPES);
-				serializer.SerializeArray(writer, types, (s, w, item) => w.WriteType(item));
+				serializer.SerializeArray(writer, value.GetProxyTypes(), (s, w, item) => w.WriteType(item));
 			}
 
 			// Methods
-			ApiMethodInfo[] methods = value.GetMethods().ToArray();
-			if (methods.Length > 0)
+			if (value.MethodCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_METHODS);
-				serializer.SerializeArray(writer, methods);
+				serializer.SerializeArray(writer, value.GetMethods());
 			}
 
 			// Properties
-			ApiPropertyInfo[] properties = value.GetProperties().ToArray();
-			if (properties.Length > 0)
+			if (value.PropertyCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_PROPERTIES);
-				serializer.SerializeArray(writer, properties);
+				serializer.SerializeArray(writer, value.GetProperties());
 			}
 
 			// Nodes
-			ApiNodeInfo[] nodes = value.GetNodes().ToArray();
-			if (nodes.Length > 0)
+			if (value.NodeCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_NODES);
-				serializer.SerializeArray(writer, nodes);
+				serializer.SerializeArray(writer, value.GetNodes());
 			}
 
 			// Node Groups
-			ApiNodeGroupInfo[] nodeGroups = value.GetNodeGroups().ToArray();
-			if (nodeGroups.Length > 0)
+			if (value.NodeGroupCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_NODEGROUPS);
-				serializer.SerializeArray(writer, nodeGroups);
+				serializer.SerializeArray(writer, value.GetNodeGroups());
 			}
 		}
 

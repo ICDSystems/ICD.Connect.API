@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 
@@ -29,11 +28,10 @@ namespace ICD.Connect.API.Info.Converters
 			base.WriteProperties(writer, value, serializer);
 
 			// Nodes
-			KeyValuePair<uint, ApiClassInfo>[] nodes = value.GetNodes().ToArray();
-			if (nodes.Length != 0)
+			if (value.NodeCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_NODES);
-				serializer.SerializeDictionary(writer, nodes.OrderByKey());
+				serializer.SerializeDictionary(writer, value.GetNodes().OrderByKey());
 			}
 		}
 

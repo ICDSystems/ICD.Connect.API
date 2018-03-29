@@ -37,11 +37,10 @@ namespace ICD.Connect.API.Info.Converters
 			}
 
 			// Parameters
-			ApiParameterInfo[] parameters = value.GetParameters().ToArray();
-			if (parameters.Length > 0)
+			if (value.ParameterCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_PARAMETERS);
-				serializer.SerializeArray(writer, parameters);
+				serializer.SerializeArray(writer, value.GetParameters());
 			}
 		}
 
