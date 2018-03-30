@@ -53,7 +53,7 @@ namespace ICD.Connect.API.Attributes
 
 			if (!s_MethodToParameters.ContainsKey(method))
 			{
-				ParameterInfo[] parameters = method.GetParameters().ToArray();
+				ParameterInfo[] parameters = method.GetParameters();
 				s_MethodToParameters.Add(method, parameters);
 			}
 
