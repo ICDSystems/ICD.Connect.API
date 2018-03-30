@@ -69,6 +69,7 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Proxies\AbstractProxy.cs" />
     <Compile Include="ApiClassInfoEventArgs.cs" />
     <Compile Include="ApiCommandBuilder.cs" />
     <Compile Include="ApiHandler.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Info\Converters\ApiPropertyInfoConverter.cs" />
     <Compile Include="Info\Converters\ApiResultConverter.cs" />
     <Compile Include="Info\IApiInfo.cs" />
+    <Compile Include="Proxies\IProxy.cs" />
     <Compile Include="Nodes\AbstractApiNodeGroup.cs" />
     <Compile Include="Nodes\ConsoleNodeGroup.cs" />
     <Compile Include="Nodes\IApiNodeGroup.cs" />
@@ -114,6 +116,7 @@
     <None Include="ObfuscationSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Info\ApiResult.cs" />
+    <Compile Include="Proxies\Proxy.cs" />
     <None Include="Properties\ControlSystem.cfg" />
   </ItemGroup>
   <ItemGroup>
