@@ -69,7 +69,10 @@ namespace ICD.Connect.API.Attributes
 
 			if (!s_ParameterToAttribute.ContainsKey(parameter))
 			{
-				ApiParameterAttribute attribute = parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault();
+				// Parameter attributes are optional
+				ApiParameterAttribute attribute = parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault() ??
+												  new ApiParameterAttribute(parameter.Name, string.Empty);
+
 				s_ParameterToAttribute.Add(parameter, attribute);
 			}
 
