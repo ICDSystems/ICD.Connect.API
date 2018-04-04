@@ -28,6 +28,28 @@ namespace ICD.Connect.API.Proxies
 		}
 
 		/// <summary>
+		/// Instructs the proxy to raise commands requesting initial values.
+		/// </summary>
+		public void Initialize()
+		{
+			ApiClassInfo command = new ApiClassInfo();
+			Initialize(command);
+
+			if (command.IsEmpty)
+				return;
+
+			SendCommand(command);
+		}
+
+		/// <summary>
+		/// Override to build initialization commands on top of the current class info.
+		/// </summary>
+		/// <param name="command"></param>
+		protected virtual void Initialize(ApiClassInfo command)
+		{
+		}
+
+		/// <summary>
 		/// Destructor.
 		/// </summary>
 		~AbstractProxy()

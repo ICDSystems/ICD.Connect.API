@@ -15,5 +15,10 @@ namespace ICD.Connect.API.Proxies
 		/// </summary>
 		/// <param name="result"></param>
 		void ParseResult(ApiResult result);
+
+		/// <summary>
+		/// Instructs the proxy to raise commands requesting initial values.
+		/// </summary>
+		void Initialize();
 	}
 }

@@ -41,6 +41,21 @@ namespace ICD.Connect.API.Info
 
 		public int NodeGroupCount { get { return m_NodeGroups == null ? 0 : m_NodeGroups.Count; } }
 
+		/// <summary>
+		/// Returns true if there are no child info instances.
+		/// </summary>
+		public bool IsEmpty
+		{
+			get
+			{
+				return ProxyTypeCount +
+				       MethodCount +
+				       PropertyCount +
+				       NodeCount +
+				       NodeGroupCount == 0;
+			}
+		}
+
 		#endregion
 
 		/// <summary>
