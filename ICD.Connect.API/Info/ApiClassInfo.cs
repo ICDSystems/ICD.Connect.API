@@ -186,7 +186,9 @@ namespace ICD.Connect.API.Info
 			if (proxyTypes == null)
 				throw new ArgumentNullException("proxyTypes");
 
-			m_ProxyTypes = proxyTypes.Except((Type)null).Distinct().ToList();
+			m_ProxyTypes = null;
+			foreach (Type type in proxyTypes)
+				AddProxyType(type);
 		}
 
 		/// <summary>
@@ -236,7 +238,9 @@ namespace ICD.Connect.API.Info
 			if (methods == null)
 				throw new ArgumentNullException("methods");
 
-			m_Methods = methods.ToDictionary(m => m.Name);
+			m_Methods = null;
+			foreach (ApiMethodInfo method in methods)
+				AddMethod(method);
 		}
 
 		/// <summary>
@@ -286,7 +290,9 @@ namespace ICD.Connect.API.Info
 			if (properties == null)
 				throw new ArgumentNullException("properties");
 
-			m_Properties = properties.ToDictionary(m => m.Name);
+			m_Properties = null;
+			foreach (ApiPropertyInfo property in properties)
+				AddProperty(property);
 		}
 
 		/// <summary>
@@ -336,7 +342,9 @@ namespace ICD.Connect.API.Info
 			if (nodes == null)
 				throw new ArgumentNullException("nodes");
 
-			m_Nodes = nodes.ToDictionary(m => m.Name);
+			m_Nodes = null;
+			foreach (ApiNodeInfo node in nodes)
+				AddNode(node);
 		}
 
 		/// <summary>
@@ -352,29 +360,6 @@ namespace ICD.Connect.API.Info
 				m_Nodes = new Dictionary<string, ApiNodeInfo> { { node.Name, node } };
 			else
 				m_Nodes.Add(node.Name, node);
-		}
-
-		/// <summary>
-		/// Gets the node with the given name, returns null if the node doesn't exist.
-		/// </summary>
-		/// <param name="name"></param>
-		/// <returns></returns>
-		[CanBeNull]
-		public ApiNodeInfo GetNode(string name)
-		{
-			return m_Nodes == null ? null : m_Nodes.GetDefault(name, null);
-		}
-
-		/// <summary>
-		/// Gets the class info at the node with the given name, returns null if the node or class don't exist.
-		/// </summary>
-		/// <param name="name"></param>
-		/// <returns></returns>
-		[CanBeNull]
-		public ApiClassInfo GetNodeClass(string name)
-		{
-			ApiNodeInfo node = GetNode(name);
-			return node == null ? null : node.Node;
 		}
 
 		#endregion
@@ -409,7 +394,9 @@ namespace ICD.Connect.API.Info
 			if (nodeGroups == null)
 				throw new ArgumentNullException("nodeGroups");
 
-			m_NodeGroups = nodeGroups.ToDictionary(m => m.Name);
+			m_NodeGroups = null;
+			foreach (ApiNodeGroupInfo nodeGroup in nodeGroups)
+				AddNodeGroup(nodeGroup);
 		}
 
 		/// <summary>
@@ -425,17 +412,6 @@ namespace ICD.Connect.API.Info
 				m_NodeGroups = new Dictionary<string, ApiNodeGroupInfo> { { nodeGroup.Name, nodeGroup } };
 			else
 				m_NodeGroups.Add(nodeGroup.Name, nodeGroup);
-		}
-
-		/// <summary>
-		/// Gets the node group with the given name, returns null if the node group doesn't exist.
-		/// </summary>
-		/// <param name="name"></param>
-		/// <returns></returns>
-		[CanBeNull]
-		public ApiNodeGroupInfo GetNodeGroup(string name)
-		{
-			return m_NodeGroups == null ? null : m_NodeGroups.GetDefault(name, null);
 		}
 
 		#endregion

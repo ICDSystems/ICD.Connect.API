@@ -154,7 +154,9 @@ namespace ICD.Connect.API.Info
 			if (nodes == null)
 				throw new ArgumentNullException("nodes");
 
-			m_Nodes = nodes.ToDictionary();
+			m_Nodes = null;
+			foreach (KeyValuePair<uint, ApiClassInfo> kvp in nodes)
+				AddNode(kvp.Key, kvp.Value);
 		}
 
 		/// <summary>

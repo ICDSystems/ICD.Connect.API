@@ -120,7 +120,9 @@ namespace ICD.Connect.API.Info
 			if (parameters == null)
 				throw new ArgumentNullException("parameters");
 
-			m_Parameters = parameters.ToList();
+			m_Parameters = null;
+			foreach (ApiParameterInfo parameter in parameters)
+				AddParameter(parameter);
 		}
 
 		/// <summary>
