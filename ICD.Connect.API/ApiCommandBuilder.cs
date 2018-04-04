@@ -28,7 +28,20 @@ namespace ICD.Connect.API
 		/// <returns></returns>
 		public static IApiClassBuilder NewCommand()
 		{
-			return new ApiCommandBuilder(new ApiClassInfo());
+			return UpdateCommand(new ApiClassInfo());
+		}
+
+		/// <summary>
+		/// Starts building on top of the given command.
+		/// </summary>
+		/// <param name="command"></param>
+		/// <returns></returns>
+		public static IApiClassBuilder UpdateCommand(ApiClassInfo command)
+		{
+			if (command == null)
+				throw new ArgumentNullException("command");
+
+			return new ApiCommandBuilder(command);
 		}
 
 		/// <summary>
@@ -136,6 +149,23 @@ namespace ICD.Connect.API
 		public IApiClassBuilder AtNodeGroupKey(string name, uint key)
 		{
 			return AtNodeGroup(name).AtKey(key);
+		}
+
+		/// <summary>
+		/// Adds a get node group command to the current node.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		public IApiClassBuilder GetNodeGroup(string name)
+		{
+			ApiNodeGroupInfo nodeGroup = new ApiNodeGroupInfo
+			{
+				Name = name
+			};
+
+			m_CurrentClass.AddNodeGroup(nodeGroup);
+			
+			return this;
 		}
 
 		/// <summary>
@@ -286,6 +316,13 @@ namespace ICD.Connect.API
 		/// <param name="key"></param>
 		/// <returns></returns>
 		IApiClassBuilder AtNodeGroupKey(string name, uint key);
+
+		/// <summary>
+		/// Adds a get node group command to the current node.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		IApiClassBuilder GetNodeGroup(string name);
 
 		/// <summary>
 		/// Adds a get property command to the current node.
