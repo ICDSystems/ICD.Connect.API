@@ -6,15 +6,15 @@ namespace ICD.Connect.API.Proxies
 	public interface IProxy
 	{
 		/// <summary>
-		/// Raised when the proxy originator makes an API request.
+		/// Raised when the proxy makes an API request.
 		/// </summary>
 		event EventHandler<ApiClassInfoEventArgs> OnCommand;
 
 		/// <summary>
-		/// Called to update the proxy originator with an API result.
+		/// Called to update the proxy with API info.
 		/// </summary>
-		/// <param name="result"></param>
-		void ParseResult(ApiResult result);
+		/// <param name="info"></param>
+		void ParseInfo(ApiClassInfo info);
 
 		/// <summary>
 		/// Instructs the proxy to raise commands requesting initial values.

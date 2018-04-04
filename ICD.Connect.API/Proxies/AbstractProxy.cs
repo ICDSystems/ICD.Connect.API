@@ -8,7 +8,7 @@ namespace ICD.Connect.API.Proxies
 	public abstract class AbstractProxy : IProxy, IStateDisposable
 	{
 		/// <summary>
-		/// Raised when the proxy originator makes an API request.
+		/// Raised when the proxy makes an API request.
 		/// </summary>
 		public event EventHandler<ApiClassInfoEventArgs> OnCommand;
 
@@ -20,10 +20,10 @@ namespace ICD.Connect.API.Proxies
 		#region Methods
 
 		/// <summary>
-		/// Called to update the proxy originator with an API result.
+		/// Called to update the proxy with API info.
 		/// </summary>
 		/// <param name="result"></param>
-		public virtual void ParseResult(ApiResult result)
+		public virtual void ParseInfo(ApiClassInfo result)
 		{
 		}
 
