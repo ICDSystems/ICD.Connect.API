@@ -377,6 +377,43 @@ namespace ICD.Connect.API.Info
 				m_Nodes.Add(node.Name, node);
 		}
 
+		/// <summary>
+		/// Tries to get the node with the given name.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="node"></param>
+		/// <returns></returns>
+		public bool TryGetNode(string name, out ApiNodeInfo node)
+		{
+			if (name == null)
+				throw new ArgumentNullException("name");
+
+			node = null;
+
+			return m_Nodes != null && m_Nodes.TryGetValue(name, out node);
+		}
+
+		/// <summary>
+		/// Tries to get the contents of the node with the given name.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="info"></param>
+		/// <returns></returns>
+		public bool TryGetNodeContents(string name, out ApiClassInfo info)
+		{
+			if (name == null)
+				throw new ArgumentNullException("name");
+
+			info = null;
+
+			ApiNodeInfo node;
+			if (!TryGetNode(name, out node))
+				return false;
+
+			info = node == null ? null : node.Node;
+			return true;
+		}
+
 		#endregion
 
 		#region Node Groups
@@ -427,6 +464,22 @@ namespace ICD.Connect.API.Info
 				m_NodeGroups = new Dictionary<string, ApiNodeGroupInfo> { { nodeGroup.Name, nodeGroup } };
 			else
 				m_NodeGroups.Add(nodeGroup.Name, nodeGroup);
+		}
+
+		/// <summary>
+		/// Tries to get the node group with the given name.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="nodeGroup"></param>
+		/// <returns></returns>
+		public bool TryGetNodeGroup(string name, out ApiNodeGroupInfo nodeGroup)
+		{
+			if (name == null)
+				throw new ArgumentNullException("name");
+
+			nodeGroup = null;
+
+			return m_NodeGroups != null && m_NodeGroups.TryGetValue(name, out nodeGroup);
 		}
 
 		#endregion
