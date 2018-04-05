@@ -458,7 +458,7 @@ namespace ICD.Connect.API
 			{
 				try
 				{
-					parameters[index] = ChangeType(parameters[index], types[index]);
+					parameters[index] = ReflectionUtils.ChangeType(parameters[index], types[index]);
 				}
 				// Parameter is the incorrect type.
 				catch (Exception)
@@ -534,7 +534,7 @@ namespace ICD.Connect.API
 
 				try
 				{
-					value = ChangeType(info.Value, property.PropertyType);
+					value = ReflectionUtils.ChangeType(info.Value, property.PropertyType);
 				}
 				// Value is the incorrect type.
 				catch (Exception)
@@ -563,20 +563,6 @@ namespace ICD.Connect.API
 			info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
 			if (property.CanRead)
 				info.Result.SetValue(property.GetValue(instance, null));
-		}
-
-		/// <summary>
-		/// Changes the given value to the given type.
-		/// </summary>
-		/// <param name="value"></param>
-		/// <param name="type"></param>
-		/// <returns></returns>
-		private static object ChangeType(object value, Type type)
-		{
-			if (type.IsEnum)
-				return Enum.ToObject(type, value);
-
-			return Convert.ChangeType(value, type, null);
 		}
 
 		#endregion

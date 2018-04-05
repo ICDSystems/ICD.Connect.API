@@ -76,6 +76,26 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
+		/// Gets the value casting to the given type.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public T GetValue<T>()
+		{
+			return (T)GetValue(typeof(T));
+		}
+
+		/// <summary>
+		/// Gets the value casting to the given type.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public object GetValue(Type type)
+		{
+			return ReflectionUtils.ChangeType(Value, type);
+		}
+
+		/// <summary>
 		/// Gets the string representation for this instance.
 		/// </summary>
 		/// <returns></returns>
