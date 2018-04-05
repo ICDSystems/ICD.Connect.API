@@ -43,6 +43,12 @@ namespace ICD.Connect.API.Proxies
 
 			foreach (ApiMethodInfo method in info.GetMethods())
 				ParseMethod(method);
+
+			foreach (ApiNodeInfo node in info.GetNodes())
+				ParseNode(node);
+
+			foreach (ApiNodeGroupInfo nodeGroup in info.GetNodeGroups())
+				ParseNodeGroup(nodeGroup);
 		}
 
 		/// <summary>
@@ -70,56 +76,6 @@ namespace ICD.Connect.API.Proxies
 		#endregion
 
 		#region Private Methods
-
-		/// <summary>
-		/// Updates the proxy with a property result.
-		/// </summary>
-		/// <param name="property"></param>
-		private void ParseProperty(ApiPropertyInfo property)
-		{
-			if (property == null)
-				throw new ArgumentNullException("property");
-
-			// Only care about good results
-			if (property.Result == null || property.Result.ErrorCode != ApiResult.eErrorCode.Ok)
-				return;
-
-			ParseProperty(property.Name, property.Result);
-		}
-
-		/// <summary>
-		/// Updates the proxy with a property result.
-		/// </summary>
-		/// <param name="name"></param>
-		/// <param name="result"></param>
-		protected virtual void ParseProperty(string name, ApiResult result)
-		{
-		}
-
-		/// <summary>
-		/// Updates the proxy with a method result.
-		/// </summary>
-		/// <param name="method"></param>
-		private void ParseMethod(ApiMethodInfo method)
-		{
-			if (method == null)
-				throw new ArgumentNullException("method");
-
-			// Only care about good results
-			if (method.Result == null || method.Result.ErrorCode != ApiResult.eErrorCode.Ok)
-				return;
-
-			ParseMethod(method.Name, method.Result);
-		}
-
-		/// <summary>
-		/// Updates the proxy with a method result.
-		/// </summary>
-		/// <param name="name"></param>
-		/// <param name="result"></param>
-		private void ParseMethod(string name, ApiResult result)
-		{
-		}
 
 		/// <summary>
 		/// Override to build initialization commands on top of the current class info.
@@ -171,6 +127,111 @@ namespace ICD.Connect.API.Proxies
 		{
 			ApiClassInfo command = ApiCommandBuilder.CallMethodCommand(name, parameters);
 			SendCommand(command);
+		}
+
+		#endregion
+
+		#region Parsing
+
+		/// <summary>
+		/// Updates the proxy with a property result.
+		/// </summary>
+		/// <param name="property"></param>
+		private void ParseProperty(ApiPropertyInfo property)
+		{
+			if (property == null)
+				throw new ArgumentNullException("property");
+
+			// Only care about good results
+			if (property.Result == null || property.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+				return;
+
+			ParseProperty(property.Name, property.Result);
+		}
+
+		/// <summary>
+		/// Updates the proxy with a property result.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="result"></param>
+		protected virtual void ParseProperty(string name, ApiResult result)
+		{
+		}
+
+		/// <summary>
+		/// Updates the proxy with a method result.
+		/// </summary>
+		/// <param name="method"></param>
+		private void ParseMethod(ApiMethodInfo method)
+		{
+			if (method == null)
+				throw new ArgumentNullException("method");
+
+			// Only care about good results
+			if (method.Result == null || method.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+				return;
+
+			ParseMethod(method.Name, method.Result);
+		}
+
+		/// <summary>
+		/// Updates the proxy with a method result.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="result"></param>
+		protected virtual void ParseMethod(string name, ApiResult result)
+		{
+		}
+
+		/// <summary>
+		/// Updates the proxy with a node result.
+		/// </summary>
+		/// <param name="node"></param>
+		private void ParseNode(ApiNodeInfo node)
+		{
+			if (node == null)
+				throw new ArgumentNullException("node");
+
+			// Only care about good results
+			if (node.Result == null || node.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+				return;
+
+			ParseNode(node.Name, node.Result);
+		}
+
+		/// <summary>
+		/// Updates the proxy with a node result.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="result"></param>
+		protected virtual void ParseNode(string name, ApiResult result)
+		{
+			
+		}
+
+		/// <summary>
+		/// Updates the proxy with a node group result.
+		/// </summary>
+		/// <param name="nodeGroup"></param>
+		private void ParseNodeGroup(ApiNodeGroupInfo nodeGroup)
+		{
+			if (nodeGroup == null)
+				throw new ArgumentNullException("nodeGroup");
+
+			// Only care about good results
+			if (nodeGroup.Result == null || nodeGroup.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+				return;
+
+			ParseNodeGroup(nodeGroup.Name, nodeGroup.Result);
+		}
+
+		/// <summary>
+		/// Updates the proxy with a node group result.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="result"></param>
+		protected virtual void ParseNodeGroup(string name, ApiResult result)
+		{
 		}
 
 		#endregion
