@@ -30,8 +30,8 @@ namespace ICD.Connect.API.Proxies
 		/// <summary>
 		/// Called to update the proxy with API info.
 		/// </summary>
-		/// <param name="result"></param>
-		public virtual void ParseInfo(ApiClassInfo result)
+		/// <param name="info"></param>
+		public void ParseInfo(ApiClassInfo info)
 		{
 		}
 
