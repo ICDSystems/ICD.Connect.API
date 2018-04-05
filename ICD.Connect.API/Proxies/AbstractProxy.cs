@@ -17,6 +17,14 @@ namespace ICD.Connect.API.Proxies
 		/// </summary>
 		public bool IsDisposed { get; private set; }
 
+		/// <summary>
+		/// Destructor.
+		/// </summary>
+		~AbstractProxy()
+		{
+			Dispose(false);
+		}
+
 		#region Methods
 
 		/// <summary>
@@ -50,14 +58,6 @@ namespace ICD.Connect.API.Proxies
 		}
 
 		/// <summary>
-		/// Destructor.
-		/// </summary>
-		~AbstractProxy()
-		{
-			Dispose(false);
-		}
-
-		/// <summary>
 		/// Release resources.
 		/// </summary>
 		public void Dispose()
@@ -78,6 +78,10 @@ namespace ICD.Connect.API.Proxies
 			IsDisposed = IsDisposed || disposing;
 		}
 
+		#endregion
+
+		#region Private Methods
+
 		/// <summary>
 		/// Override to release resources.
 		/// </summary>
@@ -85,8 +89,6 @@ namespace ICD.Connect.API.Proxies
 		protected virtual void DisposeFinal(bool disposing)
 		{
 		}
-
-		#endregion
 
 		/// <summary>
 		/// Raises the OnCommand event with the given command.
@@ -110,5 +112,7 @@ namespace ICD.Connect.API.Proxies
 			ApiClassInfo command = ApiCommandBuilder.CallMethodCommand(name, parameters);
 			SendCommand(command);
 		}
+
+		#endregion
 	}
 }
