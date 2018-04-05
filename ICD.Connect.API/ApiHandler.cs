@@ -54,7 +54,7 @@ namespace ICD.Connect.API
 
 		#endregion
 
-		#region Results
+		#region Read Results
 
 		/// <summary>
 		/// Executes the given callback for each result in the given command tree.
@@ -347,7 +347,7 @@ namespace ICD.Connect.API
 				return;
 			}
 
-			IApiNodeGroup group = property.GetValue(instance, new object[0]) as IApiNodeGroup;
+			IApiNodeGroup group = property.GetValue(instance, null) as IApiNodeGroup;
 
 			// Found the ApiNodeGroupAttribute but the property value was null
 			if (group == null)
@@ -546,7 +546,7 @@ namespace ICD.Connect.API
 
 				try
 				{
-					property.SetValue(instance, value, new object[0]);
+					property.SetValue(instance, value, null);
 				}
 				// Property failed to execute.
 				catch (Exception e)
@@ -562,7 +562,7 @@ namespace ICD.Connect.API
 			// Add the response
 			info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
 			if (property.CanRead)
-				info.Result.SetValue(property.GetValue(instance, new object[0]));
+				info.Result.SetValue(property.GetValue(instance, null));
 		}
 
 		/// <summary>
