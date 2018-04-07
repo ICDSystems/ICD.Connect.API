@@ -21,6 +21,8 @@ namespace ICD.Connect.API.Info
 		private List<Type> m_ProxyTypes;
 
 		[CanBeNull]
+		private Dictionary<string, ApiEventInfo> m_Events;
+		[CanBeNull]
 		private Dictionary<string, ApiMethodInfo> m_Methods;
 		[CanBeNull]
 		private Dictionary<string, ApiPropertyInfo> m_Properties;
@@ -32,6 +34,8 @@ namespace ICD.Connect.API.Info
 		#region Properties
 
 		public int ProxyTypeCount { get { return m_ProxyTypes == null ? 0 : m_ProxyTypes.Count; } }
+
+		public int EventCount { get { return m_Events == null ? 0 : m_Events.Count; } }
 
 		public int MethodCount { get { return m_Methods == null ? 0 : m_Methods.Count; } }
 
@@ -49,10 +53,11 @@ namespace ICD.Connect.API.Info
 			get
 			{
 				return ProxyTypeCount +
-				       MethodCount +
-				       PropertyCount +
-				       NodeCount +
-				       NodeGroupCount == 0;
+					   EventCount +
+					   MethodCount +
+					   PropertyCount +
+					   NodeCount +
+					   NodeGroupCount == 0;
 			}
 		}
 
@@ -110,12 +115,14 @@ namespace ICD.Connect.API.Info
 				return;
 
 			IEnumerable<Type> proxyTypes = GetProxyTypes(type);
+			IEnumerable<ApiEventInfo> events = GetEventInfo(type, instance, depth - 1);
 			IEnumerable<ApiMethodInfo> methods = GetMethodInfo(type, instance, depth - 1);
 			IEnumerable<ApiPropertyInfo> properties = GetPropertyInfo(type, instance, depth - 1);
 			IEnumerable<ApiNodeInfo> nodes = GetNodeInfo(type, instance, depth - 1);
 			IEnumerable<ApiNodeGroupInfo> nodeGroups = GetNodeGroupInfo(type, instance, depth - 1);
 
 			SetProxyTypes(proxyTypes);
+			SetEvents(events);
 			SetMethods(methods);
 			SetProperties(properties);
 			SetNodes(nodes);
@@ -219,6 +226,58 @@ namespace ICD.Connect.API.Info
 				m_ProxyTypes = new List<Type> {proxyType};
 			else if (!m_ProxyTypes.Contains(proxyType))
 				m_ProxyTypes.Add(proxyType);
+		}
+
+		#endregion
+
+		#region Events
+
+		/// <summary>
+		/// Clears the events for this class.
+		/// </summary>
+		public void ClearEvents()
+		{
+			SetEvents(Enumerable.Empty<ApiEventInfo>());
+		}
+
+		/// <summary>
+		/// Gets the events for this class.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<ApiEventInfo> GetEvents()
+		{
+			return m_Events == null
+					   ? Enumerable.Empty<ApiEventInfo>()
+					   : m_Events.Select(kvp => kvp.Value).ToArray(m_Events.Count);
+		}
+
+		/// <summary>
+		/// Sets the events for this class.
+		/// </summary>
+		/// <param name="events"></param>
+		public void SetEvents(IEnumerable<ApiEventInfo> events)
+		{
+			if (events == null)
+				throw new ArgumentNullException("events");
+
+			m_Events = null;
+			foreach (ApiEventInfo eventInfo in events)
+				AddEvent(eventInfo);
+		}
+
+		/// <summary>
+		/// Adds the event to the collection.
+		/// </summary>
+		/// <param name="eventInfo"></param>
+		public void AddEvent(ApiEventInfo eventInfo)
+		{
+			if (eventInfo == null)
+				throw new ArgumentNullException("eventInfo");
+
+			if (m_Events == null)
+				m_Events = new Dictionary<string, ApiEventInfo> { { eventInfo.Name, eventInfo } };
+			else
+				m_Events.Add(eventInfo.Name, eventInfo);
 		}
 
 		#endregion
@@ -506,6 +565,22 @@ namespace ICD.Connect.API.Info
 				ApiPropertyAttribute attribute = ApiPropertyAttribute.GetAttribute(property);
 				if (attribute != null)
 					yield return new ApiPropertyInfo(attribute, property, instance, depth - 1);
+			}
+		}
+
+		private IEnumerable<ApiEventInfo> GetEventInfo(Type type, object instance, int depth)
+		{
+			if (type == null)
+				yield break;
+
+			if (depth <= 0)
+				yield break;
+
+			foreach (EventInfo eventInfo in ApiEventAttribute.GetEvents(type))
+			{
+				ApiEventAttribute attribute = ApiEventAttribute.GetAttribute(eventInfo);
+				if (attribute != null)
+					yield return new ApiEventInfo(attribute, eventInfo, instance, depth - 1);
 			}
 		}
 

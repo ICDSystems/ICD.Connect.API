@@ -8,6 +8,7 @@ namespace ICD.Connect.API.Info.Converters
 	public sealed class ApiClassInfoConverter : AbstractApiInfoConverter<ApiClassInfo>
 	{
 		private const string PROPERTY_PROXYTYPES = "proxyTypes";
+		private const string PROPERTY_EVENTS = "events";
 		private const string PROPERTY_METHODS = "methods";
 		private const string PROPERTY_PROPERTIES = "properties";
 		private const string PROPERTY_NODES = "nodes";
@@ -37,6 +38,13 @@ namespace ICD.Connect.API.Info.Converters
 			{
 				writer.WritePropertyName(PROPERTY_PROXYTYPES);
 				serializer.SerializeArray(writer, value.GetProxyTypes(), (s, w, item) => w.WriteType(item));
+			}
+
+			// Events
+			if (value.EventCount > 0)
+			{
+				writer.WritePropertyName(PROPERTY_EVENTS);
+				serializer.SerializeArray(writer, value.GetEvents());
 			}
 
 			// Methods
@@ -83,6 +91,11 @@ namespace ICD.Connect.API.Info.Converters
 				case PROPERTY_PROXYTYPES:
 					IEnumerable<Type> proxyTypes = serializer.DeserializeArray(reader, (s, r) => r.GetValueAsType());
 					instance.SetProxyTypes(proxyTypes);
+					break;
+
+				case PROPERTY_EVENTS:
+					IEnumerable<ApiEventInfo> events = serializer.DeserializeArray<ApiEventInfo>(reader);
+					instance.SetEvents(events);
 					break;
 
 				case PROPERTY_METHODS:
