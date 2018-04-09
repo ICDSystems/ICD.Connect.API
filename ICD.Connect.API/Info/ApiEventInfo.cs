@@ -11,7 +11,19 @@ namespace ICD.Connect.API.Info
 {
 	[JsonConverter(typeof(ApiEventInfoConverter))]
 	public sealed class ApiEventInfo : AbstractApiInfo
-    {
+	{
+		public enum eSubscribeAction
+		{
+			None,
+			Subscribe,
+			Unsubscribe
+		}
+
+		/// <summary>
+		/// Gets/sets the subscribe action for this command.
+		/// </summary>
+		public eSubscribeAction SubscribeAction { get; set; }
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
