@@ -235,6 +235,40 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
+		/// Adds an event subscription command to the current node.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		public IApiClassBuilder SubscribeEvent(string name)
+		{
+			ApiEventInfo eventInfo = new ApiEventInfo
+			{
+				Name = name,
+				SubscribeAction = ApiEventInfo.eSubscribeAction.Subscribe
+			};
+			m_CurrentClass.AddEvent(eventInfo);
+
+			return this;
+		}
+
+		/// <summary>
+		/// Adds an event unsubscription command to the current node.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		public IApiClassBuilder UnsubscribeEvent(string name)
+		{
+			ApiEventInfo eventInfo = new ApiEventInfo
+			{
+				Name = name,
+				SubscribeAction = ApiEventInfo.eSubscribeAction.Unsubscribe
+			};
+			m_CurrentClass.AddEvent(eventInfo);
+
+			return this;
+		}
+
+		/// <summary>
 		/// Adds the parameter to the current method.
 		/// </summary>
 		/// <param name="value"></param>
@@ -352,6 +386,20 @@ namespace ICD.Connect.API
 		/// <param name="name"></param>
 		/// <returns></returns>
 		IApiClassBuilder GetMethod(string name);
+
+		/// <summary>
+		/// Adds an event subscription command to the current node.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		IApiClassBuilder SubscribeEvent(string name);
+
+		/// <summary>
+		/// Adds an event unsubscription command to the current node.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		IApiClassBuilder UnsubscribeEvent(string name);
 	}
 
 	public interface IApiNodeGroupBuilder : IApiCommandBuilder
