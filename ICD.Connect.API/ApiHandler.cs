@@ -138,6 +138,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="readResult"></param>
+		/// <param name="path"></param>
 		private static void ReadResultsRecursive(ApiMethodInfo info, Action<ApiResult, Stack<IApiInfo>> readResult, Stack<IApiInfo> path)
 		{
 			if (info == null)
@@ -165,6 +166,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="readResult"></param>
+		/// <param name="path"></param>
 		private static void ReadResultsRecursive(ApiParameterInfo info, Action<ApiResult, Stack<IApiInfo>> readResult, Stack<IApiInfo> path)
 		{
 			if (info == null)
@@ -189,6 +191,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="readResult"></param>
+		/// <param name="path"></param>
 		private static void ReadResultsRecursive(ApiNodeInfo info, Action<ApiResult, Stack<IApiInfo>> readResult, Stack<IApiInfo> path)
 		{
 			if (info == null)
@@ -216,6 +219,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="readResult"></param>
+		/// <param name="path"></param>
 		private static void ReadResultsRecursive(ApiNodeGroupInfo info, Action<ApiResult, Stack<IApiInfo>> readResult, Stack<IApiInfo> path)
 		{
 			if (info == null)
