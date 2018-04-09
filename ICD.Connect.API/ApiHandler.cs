@@ -670,7 +670,7 @@ namespace ICD.Connect.API
 			// Add the response
 			info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
 			if (property.CanRead)
-				info.Result.SetValue(property.GetValue(instance, null));
+				info.Result.SetValue(property.PropertyType, property.GetValue(instance, null));
 		}
 
 		#endregion

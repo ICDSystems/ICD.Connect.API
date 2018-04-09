@@ -25,7 +25,7 @@ namespace ICD.Connect.API.Info.Converters
 				writer.WriteValue(value.ErrorCode);
 
 				// Type
-				if (value.Value != null && value.Type != null)
+				if (value.Type != null)
 				{
 					writer.WritePropertyName(PROPERTY_TYPE);
 					writer.WriteType(value.Type);
