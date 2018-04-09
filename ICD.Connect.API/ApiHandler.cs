@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 #if SIMPLSHARP
@@ -8,8 +9,6 @@ using Crestron.SimplSharp.Reflection;
 #else
 using System.Reflection;
 #endif
-using ICD.Common.Utils.Services;
-using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.API.Info;
 using ICD.Connect.API.Nodes;
@@ -94,6 +93,9 @@ namespace ICD.Connect.API
 				if (info.Result != null)
 					readResult(info.Result, path);
 
+				foreach (ApiEventInfo eventInfo in info.GetEvents())
+					ReadResultsRecursive(eventInfo, readResult, path);
+
 				foreach (ApiPropertyInfo property in info.GetProperties())
 					ReadResultsRecursive(property, readResult, path);
 
@@ -114,6 +116,32 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="readResult"></param>
+		/// <param name="path"></param>
+		private static void ReadResultsRecursive(ApiEventInfo info, Action<ApiResult, Stack<IApiInfo>> readResult, Stack<IApiInfo> path)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (readResult == null)
+				throw new ArgumentNullException("readResult");
+
+			if (path == null)
+				throw new ArgumentNullException("path");
+
+			path.Push(info);
+			{
+				if (info.Result != null)
+					readResult(info.Result, path);
+			}
+			path.Pop();
+		}
+
+		/// <summary>
+		/// Executes the given callback for each result in the given command tree.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="readResult"></param>
+		/// <param name="path"></param>
 		private static void ReadResultsRecursive(ApiPropertyInfo info, Action<ApiResult, Stack<IApiInfo>> readResult, Stack<IApiInfo> path)
 		{
 			if (info == null)
@@ -260,6 +288,12 @@ namespace ICD.Connect.API
 			type = instance == null ? type : instance.GetType();
 			bool handled = false;
 
+			foreach (ApiEventInfo eventInfo in info.GetEvents())
+			{
+				handled = true;
+				HandleRequest(eventInfo, type, instance);
+			}
+
 			foreach (ApiMethodInfo method in info.GetMethods())
 			{
 				handled = true;
@@ -291,6 +325,76 @@ namespace ICD.Connect.API
 			ApiClassInfo resultData = ApiClassAttribute.GetInfo(type, instance, 3);
 			info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
 			info.Result.SetValue(resultData);
+		}
+
+		/// <summary>
+		/// Interprets the incoming API request.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="type"></param>
+		/// <param name="instance"></param>
+		private static void HandleRequest(ApiEventInfo info, Type type, object instance)
+		{
+			type = instance == null ? type : instance.GetType();
+
+			EventInfo eventInfo = ApiEventAttribute.GetEvent(info, type);
+
+			// Couldn't find an ApiEventAttribute for the given info.
+			if (eventInfo == null)
+			{
+				info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.MissingMember };
+				info.Result.SetValue(string.Format("No event with name {0}.", StringUtils.ToRepresentation(info.Name)));
+				return;
+			}
+
+			switch (info.SubscribeAction)
+			{
+				case ApiEventInfo.eSubscribeAction.None:
+					// We're not doing anything with the event so return info.
+					ApiEventInfo resultInfo = ApiEventAttribute.GetInfo(eventInfo, instance, 3);
+					info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
+					info.Result.SetValue(resultInfo);
+					return;
+				
+				case ApiEventInfo.eSubscribeAction.Subscribe:
+					// Subscribe to the event
+					try
+					{
+						Delegate handler = ReflectionUtils.CreateDelegate(eventInfo.EventHandlerType, null, EventCallbackMethod);
+						eventInfo.AddEventHandler(instance, handler);
+					}
+					catch (Exception e)
+					{
+						info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
+						info.Result.SetValue(string.Format("Failed to subscribe to {0} - {1}", eventInfo.Name, e.Message));
+						return;
+					}
+
+					info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
+					return;
+				
+				case ApiEventInfo.eSubscribeAction.Unsubscribe:
+					// Unsubscribe from the event
+					try
+					{
+						// TODO - Build a lookup table
+						throw new NotImplementedException();
+						//Delegate handler = null;
+						//eventInfo.RemoveEventHandler(null, handler);
+					}
+					catch (Exception e)
+					{
+						info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
+						info.Result.SetValue(string.Format("Failed to unsubscribe from {0} - {1}", eventInfo.Name, e.Message));
+						return;
+					}
+
+					info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
+					return;
+
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		/// <summary>
@@ -571,12 +675,31 @@ namespace ICD.Connect.API
 
 		#endregion
 
-		#region API
+		#region Event Callbacks
 
-		[ApiMethod("SetLoggingSeverity", "Sets the severity level for the logging service.")]
-		private static void SetLoggingSeverity(eSeverity severity)
+		private static MethodInfo s_EventCallbackMethod;
+
+		/// <summary>
+		/// Gets a reference to the callback method used with API events.
+		/// </summary>
+		private static MethodInfo EventCallbackMethod
 		{
-			ServiceProvider.GetService<ILoggerService>().SeverityLevel = severity;
+			get
+			{
+				return s_EventCallbackMethod =
+				       s_EventCallbackMethod ?? typeof(ApiHandler)
+#if SIMPLSHARP
+					                                .GetCType()
+#endif
+					                                .GetMethod("EventCallback",
+					                                           BindingFlags.NonPublic | BindingFlags.Static);
+			}
+		}
+
+		[UsedImplicitly]
+		private static void EventCallback(object sender, EventArgs args)
+		{
+			IcdConsole.PrintLine(eConsoleColor.Magenta, "API event raised");
 		}
 
 		#endregion
