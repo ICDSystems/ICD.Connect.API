@@ -70,6 +70,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attributes\ApiEventAttribute.cs" />
+    <Compile Include="EventArguments\AbstractApiEventArgs.cs" />
+    <Compile Include="EventArguments\AbstractGenericApiEventArgs.cs" />
+    <Compile Include="EventArguments\GenericApiEventArgs.cs" />
+    <Compile Include="EventArguments\IApiEventArgs.cs" />
     <Compile Include="Info\ApiEventInfo.cs" />
     <Compile Include="Info\Converters\ApiEventInfoConverter.cs" />
     <Compile Include="Proxies\AbstractProxy.cs" />
