@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API
@@ -58,6 +59,16 @@ namespace ICD.Connect.API
 				builder.AddParameter(param);
 
 			return builder.Complete();
+		}
+
+		/// <summary>
+		/// Builds a new command containing only the items in the given stack.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		public static ApiClassInfo CommandFromPath(Stack<IApiInfo> path)
+		{
+			return null;
 		}
 
 		#endregion

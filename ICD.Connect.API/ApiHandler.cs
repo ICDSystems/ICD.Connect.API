@@ -385,12 +385,12 @@ namespace ICD.Connect.API
 
 					case ApiEventInfo.eSubscribeAction.Subscribe:
 						// Subscribe to the event
-						info.Result = Subscribe(eventInfo, instance);
+						info.Result = Subscribe(eventInfo, instance, path);
 						return;
 
 					case ApiEventInfo.eSubscribeAction.Unsubscribe:
 						// Unsubscribe from the event
-						info.Result = Unsubscribe(eventInfo, instance);
+						info.Result = Unsubscribe(eventInfo, instance, path);
 						return;
 
 					default:
@@ -731,12 +731,29 @@ namespace ICD.Connect.API
 
 		#region Event Callbacks
 
-		private static ApiResult Subscribe(EventInfo eventInfo, object instance)
+		private static ApiResult Subscribe(EventInfo eventInfo, object instance, Stack<IApiInfo> path)
 		{
+			if (eventInfo == null)
+				throw new ArgumentNullException("eventInfo");
+
+			if (instance == null)
+				throw new ArgumentNullException("instance");
+
+			if (path == null)
+				throw new ArgumentNullException("path");
+
 			try
 			{
 				Delegate handler = ReflectionUtils.CreateDelegate(eventInfo.EventHandlerType, null, EventCallbackMethod);
 				eventInfo.AddEventHandler(instance, handler);
+
+				if (!s_SubscribedEventsMap.ContainsKey(instance))
+					s_SubscribedEventsMap.Add(instance, new Dictionary<string, ApiClassInfo>());
+
+				ApiClassInfo command = ApiCommandBuilder.CommandFromPath(path);
+
+				s_SubscribedEventsMap[instance].Add(eventInfo.Name, command);
+
 			}
 			catch (Exception e)
 			{
@@ -748,7 +765,7 @@ namespace ICD.Connect.API
 			return new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
 		}
 
-		private static ApiResult Unsubscribe(EventInfo eventInfo, object instance)
+		private static ApiResult Unsubscribe(EventInfo eventInfo, object instance, Stack<IApiInfo> path)
 		{
 			try
 			{
@@ -781,7 +798,15 @@ namespace ICD.Connect.API
 			if (args == null)
 				throw new ArgumentNullException("args");
 
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "API event raised - {0}", args);
+			Dictionary<string, ApiClassInfo> map;
+			if (!s_SubscribedEventsMap.TryGetValue(sender, out map))
+				return;
+
+			ApiClassInfo command;
+			if (!map.TryGetValue(args.EventName, out command))
+				return;
+
+			IcdConsole.PrintLine(eConsoleColor.Magenta, "API event raised - {0} - {1}", args, command);
 		}
 
 		#endregion
