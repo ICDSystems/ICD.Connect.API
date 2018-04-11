@@ -31,7 +31,7 @@ namespace ICD.Connect.API.Info.Converters
 			if (value.NodeCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_NODES);
-				serializer.SerializeDictionary(writer, value.GetNodes().OrderByKey());
+				serializer.SerializeArray(writer, value.GetNodes());
 			}
 		}
 
@@ -48,7 +48,7 @@ namespace ICD.Connect.API.Info.Converters
 			switch (property)
 			{
 				case PROPERTY_NODES:
-					IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodes = serializer.DeserializeDictionary<uint, ApiClassInfo>(reader);
+					IEnumerable<ApiNodeGroupKeyInfo> nodes = serializer.DeserializeArray<ApiNodeGroupKeyInfo>(reader);
 					instance.SetNodes(nodes);
 					break;
 			}

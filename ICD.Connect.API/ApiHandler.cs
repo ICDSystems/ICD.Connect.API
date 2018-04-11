@@ -265,8 +265,36 @@ namespace ICD.Connect.API
 				if (info.Result != null)
 					readResult(info.Result, path);
 
-				foreach (KeyValuePair<uint, ApiClassInfo> item in info.GetNodes().Where(kvp => kvp.Value != null))
-					ReadResultsRecursive(item.Value, readResult, path);
+				foreach (ApiNodeGroupKeyInfo node in info.GetNodes())
+					ReadResultsRecursive(node, readResult, path);
+			}
+			path.Pop();
+		}
+
+		/// <summary>
+		/// Executes the given callback for each result in the given command tree.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="readResult"></param>
+		/// <param name="path"></param>
+		private static void ReadResultsRecursive(ApiNodeGroupKeyInfo info, Action<ApiResult, Stack<IApiInfo>> readResult, Stack<IApiInfo> path)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			if (readResult == null)
+				throw new ArgumentNullException("readResult");
+
+			if (path == null)
+				throw new ArgumentNullException("path");
+
+			path.Push(info);
+			{
+				if (info.Result != null)
+					readResult(info.Result, path);
+
+				if (info.Node != null)
+					ReadResultsRecursive(info.Node, readResult, path);
 			}
 			path.Pop();
 		}
@@ -494,23 +522,23 @@ namespace ICD.Connect.API
 
 				bool handled = false;
 
-				foreach (KeyValuePair<uint, ApiClassInfo> kvp in nodeGroup)
+				foreach (ApiNodeGroupKeyInfo node in nodeGroup)
 				{
 					handled = true;
 
-					ApiClassInfo classInfo = kvp.Value;
+					ApiClassInfo classInfo = node.Node;
 
 					// The key for the group is invalid
-					if (!group.ContainsKey(kvp.Key))
+					if (!group.ContainsKey(node.Key))
 					{
 						classInfo.ClearChildren();
 						classInfo.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.MissingNode };
 						classInfo.Result.SetValue(string.Format("The node group at property {0} does not contain a key at {1}.",
-																StringUtils.ToRepresentation(nodeGroup.Name), kvp.Key));
+																StringUtils.ToRepresentation(nodeGroup.Name), node.Key));
 						continue;
 					}
 
-					object classInstance = group[kvp.Key];
+					object classInstance = group[node.Key];
 
 					// The instance at the given key is null
 					if (classInstance == null)
@@ -518,7 +546,7 @@ namespace ICD.Connect.API
 						classInfo.ClearChildren();
 						classInfo.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.MissingNode };
 						classInfo.Result.SetValue(string.Format("The node group at property {0} key {1} is null.",
-																StringUtils.ToRepresentation(nodeGroup.Name), kvp.Key));
+																StringUtils.ToRepresentation(nodeGroup.Name), node.Key));
 						continue;
 					}
 

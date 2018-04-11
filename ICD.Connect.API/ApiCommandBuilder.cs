@@ -144,7 +144,7 @@ namespace ICD.Connect.API
 				throw new ArgumentNullException("value");
 
 			m_CurrentClass = value;
-			m_CurrentNodeGroup.AddNode(key, m_CurrentClass);
+			m_CurrentNodeGroup.AddNode(key, ApiNodeGroupKeyInfo.FromClassInfo(key, value));
 
 			m_CurrentNodeGroup = null;
 

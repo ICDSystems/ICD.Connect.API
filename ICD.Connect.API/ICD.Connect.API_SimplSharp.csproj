@@ -75,7 +75,9 @@
     <Compile Include="EventArguments\GenericApiEventArgs.cs" />
     <Compile Include="EventArguments\IApiEventArgs.cs" />
     <Compile Include="Info\ApiEventInfo.cs" />
+    <Compile Include="Info\ApiNodeGroupKeyInfo.cs" />
     <Compile Include="Info\Converters\ApiEventInfoConverter.cs" />
+    <Compile Include="Info\Converters\ApiNodeGroupKeyInfoConverter.cs" />
     <Compile Include="Proxies\AbstractProxy.cs" />
     <Compile Include="ApiClassInfoEventArgs.cs" />
     <Compile Include="ApiCommandBuilder.cs" />

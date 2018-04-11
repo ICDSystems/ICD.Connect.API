@@ -17,10 +17,10 @@ using ICD.Connect.API.Attributes;
 namespace ICD.Connect.API.Info
 {
 	[JsonConverter(typeof(ApiNodeGroupInfoConverter))]
-	public sealed class ApiNodeGroupInfo : AbstractApiInfo, IEnumerable<KeyValuePair<uint, ApiClassInfo>>
+	public sealed class ApiNodeGroupInfo : AbstractApiInfo, IEnumerable<ApiNodeGroupKeyInfo>
 	{
 		[CanBeNull]
-		private Dictionary<uint, ApiClassInfo> m_Nodes;
+		private Dictionary<uint, ApiNodeGroupKeyInfo> m_Nodes;
 
 		public int NodeCount { get { return m_Nodes == null ? 0 : m_Nodes.Count; } }
 
@@ -69,7 +69,7 @@ namespace ICD.Connect.API.Info
 			if (property == null)
 				return;
 
-			IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodes = GetNodes(property, instance, depth - 1);
+			IEnumerable<ApiNodeGroupKeyInfo> nodes = GetNodes(property, instance, depth - 1);
 			SetNodes(nodes);
 		}
 
@@ -81,8 +81,7 @@ namespace ICD.Connect.API.Info
 		{
 			ApiNodeGroupInfo output = new ApiNodeGroupInfo();
 
-			IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodesCopy =
-				GetNodes().Select(kvp => new KeyValuePair<uint, ApiClassInfo>(kvp.Key, kvp.Value.DeepCopy()));
+			IEnumerable<ApiNodeGroupKeyInfo> nodesCopy = GetNodes().Select(node => node.DeepCopy());
 
 			output.SetNodes(nodesCopy);
 
@@ -95,7 +94,7 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		public void ClearNodes()
 		{
-			SetNodes(Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>());
+			SetNodes(Enumerable.Empty<ApiNodeGroupKeyInfo>());
 		}
 
 		/// <summary>
@@ -106,7 +105,7 @@ namespace ICD.Connect.API.Info
 		/// <param name="depth"></param>
 		/// <returns></returns>
 		[CanBeNull]
-		private static IEnumerable<KeyValuePair<uint, ApiClassInfo>> GetNodes(PropertyInfo property, object instance, int depth)
+		private static IEnumerable<ApiNodeGroupKeyInfo> GetNodes(PropertyInfo property, object instance, int depth)
 		{
 			if (instance == null)
 				yield break;
@@ -123,16 +122,14 @@ namespace ICD.Connect.API.Info
 
 			foreach (KeyValuePair<uint, object> kvp in nodeGroup.GetKeyedNodes())
 			{
-				uint key = kvp.Key;
-
 				object value = kvp.Value;
 				if (value == null)
 					continue;
 
 				Type type = value.GetType();
-				ApiClassInfo info = ApiClassAttribute.GetInfo(type, value, depth - 1);
 
-				yield return new KeyValuePair<uint, ApiClassInfo>(key, info);
+				ApiClassInfo classInfo = ApiClassAttribute.GetInfo(type, value, depth - 1);
+				yield return ApiNodeGroupKeyInfo.FromClassInfo(kvp.Key, classInfo);
 			}
 		}
 
@@ -140,23 +137,23 @@ namespace ICD.Connect.API.Info
 		/// Gets the nodes from this group.
 		/// </summary>
 		/// <returns></returns>
-		public IEnumerable<KeyValuePair<uint, ApiClassInfo>> GetNodes()
+		public IEnumerable<ApiNodeGroupKeyInfo> GetNodes()
 		{
-			return m_Nodes == null ? Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>() : m_Nodes.ToArray(m_Nodes.Count);
+			return m_Nodes == null ? Enumerable.Empty<ApiNodeGroupKeyInfo>() : m_Nodes.Values.ToArray(m_Nodes.Count);
 		}
 
 		/// <summary>
 		/// Sets the nodes for this group.
 		/// </summary>
 		/// <param name="nodes"></param>
-		public void SetNodes(IEnumerable<KeyValuePair<uint, ApiClassInfo>> nodes)
+		public void SetNodes(IEnumerable<ApiNodeGroupKeyInfo> nodes)
 		{
 			if (nodes == null)
 				throw new ArgumentNullException("nodes");
 
 			m_Nodes = null;
-			foreach (KeyValuePair<uint, ApiClassInfo> kvp in nodes)
-				AddNode(kvp.Key, kvp.Value);
+			foreach (ApiNodeGroupKeyInfo node in nodes)
+				AddNode(node.Key, node);
 		}
 
 		/// <summary>
@@ -164,13 +161,13 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="node"></param>
-		public void AddNode(uint key, ApiClassInfo node)
+		public void AddNode(uint key, ApiNodeGroupKeyInfo node)
 		{
 			if (node == null)
 				throw new ArgumentNullException("node");
 
 			if (m_Nodes == null)
-				m_Nodes = new Dictionary<uint, ApiClassInfo> {{key, node}};
+				m_Nodes = new Dictionary<uint, ApiNodeGroupKeyInfo> { { key, node } };
 			else
 				m_Nodes.Add(key, node);
 		}
@@ -185,11 +182,9 @@ namespace ICD.Connect.API.Info
 			return m_Nodes != null && m_Nodes.Remove(key);
 		}
 
-		public IEnumerator<KeyValuePair<uint, ApiClassInfo>> GetEnumerator()
+		public IEnumerator<ApiNodeGroupKeyInfo> GetEnumerator()
 		{
-			return m_Nodes == null
-				       ? Enumerable.Empty<KeyValuePair<uint, ApiClassInfo>>().GetEnumerator()
-				       : m_Nodes.GetEnumerator();
+			return GetNodes().GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
