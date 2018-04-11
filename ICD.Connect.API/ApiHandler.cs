@@ -775,6 +775,12 @@ namespace ICD.Connect.API
 		[UsedImplicitly]
 		private static void EventCallback(object sender, IApiEventArgs args)
 		{
+			if (sender == null)
+				throw new ArgumentNullException("sender");
+
+			if (args == null)
+				throw new ArgumentNullException("args");
+
 			IcdConsole.PrintLine(eConsoleColor.Magenta, "API event raised - {0}", args);
 		}
 
