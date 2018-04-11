@@ -25,6 +25,11 @@ namespace ICD.Connect.API
 	[ApiClass("ICD", "Entry point for the Connect API.")]
 	public static class ApiHandler
 	{
+		/// <summary>
+		/// Raised when a subscribed API event is fired.
+		/// </summary>
+		public static event EventHandler<ApiHandlerFeedbackEventArgs> OnFeedback; 
+
 		[ApiNode("ControlSystem", "")]
 		public static object ControlSystem { get; set; }
 
@@ -847,6 +852,8 @@ namespace ICD.Connect.API
 			args.BuildResult(sender, copy.Event.Result);
 
 			IcdConsole.PrintLine(eConsoleColor.Magenta, "API event raised - {0} - {1}", args, JsonUtils.Format(copy.Command));
+			
+			OnFeedback.Raise(null, new ApiHandlerFeedbackEventArgs(copy.Command));
 		}
 
 		#endregion
