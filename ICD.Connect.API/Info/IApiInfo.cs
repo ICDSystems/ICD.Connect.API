@@ -16,5 +16,17 @@ namespace ICD.Connect.API.Info
 		/// Gets/sets the response message for this request.
 		/// </summary>
 		ApiResult Result { get; set; }
+
+		/// <summary>
+		/// Creates a copy of the instance containing none of the child nodes.
+		/// </summary>
+		/// <returns></returns>
+		IApiInfo ShallowCopy();
+
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		void AddChild(IApiInfo child);
 	}
 }

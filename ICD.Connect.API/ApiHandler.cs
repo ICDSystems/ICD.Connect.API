@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
+using ICD.Common.Utils.Json;
 using ICD.Connect.API.EventArguments;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -26,7 +28,7 @@ namespace ICD.Connect.API
 		[ApiNode("ControlSystem", "")]
 		public static object ControlSystem { get; set; }
 
-		private static readonly Dictionary<object, Dictionary<string, ApiClassInfo>> s_SubscribedEventsMap;
+		private static readonly WeakKeyDictionary<object, Dictionary<string, ApiHandlerEventCallbackInfo>> s_SubscribedEventsMap;
 		private static MethodInfo s_EventCallbackMethod;
 
 		/// <summary>
@@ -51,7 +53,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		static ApiHandler()
 		{
-			s_SubscribedEventsMap = new Dictionary<object, Dictionary<string, ApiClassInfo>>();
+			s_SubscribedEventsMap = new WeakKeyDictionary<object, Dictionary<string, ApiHandlerEventCallbackInfo>>();
 		}
 
 		#region Read Results
@@ -526,15 +528,13 @@ namespace ICD.Connect.API
 				{
 					handled = true;
 
-					ApiClassInfo classInfo = node.Node;
-
 					// The key for the group is invalid
 					if (!group.ContainsKey(node.Key))
 					{
-						classInfo.ClearChildren();
-						classInfo.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.MissingNode };
-						classInfo.Result.SetValue(string.Format("The node group at property {0} does not contain a key at {1}.",
-																StringUtils.ToRepresentation(nodeGroup.Name), node.Key));
+						node.Node = null;
+						node.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingNode};
+						node.Result.SetValue(string.Format("The node group at property {0} does not contain a key at {1}.",
+						                                   StringUtils.ToRepresentation(nodeGroup.Name), node.Key));
 						continue;
 					}
 
@@ -543,16 +543,25 @@ namespace ICD.Connect.API
 					// The instance at the given key is null
 					if (classInstance == null)
 					{
-						classInfo.ClearChildren();
-						classInfo.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.MissingNode };
-						classInfo.Result.SetValue(string.Format("The node group at property {0} key {1} is null.",
-																StringUtils.ToRepresentation(nodeGroup.Name), node.Key));
+						node.Node = null;
+						node.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingNode};
+						node.Result.SetValue(string.Format("The node group at property {0} key {1} is null.",
+						                                   StringUtils.ToRepresentation(nodeGroup.Name), node.Key));
 						continue;
 					}
 
 					Type classType = classInstance.GetType();
 
-					HandleRequest(classInfo, classType, classInstance, path);
+					path.Push(node);
+
+					try
+					{
+						HandleRequest(node.Node, classType, classInstance, path);
+					}
+					finally
+					{
+						path.Pop();
+					}
 				}
 
 				if (handled)
@@ -776,12 +785,10 @@ namespace ICD.Connect.API
 				eventInfo.AddEventHandler(instance, handler);
 
 				if (!s_SubscribedEventsMap.ContainsKey(instance))
-					s_SubscribedEventsMap.Add(instance, new Dictionary<string, ApiClassInfo>());
+					s_SubscribedEventsMap.Add(instance, new Dictionary<string, ApiHandlerEventCallbackInfo>());
 
-				ApiClassInfo command = ApiCommandBuilder.CommandFromPath(path);
-
-				s_SubscribedEventsMap[instance].Add(eventInfo.Name, command);
-
+				ApiHandlerEventCallbackInfo callbackInfo = ApiHandlerEventCallbackInfo.FromPath(path);
+				s_SubscribedEventsMap[instance].Add(eventInfo.Name, callbackInfo);
 			}
 			catch (Exception e)
 			{
@@ -826,15 +833,20 @@ namespace ICD.Connect.API
 			if (args == null)
 				throw new ArgumentNullException("args");
 
-			Dictionary<string, ApiClassInfo> map;
+			Dictionary<string, ApiHandlerEventCallbackInfo> map;
 			if (!s_SubscribedEventsMap.TryGetValue(sender, out map))
 				return;
 
-			ApiClassInfo command;
-			if (!map.TryGetValue(args.EventName, out command))
+			ApiHandlerEventCallbackInfo callbackInfo;
+			if (!map.TryGetValue(args.EventName, out callbackInfo))
 				return;
 
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "API event raised - {0} - {1}", args, command);
+			// Create a copy and build the result
+			ApiHandlerEventCallbackInfo copy = callbackInfo.DeepCopy();
+			copy.Event.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
+			args.BuildResult(sender, copy.Event.Result);
+
+			IcdConsole.PrintLine(eConsoleColor.Magenta, "API event raised - {0} - {1}", args, JsonUtils.Format(copy.Command));
 		}
 
 		#endregion

@@ -74,22 +74,6 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
-		/// Creates a recursive copy of the API info.
-		/// </summary>
-		/// <returns></returns>
-		public ApiNodeGroupInfo DeepCopy()
-		{
-			ApiNodeGroupInfo output = new ApiNodeGroupInfo();
-
-			IEnumerable<ApiNodeGroupKeyInfo> nodesCopy = GetNodes().Select(node => node.DeepCopy());
-
-			output.SetNodes(nodesCopy);
-
-			DeepCopy(output);
-			return output;
-		}
-
-		/// <summary>
 		/// Removes all of the nodes.
 		/// </summary>
 		public void ClearNodes()
@@ -153,7 +137,7 @@ namespace ICD.Connect.API.Info
 
 			m_Nodes = null;
 			foreach (ApiNodeGroupKeyInfo node in nodes)
-				AddNode(node.Key, node);
+				AddNode(node);
 		}
 
 		/// <summary>
@@ -161,15 +145,15 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="key"></param>
 		/// <param name="node"></param>
-		public void AddNode(uint key, ApiNodeGroupKeyInfo node)
+		public void AddNode(ApiNodeGroupKeyInfo node)
 		{
 			if (node == null)
 				throw new ArgumentNullException("node");
 
 			if (m_Nodes == null)
-				m_Nodes = new Dictionary<uint, ApiNodeGroupKeyInfo> { { key, node } };
+				m_Nodes = new Dictionary<uint, ApiNodeGroupKeyInfo> { { node.Key, node } };
 			else
-				m_Nodes.Add(key, node);
+				m_Nodes.Add(node.Key, node);
 		}
 
 		/// <summary>
@@ -190,6 +174,21 @@ namespace ICD.Connect.API.Info
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return GetEnumerator();
+		}
+
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		protected override void AddChild(IApiInfo child)
+		{
+			if (child == null)
+				throw new ArgumentNullException("child");
+
+			if (child is ApiNodeGroupKeyInfo)
+				AddNode(child as ApiNodeGroupKeyInfo);
+			else
+				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
 		}
 	}
 }

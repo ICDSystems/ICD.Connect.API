@@ -131,53 +131,6 @@ namespace ICD.Connect.API.Info
 
 		#region Methods
 
-		/// <summary>
-		/// Clears methods, properties, nodes etc while leaving the name and help intact.
-		/// </summary>
-		public void ClearChildren()
-		{
-			ClearMethods();
-			ClearProperties();
-			ClearNodes();
-			ClearNodeGroups();
-		}
-
-		/// <summary>
-		/// Creates a recursive copy of the API info.
-		/// </summary>
-		/// <returns></returns>
-		public ApiClassInfo DeepCopy()
-		{
-			ApiClassInfo output = new ApiClassInfo();
-			output.Update(this);
-			return output;
-		}
-
-		/// <summary>
-		/// Copies the values from the other instance.
-		/// </summary>
-		/// <param name="info"></param>
-		public void Update(ApiClassInfo info)
-		{
-			if (info == null)
-				throw new ArgumentNullException("info");
-
-			if (info.m_ProxyTypes != null)
-				SetProxyTypes(info.m_ProxyTypes);
-
-			if (info.m_Methods != null)
-				SetMethods(info.m_Methods.Values.Select(m => m.DeepCopy()));
-
-			if (info.m_Properties != null)
-				SetProperties(info.m_Properties.Values.Select(p => p.DeepCopy()));
-
-			if (info.m_Nodes != null)
-				SetNodes(info.m_Nodes.Values.Select(n => n.DeepCopy()));
-
-			if (info.m_NodeGroups != null)
-				SetNodeGroups(info.m_NodeGroups.Values.Select(n => n.DeepCopy()));
-		}
-
 		#region ProxyTypes
 
 		/// <summary>
@@ -546,6 +499,29 @@ namespace ICD.Connect.API.Info
 		#endregion
 
 		#region Private Methods
+
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		protected override void AddChild(IApiInfo child)
+		{
+			if (child == null)
+				throw new ArgumentNullException("child");
+
+			if (child is ApiEventInfo)
+				AddEvent(child as ApiEventInfo);
+			else if (child is ApiMethodInfo)
+				AddMethod(child as ApiMethodInfo);
+			else if (child is ApiPropertyInfo)
+				AddProperty(child as ApiPropertyInfo);
+			else if (child is ApiNodeInfo)
+				AddNode(child as ApiNodeInfo);
+			else if (child is ApiNodeGroupInfo)
+				AddNodeGroup(child as ApiNodeGroupInfo);
+			else
+				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
+		}
 
 		private IEnumerable<Type> GetProxyTypes(Type type)
 		{

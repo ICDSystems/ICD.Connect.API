@@ -79,20 +79,6 @@ namespace ICD.Connect.API.Info
 		#region Methods
 
 		/// <summary>
-		/// Creates a recursive copy of the API info.
-		/// </summary>
-		/// <returns></returns>
-		public ApiMethodInfo DeepCopy()
-		{
-			ApiMethodInfo output = new ApiMethodInfo();
-			DeepCopy(output);
-
-			output.SetParameters(GetParameters().Select(p => p.DeepCopy()));
-
-			return output;
-		}
-
-		/// <summary>
 		/// Clears the parameters for the method.
 		/// </summary>
 		public void ClearParameters()
@@ -144,7 +130,37 @@ namespace ICD.Connect.API.Info
 
 		#region Private Methods
 
-		private IEnumerable<ApiParameterInfo> GetParameterInfo(MethodInfo method, object instance, int depth)
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		protected override void AddChild(IApiInfo child)
+		{
+			if (child == null)
+				throw new ArgumentNullException("child");
+
+			if (child is ApiParameterInfo)
+				AddParameter(child as ApiParameterInfo);
+			else
+				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
+		}
+
+		/// <summary>
+		/// Copies the current state onto the given instance.
+		/// </summary>
+		/// <param name="info"></param>
+		protected override void ShallowCopy(IApiInfo info)
+		{
+			base.ShallowCopy(info);
+
+			ApiMethodInfo apiMethodInfo = info as ApiMethodInfo;
+			if (apiMethodInfo == null)
+				throw new ArgumentException("info");
+
+			apiMethodInfo.Execute = Execute;
+		}
+
+		private static IEnumerable<ApiParameterInfo> GetParameterInfo(MethodInfo method, object instance, int depth)
 		{
 			if (method == null)
 				yield break;

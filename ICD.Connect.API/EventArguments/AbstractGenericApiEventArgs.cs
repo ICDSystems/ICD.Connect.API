@@ -1,5 +1,7 @@
-﻿using ICD.Common.Utils;
+﻿using System;
+using ICD.Common.Utils;
 using ICD.Common.Utils.EventArguments;
+using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.EventArguments
 {
@@ -21,6 +23,18 @@ namespace ICD.Connect.API.EventArguments
 			: base(eventName)
 		{
 			m_Data = data;
+		}
+
+		/// <summary>
+		/// Builds an API result for the args.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="result"></param>
+		/// <returns></returns>
+		public override void BuildResult(object sender, ApiResult result)
+		{
+			Type type = Data == null ? typeof(T) : Data.GetType();
+			result.SetValue(type, Data);
 		}
 
 		/// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API
@@ -62,13 +63,32 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
-		/// Builds a new command containing only the items in the given stack.
+		/// Performs a copy of the given sequence of items, excluding anything outside of the path.
 		/// </summary>
 		/// <param name="path"></param>
+		/// <param name="root"></param>
+		/// <param name="leaf"></param>
 		/// <returns></returns>
-		public static ApiClassInfo CommandFromPath(Stack<IApiInfo> path)
+		public static IEnumerable<IApiInfo> CopyPath(IEnumerable<IApiInfo> path, out ApiClassInfo root, out IApiInfo leaf)
 		{
-			return null;
+			if (path == null)
+				throw new ArgumentNullException("path");
+
+			IApiInfo[] shallowCopy = path.Select(i => i.ShallowCopy()).ToArray();
+
+			root = shallowCopy.FirstOrDefault() as ApiClassInfo;
+			if (root == null)
+				throw new ArgumentException("First item must be an ApiClassInfo", "path");
+
+			leaf = shallowCopy[shallowCopy.Length - 1];
+
+			shallowCopy.Aggregate((a, b) =>
+			                      {
+				                      a.AddChild(b);
+				                      return b;
+			                      });
+
+			return shallowCopy;
 		}
 
 		#endregion
@@ -144,7 +164,7 @@ namespace ICD.Connect.API
 				throw new ArgumentNullException("value");
 
 			m_CurrentClass = value;
-			m_CurrentNodeGroup.AddNode(key, ApiNodeGroupKeyInfo.FromClassInfo(key, value));
+			m_CurrentNodeGroup.AddNode(ApiNodeGroupKeyInfo.FromClassInfo(key, value));
 
 			m_CurrentNodeGroup = null;
 

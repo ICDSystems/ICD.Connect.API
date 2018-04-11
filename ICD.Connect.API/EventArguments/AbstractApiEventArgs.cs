@@ -1,5 +1,6 @@
 ﻿using System;
 using ICD.Common.Utils;
+using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API.EventArguments
 {
@@ -20,6 +21,14 @@ namespace ICD.Connect.API.EventArguments
 		{
 			m_EventName = eventName;
 		}
+
+		/// <summary>
+		/// Builds an API result for the args.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="result"></param>
+		/// <returns></returns>
+		public abstract void BuildResult(object sender, ApiResult result);
 
 		/// <summary>
 		/// Get the string representation for this instance.

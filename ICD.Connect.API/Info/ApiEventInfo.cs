@@ -1,4 +1,5 @@
-﻿using ICD.Connect.API.Attributes;
+﻿using System;
+using ICD.Connect.API.Attributes;
 using ICD.Connect.API.Info.Converters;
 using Newtonsoft.Json;
 #if SIMPLSHARP
@@ -63,6 +64,33 @@ namespace ICD.Connect.API.Info
 		public ApiEventInfo(ApiEventAttribute attribute, EventInfo eventInfo, object instance, int depth)
 			: base(attribute)
 		{
+		}
+
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		protected override void AddChild(IApiInfo child)
+		{
+			if (child == null)
+				throw new ArgumentNullException("child");
+
+			throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
+		}
+
+		/// <summary>
+		/// Copies the current state onto the given instance.
+		/// </summary>
+		/// <param name="info"></param>
+		protected override void ShallowCopy(IApiInfo info)
+		{
+			base.ShallowCopy(info);
+
+			ApiEventInfo apiEventInfo = info as ApiEventInfo;
+			if (apiEventInfo == null)
+				throw new ArgumentException("info");
+
+			apiEventInfo.SubscribeAction = SubscribeAction;
 		}
 	}
 }

@@ -71,22 +71,6 @@ namespace ICD.Connect.API.Info
 		#region Methods
 
 		/// <summary>
-		/// Creates a recursive copy of the API info.
-		/// </summary>
-		/// <returns></returns>
-		public ApiParameterInfo DeepCopy()
-		{
-			ApiParameterInfo output = new ApiParameterInfo
-			{
-				Type = Type,
-				Value = Value
-			};
-
-			DeepCopy(output);
-			return output;
-		}
-
-		/// <summary>
 		/// Sets the value and type.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
@@ -110,5 +94,33 @@ namespace ICD.Connect.API.Info
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		protected override void AddChild(IApiInfo child)
+		{
+			if (child == null)
+				throw new ArgumentNullException("child");
+
+			throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
+		}
+
+		/// <summary>
+		/// Copies the current state onto the given instance.
+		/// </summary>
+		/// <param name="info"></param>
+		protected override void ShallowCopy(IApiInfo info)
+		{
+			base.ShallowCopy(info);
+
+			ApiParameterInfo apiParameterInfo = info as ApiParameterInfo;
+			if (apiParameterInfo == null)
+				throw new ArgumentException("info");
+
+			apiParameterInfo.Type = Type;
+			apiParameterInfo.Value = Value;
+		}
 	}
 }

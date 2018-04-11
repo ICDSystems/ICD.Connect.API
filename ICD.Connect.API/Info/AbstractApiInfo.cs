@@ -1,4 +1,5 @@
-﻿using ICD.Common.Utils;
+﻿using System;
+using ICD.Common.Utils;
 using ICD.Connect.API.Attributes;
 
 namespace ICD.Connect.API.Info
@@ -31,17 +32,6 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
-		/// Creates a recursive copy of the API info.
-		/// </summary>
-		/// <returns></returns>
-		protected void DeepCopy(IApiInfo info)
-		{
-			info.Name = Name;
-			info.Help = Help;
-			info.Result = Result == null ? null : Result.DeepCopy();
-		}
-
-		/// <summary>
 		/// Gets the string representation for this instance.
 		/// </summary>
 		/// <returns></returns>
@@ -52,6 +42,54 @@ namespace ICD.Connect.API.Info
 			builder.AppendProperty("Name", Name);
 
 			return builder.ToString();
+		}
+
+		/// <summary>
+		/// Creates a copy of the instance containing none of the child nodes.
+		/// </summary>
+		/// <returns></returns>
+		public IApiInfo ShallowCopy()
+		{
+			AbstractApiInfo instance = Instantiate();
+			ShallowCopy(instance);
+			return instance;
+		}
+
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		void IApiInfo.AddChild(IApiInfo child)
+		{
+			AddChild(child);
+		}
+
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		protected abstract void AddChild(IApiInfo child);
+
+		/// <summary>
+		/// Copies the current state onto the given instance.
+		/// </summary>
+		/// <param name="info"></param>
+		protected virtual void ShallowCopy(IApiInfo info)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			info.Name = Name;
+			info.Help = Help;
+		}
+
+		/// <summary>
+		/// Creates a new instance of the current type.
+		/// </summary>
+		/// <returns></returns>
+		private AbstractApiInfo Instantiate()
+		{
+			return ReflectionUtils.CreateInstance(GetType()) as AbstractApiInfo;
 		}
 	}
 }

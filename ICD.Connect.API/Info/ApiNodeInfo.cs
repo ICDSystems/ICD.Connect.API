@@ -1,4 +1,5 @@
-﻿using ICD.Common.Properties;
+﻿using System;
+using ICD.Common.Properties;
 using Newtonsoft.Json;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -64,21 +65,6 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
-		/// Creates a recursive copy of the API info.
-		/// </summary>
-		/// <returns></returns>
-		public ApiNodeInfo DeepCopy()
-		{
-			ApiNodeInfo output = new ApiNodeInfo
-			{
-				Node = Node == null ? null : Node.DeepCopy()
-			};
-
-			DeepCopy(output);
-			return output;
-		}
-
-		/// <summary>
 		/// Gets the class info for the given properties value.
 		/// </summary>
 		/// <param name="property"></param>
@@ -98,6 +84,21 @@ namespace ICD.Connect.API.Info
 				return null;
 
 			return ApiClassAttribute.GetInfo(property.PropertyType, property.GetValue(instance, new object[0]), depth - 1);
+		}
+
+		/// <summary>
+		/// Adds the given item as an immediate child to this node.
+		/// </summary>
+		/// <param name="child"></param>
+		protected override void AddChild(IApiInfo child)
+		{
+			if (child == null)
+				throw new ArgumentNullException("child");
+
+			if (child is ApiClassInfo)
+				Node = child as ApiClassInfo;
+			else
+				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
 		}
 	}
 }
