@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
-using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Json;
-using ICD.Connect.API.EventArguments;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -15,7 +11,6 @@ using System.Reflection;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.API.Info;
 using ICD.Connect.API.Nodes;
-using Newtonsoft.Json;
 
 namespace ICD.Connect.API
 {
@@ -25,55 +20,20 @@ namespace ICD.Connect.API
 	[ApiClass("ICD", "Entry point for the Connect API.")]
 	public static class ApiHandler
 	{
-		/// <summary>
-		/// Raised when a subscribed API event is fired.
-		/// </summary>
-		public static event EventHandler<ApiHandlerFeedbackEventArgs> OnFeedback; 
+		private static readonly ApiFeedbackCache s_FeedbackCache;
 
 		[ApiNode("ControlSystem", "")]
 		public static object ControlSystem { get; set; }
-
-		private static readonly WeakKeyDictionary<object, Dictionary<string, ApiHandlerEventCallbackInfo>> s_SubscribedEventsMap;
-		private static MethodInfo s_EventCallbackMethod;
-
-		/// <summary>
-		/// Gets a reference to the callback method used with API events.
-		/// </summary>
-		private static MethodInfo EventCallbackMethod
-		{
-			get
-			{
-				return s_EventCallbackMethod =
-				       s_EventCallbackMethod ?? typeof(ApiHandler)
-#if SIMPLSHARP
-					                                .GetCType()
-#endif
-					                                .GetMethod("EventCallback",
-					                                           BindingFlags.NonPublic | BindingFlags.Static);
-			}
-		}
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		static ApiHandler()
 		{
-			s_SubscribedEventsMap = new WeakKeyDictionary<object, Dictionary<string, ApiHandlerEventCallbackInfo>>();
+			s_FeedbackCache = new ApiFeedbackCache();
 		}
 
 		#region Handle Requests
-
-		/// <summary>
-		/// Interprets the incoming API request.
-		/// </summary>
-		/// <param name="serialized"></param>
-		/// <returns></returns>
-		public static ApiClassInfo HandleRequest(string serialized)
-		{
-			ApiClassInfo info = JsonConvert.DeserializeObject<ApiClassInfo>(serialized);
-			HandleRequest(info);
-			return info;
-		}
 
 		/// <summary>
 		/// Interprets the incoming API request.
@@ -84,17 +44,31 @@ namespace ICD.Connect.API
 			if (info == null)
 				throw new ArgumentNullException("info");
 
-			HandleRequest(info, typeof(ApiHandler), null, new Stack<IApiInfo>());
+			HandleRequest(null, info);
 		}
 
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
+		/// <param name="requestor"></param>
+		/// <param name="info"></param>
+		public static void HandleRequest(IApiRequestor requestor, ApiClassInfo info)
+		{
+			if (info == null)
+				throw new ArgumentNullException("info");
+
+			HandleRequest(requestor, info, typeof(ApiHandler), null, new Stack<IApiInfo>());
+		}
+
+		/// <summary>
+		/// Interprets the incoming API request.
+		/// </summary>
+		/// <param name="requestor"></param>
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(ApiClassInfo info, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleRequest(IApiRequestor requestor, ApiClassInfo info, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
@@ -115,19 +89,19 @@ namespace ICD.Connect.API
 			try
 			{
 				foreach (ApiEventInfo eventInfo in info.GetEvents())
-					HandleRequest(eventInfo, type, instance, path);
+					HandleRequest(requestor, eventInfo, type, instance, path);
 
 				foreach (ApiMethodInfo method in info.GetMethods())
-					HandleRequest(method, type, instance, path);
+					HandleRequest(requestor, method, type, instance, path);
 
 				foreach (ApiPropertyInfo property in info.GetProperties())
-					HandleRequest(property, type, instance, path);
+					HandleRequest(requestor, property, type, instance, path);
 
 				foreach (ApiNodeInfo node in info.GetNodes())
-					HandleRequest(node, type, instance, path);
+					HandleRequest(requestor, node, type, instance, path);
 
 				foreach (ApiNodeGroupInfo nodeGroup in info.GetNodeGroups())
-					HandleRequest(nodeGroup, type, instance, path);
+					HandleRequest(requestor, nodeGroup, type, instance, path);
 			}
 			finally
 			{
@@ -138,11 +112,12 @@ namespace ICD.Connect.API
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
+		/// <param name="requestor"></param>
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(ApiEventInfo info, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleRequest(IApiRequestor requestor, ApiEventInfo info, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
@@ -173,12 +148,12 @@ namespace ICD.Connect.API
 
 					case ApiEventInfo.eSubscribeAction.Subscribe:
 						// Subscribe to the event
-						info.Result = Subscribe(eventInfo, instance, path);
+						info.Result = Subscribe(requestor, eventInfo, instance, path);
 						return;
 
 					case ApiEventInfo.eSubscribeAction.Unsubscribe:
 						// Unsubscribe from the event
-						info.Result = Unsubscribe(eventInfo, instance, path);
+						info.Result = Unsubscribe(requestor, eventInfo, instance, path);
 						return;
 
 					default:
@@ -194,11 +169,12 @@ namespace ICD.Connect.API
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
+		/// <param name="requestor"></param>
 		/// <param name="node"></param>
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(ApiNodeInfo node, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleRequest(IApiRequestor requestor, ApiNodeInfo node, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (node == null)
 				throw new ArgumentNullException("node");
@@ -231,7 +207,7 @@ namespace ICD.Connect.API
 				}
 
 				Type nodeType = nodeValue.GetType();
-				HandleRequest(node.Node, nodeType, nodeValue, path);
+				HandleRequest(requestor, node.Node, nodeType, nodeValue, path);
 			}
 			finally
 			{
@@ -242,11 +218,12 @@ namespace ICD.Connect.API
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
+		/// <param name="requestor"></param>
 		/// <param name="nodeGroup"></param>
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(ApiNodeGroupInfo nodeGroup, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleRequest(IApiRequestor requestor, ApiNodeGroupInfo nodeGroup, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (nodeGroup == null)
 				throw new ArgumentNullException("nodeGroup");
@@ -314,7 +291,7 @@ namespace ICD.Connect.API
 
 					try
 					{
-						HandleRequest(node.Node, classType, classInstance, path);
+						HandleRequest(requestor, node.Node, classType, classInstance, path);
 					}
 					finally
 					{
@@ -339,11 +316,12 @@ namespace ICD.Connect.API
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
+		/// <param name="requestor"></param>
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(ApiMethodInfo info, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleRequest(IApiRequestor requestor, ApiMethodInfo info, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
@@ -447,11 +425,12 @@ namespace ICD.Connect.API
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
+		/// <param name="requestor"></param>
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(ApiPropertyInfo info, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleRequest(IApiRequestor requestor, ApiPropertyInfo info, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
@@ -526,7 +505,7 @@ namespace ICD.Connect.API
 
 		#region Event Callbacks
 
-		private static ApiResult Subscribe(EventInfo eventInfo, object instance, Stack<IApiInfo> path)
+		private static ApiResult Subscribe(IApiRequestor requestor, EventInfo eventInfo, object instance, Stack<IApiInfo> path)
 		{
 			if (eventInfo == null)
 				throw new ArgumentNullException("eventInfo");
@@ -539,14 +518,7 @@ namespace ICD.Connect.API
 
 			try
 			{
-				Delegate handler = ReflectionUtils.CreateDelegate(eventInfo.EventHandlerType, null, EventCallbackMethod);
-				eventInfo.AddEventHandler(instance, handler);
-
-				if (!s_SubscribedEventsMap.ContainsKey(instance))
-					s_SubscribedEventsMap.Add(instance, new Dictionary<string, ApiHandlerEventCallbackInfo>());
-
-				ApiHandlerEventCallbackInfo callbackInfo = ApiHandlerEventCallbackInfo.FromPath(path);
-				s_SubscribedEventsMap[instance].Add(eventInfo.Name, callbackInfo);
+				s_FeedbackCache.Subscribe(requestor, eventInfo, instance, path);
 			}
 			catch (Exception e)
 			{
@@ -558,14 +530,20 @@ namespace ICD.Connect.API
 			return new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
 		}
 
-		private static ApiResult Unsubscribe(EventInfo eventInfo, object instance, Stack<IApiInfo> path)
+		private static ApiResult Unsubscribe(IApiRequestor requestor, EventInfo eventInfo, object instance, Stack<IApiInfo> path)
 		{
+			if (eventInfo == null)
+				throw new ArgumentNullException("eventInfo");
+
+			if (instance == null)
+				throw new ArgumentNullException("instance");
+
+			if (path == null)
+				throw new ArgumentNullException("path");
+
 			try
 			{
-				// TODO - Build a lookup table
-				throw new NotImplementedException();
-				//Delegate handler = null;
-				//eventInfo.RemoveEventHandler(null, handler);
+				s_FeedbackCache.Unsubscribe(requestor, eventInfo, instance, path);
 			}
 			catch (Exception e)
 			{
@@ -575,38 +553,6 @@ namespace ICD.Connect.API
 			}
 
 			return new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
-		}
-
-		/// <summary>
-		/// Only support subscribing to events matching the siganture of this method.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="args"></param>
-		[UsedImplicitly]
-		private static void EventCallback(object sender, IApiEventArgs args)
-		{
-			if (sender == null)
-				throw new ArgumentNullException("sender");
-
-			if (args == null)
-				throw new ArgumentNullException("args");
-
-			Dictionary<string, ApiHandlerEventCallbackInfo> map;
-			if (!s_SubscribedEventsMap.TryGetValue(sender, out map))
-				return;
-
-			ApiHandlerEventCallbackInfo callbackInfo;
-			if (!map.TryGetValue(args.EventName, out callbackInfo))
-				return;
-
-			// Create a copy and build the result
-			ApiHandlerEventCallbackInfo copy = callbackInfo.DeepCopy();
-			copy.Event.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Ok};
-			args.BuildResult(sender, copy.Event.Result);
-
-			IcdConsole.PrintLine(eConsoleColor.Magenta, "API event raised - {0} - {1}", args, JsonUtils.Format(copy.Command));
-			
-			OnFeedback.Raise(null, new ApiHandlerFeedbackEventArgs(copy.Command));
 		}
 
 		#endregion
