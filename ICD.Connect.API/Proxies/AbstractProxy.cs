@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info;
@@ -35,6 +36,9 @@ namespace ICD.Connect.API.Proxies
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
+
+			foreach (ApiEventInfo eventInfo in info.GetEvents().Where(e => e.SubscribeAction == ApiEventInfo.eSubscribeAction.None))
+				ParseEvent(eventInfo);
 
 			foreach (ApiPropertyInfo property in info.GetProperties())
 				ParseProperty(property);
@@ -130,6 +134,31 @@ namespace ICD.Connect.API.Proxies
 		#endregion
 
 		#region Parsing
+
+		/// <summary>
+		/// Updates the proxy with event feedback info.
+		/// </summary>
+		/// <param name="eventInfo"></param>
+		private void ParseEvent(ApiEventInfo eventInfo)
+		{
+			if (eventInfo == null)
+				throw new ArgumentNullException("property");
+
+			// Only care about good results
+			if (eventInfo.Result == null || eventInfo.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+				return;
+
+			ParseEvent(eventInfo.Name, eventInfo.Result);
+		}
+
+		/// <summary>
+		/// Updates the proxy with event feedback info.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="result"></param>
+		protected virtual void ParseEvent(string name, ApiResult result)
+		{
+		}
 
 		/// <summary>
 		/// Updates the proxy with a property result.

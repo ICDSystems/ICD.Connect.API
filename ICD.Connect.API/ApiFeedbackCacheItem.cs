@@ -46,6 +46,9 @@ namespace ICD.Connect.API
 			if (eventInfo == null)
 				throw new ArgumentNullException("eventInfo");
 
+			// Feedback shouldn't have a subscription action
+			eventInfo.SubscribeAction = ApiEventInfo.eSubscribeAction.None;
+
 			m_Path = path.ToArray();
 			m_Command = command;
 			m_Event = eventInfo;
