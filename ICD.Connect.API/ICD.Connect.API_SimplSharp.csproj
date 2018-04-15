@@ -71,9 +71,11 @@
   <ItemGroup>
     <Compile Include="ApiFeedbackCache.cs" />
     <Compile Include="ApiFeedbackCacheItem.cs" />
+    <Compile Include="ApiRequestor.cs" />
     <Compile Include="Attributes\ApiEventAttribute.cs" />
     <Compile Include="EventArguments\AbstractApiEventArgs.cs" />
     <Compile Include="EventArguments\AbstractGenericApiEventArgs.cs" />
+    <Compile Include="EventArguments\ApiClassInfoEventArgs.cs" />
     <Compile Include="EventArguments\ApiHandlerFeedbackEventArgs.cs" />
     <Compile Include="EventArguments\GenericApiEventArgs.cs" />
     <Compile Include="EventArguments\IApiEventArgs.cs" />
