@@ -1,9 +1,8 @@
 ﻿using System;
 using ICD.Common.Utils.Extensions;
-using ICD.Connect.API;
 using ICD.Connect.API.Info;
 
-namespace ICD.Connect.Krang.Remote.Direct.API
+namespace ICD.Connect.API
 {
     public sealed class ApiRequestor : IApiRequestor
 	{
