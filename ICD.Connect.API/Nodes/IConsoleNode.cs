@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Extensions;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -41,6 +42,9 @@ namespace ICD.Connect.API.Nodes
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
+			if (command == null)
+				throw new ArgumentNullException("command");
+
 			string[] split = command.Split()
 			                        .Where(s => !string.IsNullOrEmpty(s))
 			                        .ToArray();
@@ -67,8 +71,8 @@ namespace ICD.Connect.API.Nodes
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			string first = command.Length == 0 ? ApiConsole.HELP_COMMAND : command[0];
-			string[] remaining = command.Skip(command.Length == 0 ? 0 : 1).ToArray();
+			string first = command.FirstOrDefault(ApiConsole.HELP_COMMAND);
+			string[] remaining = command.Skip(1).ToArray();
 
 			// Help
 			if (first.Equals(ApiConsole.HELP_COMMAND, StringComparison.CurrentCultureIgnoreCase))

@@ -83,6 +83,9 @@ namespace ICD.Connect.API
 		[PublicAPI]
 		public static void UnregisterChild(IConsoleNodeBase node)
 		{
+			if (node == null)
+				throw new ArgumentNullException("node");
+
 			s_ChildrenSection.Execute(() => s_Children.Remove(node));
 		}
 
@@ -93,6 +96,9 @@ namespace ICD.Connect.API
 		[PublicAPI]
 		public static void ExecuteCommand(string command)
 		{
+			if (command == null)
+				throw new ArgumentNullException("command");
+
 			command = command.Trim();
 			IcdConsole.ConsoleCommandResponseLine(s_Singleton.ExecuteConsoleCommand(command));
 		}
@@ -106,6 +112,9 @@ namespace ICD.Connect.API
 		[PublicAPI]
 		public static void SPlusUcmd(SimplSharpString command)
 		{
+			if (command == null)
+				throw new ArgumentNullException("command");
+
 			string commandString = command == null ? String.Empty : command.ToString().Trim();
 			commandString = String.IsNullOrEmpty(commandString) ? HELP_COMMAND : commandString;
 
@@ -138,6 +147,9 @@ namespace ICD.Connect.API
 		/// <returns></returns>
 		private static string CleanErrorLog(params string[] args)
 		{
+			if (args == null)
+				throw new ArgumentNullException("args");
+
 			string errLog = string.Empty;
 			IcdConsole.SendControlSystemCommand("err " + string.Join(" ", args), ref errLog);
 
