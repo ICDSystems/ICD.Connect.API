@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -101,7 +102,10 @@ namespace ICD.Connect.API.Info.Converters
 					break;
 
 				case PROPERTY_PROXYTYPES:
-					IEnumerable<Type> proxyTypes = serializer.DeserializeArray(reader, (s, r) => r.GetValueAsType());
+					// Skip proxy types that can't be deserialized.
+					// This is by design - we fall back to the best known compatible type.
+					IEnumerable<Type> proxyTypes = serializer.DeserializeArray(reader, (s, r) => r.GetValueAsType())
+					                                         .Where(t => t != null);
 					instance.SetProxyTypes(proxyTypes);
 					break;
 
