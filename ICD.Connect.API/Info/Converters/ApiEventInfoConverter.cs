@@ -48,6 +48,10 @@ namespace ICD.Connect.API.Info.Converters
 				case PROPERTY_ACTION:
 					instance.SubscribeAction = reader.GetValueAsEnum<ApiEventInfo.eSubscribeAction>();
 					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
 			}
 		}
 	}

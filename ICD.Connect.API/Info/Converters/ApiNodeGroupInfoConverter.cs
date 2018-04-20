@@ -51,6 +51,10 @@ namespace ICD.Connect.API.Info.Converters
 					IEnumerable<ApiNodeGroupKeyInfo> nodes = serializer.DeserializeArray<ApiNodeGroupKeyInfo>(reader);
 					instance.SetNodes(nodes);
 					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
 			}
 		}
 	}

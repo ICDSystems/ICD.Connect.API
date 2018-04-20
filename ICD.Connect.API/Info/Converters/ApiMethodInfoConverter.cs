@@ -66,6 +66,10 @@ namespace ICD.Connect.API.Info.Converters
 						          .Where(p => p != null);
 					instance.SetParameters(parameters);
 					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
 			}
 		}
 	}

@@ -59,6 +59,10 @@ namespace ICD.Connect.API.Info.Converters
 				case PROPERTY_VALUE:
 					instance.Value = serializer.Deserialize(reader, instance.Type);
 					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
 			}
 		}
 	}

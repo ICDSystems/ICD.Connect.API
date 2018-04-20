@@ -78,6 +78,10 @@ namespace ICD.Connect.API.Info.Converters
 				case PROPERTY_WRITE:
 					instance.Write = (bool)reader.Value;
 					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
 			}
 		}
 	}

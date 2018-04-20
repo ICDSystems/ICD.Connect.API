@@ -56,6 +56,10 @@ namespace ICD.Connect.API.Info.Converters
 				case PROPERTY_NODE:
 					instance.Node = serializer.Deserialize<ApiClassInfo>(reader);
 					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
 			}
 		}
 	}

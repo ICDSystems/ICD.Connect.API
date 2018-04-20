@@ -133,6 +133,10 @@ namespace ICD.Connect.API.Info.Converters
 					IEnumerable<ApiNodeGroupInfo> nodeGroups = serializer.DeserializeArray<ApiNodeGroupInfo>(reader);
 					instance.SetNodeGroups(nodeGroups);
 					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
 			}
 		}
 	}

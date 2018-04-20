@@ -11,81 +11,70 @@ namespace ICD.Connect.API.Info.Converters
 		private const string PROPERTY_VALUE = "value";
 
 		/// <summary>
-		/// Writes the JSON representation of the object.
+		/// Creates a new instance of T.
 		/// </summary>
-		/// <param name="writer">The <see cref="T:Newtonsoft.Json.JsonWriter"/> to write to.</param>
-		/// <param name="value">The value.</param>
-		/// <param name="serializer">The calling serializer.</param>
-		public override void WriteJson(JsonWriter writer, ApiResult value, JsonSerializer serializer)
+		/// <returns></returns>
+		protected override ApiResult Instantiate()
 		{
-			writer.WriteStartObject();
-			{
-				// Error Code
-				writer.WritePropertyName(PROPERTY_ERRORCODE);
-				writer.WriteValue(value.ErrorCode);
-
-				// Type
-				if (value.Type != null)
-				{
-					writer.WritePropertyName(PROPERTY_TYPE);
-					writer.WriteType(value.Type);
-				}
-
-				// Value
-				if (value.Value != null)
-				{
-					writer.WritePropertyName(PROPERTY_VALUE);
-					serializer.Serialize(writer, value.Value);
-				}
-			}
-			writer.WriteEndObject();
+			return new ApiResult();
 		}
 
 		/// <summary>
-		/// Reads the JSON representation of the object.
+		/// Override to write properties to the writer.
 		/// </summary>
-		/// <param name="reader">The <see cref="T:Newtonsoft.Json.JsonReader"/> to read from.</param>
-		/// <param name="existingValue">The existing value of object being read.</param>
-		/// <param name="serializer">The calling serializer.</param>
-		/// <returns>
-		/// The object value.
-		/// </returns>
-		public override ApiResult ReadJson(JsonReader reader, ApiResult existingValue, JsonSerializer serializer)
+		/// <param name="writer"></param>
+		/// <param name="value"></param>
+		/// <param name="serializer"></param>
+		protected override void WriteProperties(JsonWriter writer, ApiResult value, JsonSerializer serializer)
 		{
-			ApiResult output = null;
+			base.WriteProperties(writer, value, serializer);
 
-			while (reader.Read())
+			// Error Code
+			writer.WritePropertyName(PROPERTY_ERRORCODE);
+			writer.WriteValue(value.ErrorCode);
+
+			// Type
+			if (value.Type != null)
 			{
-				if (reader.TokenType == JsonToken.Null || reader.TokenType == JsonToken.EndObject)
-					break;
-
-				output = output ?? new ApiResult();
-
-				// Get the property
-				if (reader.TokenType != JsonToken.PropertyName)
-					continue;
-				string property = (string)reader.Value;
-				
-				// Read into the value
-				reader.Read();
-
-				switch (property)
-				{
-					case PROPERTY_ERRORCODE:
-						output.ErrorCode = reader.GetValueAsEnum<ApiResult.eErrorCode>();
-						break;
-
-					case PROPERTY_TYPE:
-						output.Type = reader.GetValueAsType();
-						break;
-
-					case PROPERTY_VALUE:
-						output.Value = serializer.Deserialize(reader, output.Type);
-						break;
-				}
+				writer.WritePropertyName(PROPERTY_TYPE);
+				writer.WriteType(value.Type);
 			}
 
-			return output;
+			// Value
+			if (value.Value != null)
+			{
+				writer.WritePropertyName(PROPERTY_VALUE);
+				serializer.Serialize(writer, value.Value);
+			}
+		}
+
+		/// <summary>
+		/// Override to handle the current property value with the given name.
+		/// </summary>
+		/// <param name="property"></param>
+		/// <param name="reader"></param>
+		/// <param name="instance"></param>
+		/// <param name="serializer"></param>
+		protected override void ReadProperty(string property, JsonReader reader, ApiResult instance, JsonSerializer serializer)
+		{
+			switch (property)
+			{
+				case PROPERTY_ERRORCODE:
+					instance.ErrorCode = reader.GetValueAsEnum<ApiResult.eErrorCode>();
+					break;
+
+				case PROPERTY_TYPE:
+					instance.Type = reader.GetValueAsType();
+					break;
+
+				case PROPERTY_VALUE:
+					instance.Value = serializer.Deserialize(reader, instance.Type);
+					break;
+
+				default:
+					base.ReadProperty(property, reader, instance, serializer);
+					break;
+			}
 		}
 	}
 }
