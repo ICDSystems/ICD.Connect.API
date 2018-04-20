@@ -100,33 +100,6 @@ namespace ICD.Connect.API
 				throw new ArgumentNullException("command");
 
 			command = command.Trim();
-
-			if (command.Equals("mother", StringComparison.OrdinalIgnoreCase))
-			{
-				IcdConsole.ConsoleCommandResponseLine("PRIORITY ONE");
-				IcdConsole.ConsoleCommandResponseLine("INSURE RETURN OF ORGANISM");
-				IcdConsole.ConsoleCommandResponseLine("FOR ANALYSIS.");
-				IcdConsole.ConsoleCommandResponseLine("ALL OTHER CONSIDERATIONS SECONDARY.");
-				IcdConsole.ConsoleCommandResponse("CREW EXPENDABLE.");
-				return;
-			}
-
-			if (command.Equals("projection", StringComparison.OrdinalIgnoreCase))
-			{
-				IcdConsole.ConsoleCommandResponseLine("IF INTRUDER ORGANISM REACHES");
-				IcdConsole.ConsoleCommandResponseLine("CIVILIZED AREAS . . .");
-				IcdConsole.ConsoleCommandResponseLine("");
-				IcdConsole.ConsoleCommandResponseLine("ENTIRE WORLD POPULATION INFECTED");
-				IcdConsole.ConsoleCommandResponseLine("27,000 HOURS FROM FIRST CONTACT.");
-				IcdConsole.ConsoleCommandResponseLine("");
-				IcdConsole.ConsoleCommandResponseLine("PROBABILITY THAT ONE OR MORE");
-				IcdConsole.ConsoleCommandResponseLine("TEAM MEMBERS MAY BE INFECTED");
-				IcdConsole.ConsoleCommandResponseLine("BY INTRUDER ORGANISM:");
-				IcdConsole.ConsoleCommandResponseLine("");
-				IcdConsole.ConsoleCommandResponse("-75%-");
-				return;
-			}
-
 			IcdConsole.ConsoleCommandResponseLine(s_Singleton.ExecuteConsoleCommand(command));
 		}
 
