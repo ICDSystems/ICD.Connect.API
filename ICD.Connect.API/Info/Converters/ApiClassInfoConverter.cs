@@ -7,6 +7,7 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiClassInfoConverter : AbstractApiInfoConverter<ApiClassInfo>
 	{
+		private const string PROPERTY_IS_PROXY = "isProxy";
 		private const string PROPERTY_PROXYTYPES = "proxyTypes";
 		private const string PROPERTY_EVENTS = "events";
 		private const string PROPERTY_METHODS = "methods";
@@ -32,6 +33,13 @@ namespace ICD.Connect.API.Info.Converters
 		protected override void WriteProperties(JsonWriter writer, ApiClassInfo value, JsonSerializer serializer)
 		{
 			base.WriteProperties(writer, value, serializer);
+
+			// IsProxy
+			if (value.IsProxy)
+			{
+				writer.WritePropertyName(PROPERTY_IS_PROXY);
+				writer.WriteValue(value.IsProxy);
+			}
 
 			// Proxy Types
 			if (value.ProxyTypeCount > 0)
@@ -88,6 +96,10 @@ namespace ICD.Connect.API.Info.Converters
 		{
 			switch (property)
 			{
+				case PROPERTY_IS_PROXY:
+					instance.IsProxy = reader.GetValueAsBool();
+					break;
+
 				case PROPERTY_PROXYTYPES:
 					IEnumerable<Type> proxyTypes = serializer.DeserializeArray(reader, (s, r) => r.GetValueAsType());
 					instance.SetProxyTypes(proxyTypes);

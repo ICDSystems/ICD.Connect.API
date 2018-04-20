@@ -5,6 +5,7 @@ using ICD.Common.Properties;
 using ICD.Connect.API.Attributes;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info.Converters;
+using ICD.Connect.API.Proxies;
 using Newtonsoft.Json;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -61,6 +62,11 @@ namespace ICD.Connect.API.Info
 			}
 		}
 
+		/// <summary>
+		/// Returns true if this class info represents a proxy instance.
+		/// </summary>
+		public bool IsProxy { get; set; }
+
 		#endregion
 
 		/// <summary>
@@ -113,6 +119,8 @@ namespace ICD.Connect.API.Info
 
 			if (type == null)
 				return;
+
+			IsProxy = type.IsAssignableTo(typeof(IProxy));
 
 			IEnumerable<Type> proxyTypes = GetProxyTypes(type);
 			IEnumerable<ApiEventInfo> events = GetEventInfo(type, instance, depth - 1);
