@@ -143,7 +143,6 @@ namespace ICD.Connect.API.Info
 		/// <summary>
 		/// Adds the node to the group.
 		/// </summary>
-		/// <param name="key"></param>
 		/// <param name="node"></param>
 		public void AddNode(ApiNodeGroupKeyInfo node)
 		{
