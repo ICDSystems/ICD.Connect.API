@@ -115,8 +115,8 @@ namespace ICD.Connect.API
 			if (command == null)
 				throw new ArgumentNullException("command");
 
-			string commandString = command == null ? String.Empty : command.ToString().Trim();
-			commandString = String.IsNullOrEmpty(commandString) ? HELP_COMMAND : commandString;
+			string commandString = command.ToString().Trim();
+			commandString = string.IsNullOrEmpty(commandString) ? HELP_COMMAND : commandString;
 
 			// User convenience, let them know there's actually a UCMD handler
 			if (commandString == HELP_COMMAND)
