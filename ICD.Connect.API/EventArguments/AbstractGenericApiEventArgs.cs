@@ -33,6 +33,7 @@ namespace ICD.Connect.API.EventArguments
 		/// <returns></returns>
 		public override void BuildResult(object sender, ApiResult result)
 		{
+// ReSharper disable once CompareNonConstrainedGenericWithNull
 			Type type = Data == null ? typeof(T) : Data.GetType();
 			result.SetValue(type, Data);
 		}
