@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API
@@ -82,11 +83,9 @@ namespace ICD.Connect.API
 
 			leaf = shallowCopy[shallowCopy.Length - 1];
 
-			shallowCopy.Aggregate((a, b) =>
-			                      {
-				                      a.AddChild(b);
-				                      return b;
-			                      });
+			// Daisy chain the nodes back together
+			foreach (IApiInfo[] pair in shallowCopy.GetAdjacentPairs())
+				pair[0].AddChild(pair[1]);
 
 			return shallowCopy;
 		}
