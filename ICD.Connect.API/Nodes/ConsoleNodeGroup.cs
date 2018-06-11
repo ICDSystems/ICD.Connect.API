@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Extensions;
 
 namespace ICD.Connect.API.Nodes
@@ -12,7 +13,7 @@ namespace ICD.Connect.API.Nodes
 		private readonly string m_Help;
 		private readonly IEnumerable<KeyValuePair<uint, IConsoleNodeBase>> m_Enumerable;
 
-		private Dictionary<uint, IConsoleNodeBase> m_Nodes;
+		private IcdOrderedDictionary<uint, IConsoleNodeBase> m_Nodes;
 
 		#region Properties
 
@@ -140,7 +141,10 @@ namespace ICD.Connect.API.Nodes
 		public IDictionary<uint, IConsoleNodeBase> GetConsoleNodes()
 		{
 			if (m_Nodes == null)
-				m_Nodes = m_Enumerable.ToDictionary();
+			{
+				m_Nodes = new IcdOrderedDictionary<uint, IConsoleNodeBase>();
+				m_Nodes.AddRange(m_Enumerable);
+			}
 
 			return new Dictionary<uint, IConsoleNodeBase>(m_Nodes);
 		}
@@ -151,7 +155,7 @@ namespace ICD.Connect.API.Nodes
 		/// <returns></returns>
 		IEnumerable<IConsoleNodeBase> IConsoleNodeBase.GetConsoleNodes()
 		{
-			return GetConsoleNodes().OrderValuesByKey();
+			return GetConsoleNodes().Values;
 		}
 	}
 }
