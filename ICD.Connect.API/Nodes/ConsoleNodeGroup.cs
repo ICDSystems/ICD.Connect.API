@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils.Extensions;
 
@@ -9,7 +10,9 @@ namespace ICD.Connect.API.Nodes
 	{
 		private readonly string m_ConsoleName;
 		private readonly string m_Help;
-		private readonly Dictionary<uint, IConsoleNodeBase> m_Nodes;
+		private readonly IEnumerable<KeyValuePair<uint, IConsoleNodeBase>> m_Enumerable;
+
+		private Dictionary<uint, IConsoleNodeBase> m_Nodes;
 
 		#region Properties
 
@@ -38,6 +41,9 @@ namespace ICD.Connect.API.Nodes
 		public static ConsoleNodeGroup IndexNodeMap<T>(string name, IEnumerable<T> nodes)
 			where T : IConsoleNodeBase
 		{
+			if (nodes == null)
+				throw new ArgumentNullException("nodes");
+
 			return IndexNodeMap(name, string.Empty, nodes);
 		}
 
@@ -53,12 +59,14 @@ namespace ICD.Connect.API.Nodes
 		public static ConsoleNodeGroup IndexNodeMap<T>(string name, string help, IEnumerable<T> nodes)
 			where T : IConsoleNodeBase
 		{
-			Dictionary<uint, IConsoleNodeBase> output = new Dictionary<uint, IConsoleNodeBase>();
+			if (nodes == null)
+				throw new ArgumentNullException("nodes");
 
 			// Add 1, the user wants to press 1 for the first item.
-			nodes.ForEach((item, index) => output[(uint)index + 1] = item);
+			IEnumerable<KeyValuePair<uint, IConsoleNodeBase>> enumerable =
+				nodes.Select((node, index) => new KeyValuePair<uint, IConsoleNodeBase>((uint)index + 1, node));
 
-			return new ConsoleNodeGroup(name, help, output);
+			return new ConsoleNodeGroup(name, help, enumerable);
 		}
 
 		/// <summary>
@@ -73,6 +81,12 @@ namespace ICD.Connect.API.Nodes
 		public static ConsoleNodeGroup KeyNodeMap<T>(string name, IEnumerable<T> nodes, Func<T, uint> getKey)
 			where T : IConsoleNodeBase
 		{
+			if (nodes == null)
+				throw new ArgumentNullException("nodes");
+
+			if (getKey == null)
+				throw new ArgumentNullException("getKey");
+
 			return KeyNodeMap(name, string.Empty, nodes, getKey);
 		}
 
@@ -89,15 +103,16 @@ namespace ICD.Connect.API.Nodes
 		public static ConsoleNodeGroup KeyNodeMap<T>(string name, string help, IEnumerable<T> nodes, Func<T, uint> getKey)
 			where T : IConsoleNodeBase
 		{
-			Dictionary<uint, IConsoleNodeBase> dict = new Dictionary<uint, IConsoleNodeBase>();
+			if (nodes == null)
+				throw new ArgumentNullException("nodes");
 
-			foreach (T item in nodes)
-			{
-				uint key = getKey(item);
-				dict.Add(key, item);
-			}
+			if (getKey == null)
+				throw new ArgumentNullException("getKey");
 
-			return new ConsoleNodeGroup(name, help, dict);
+			IEnumerable<KeyValuePair<uint, IConsoleNodeBase>> enumerable =
+				nodes.Select(node => new KeyValuePair<uint, IConsoleNodeBase>(getKey(node), node));
+
+			return new ConsoleNodeGroup(name, help, enumerable);
 		}
 
 		/// <summary>
@@ -105,12 +120,15 @@ namespace ICD.Connect.API.Nodes
 		/// </summary>
 		/// <param name="name"></param>
 		/// <param name="help"></param>
-		/// <param name="nodes"></param>
-		private ConsoleNodeGroup(string name, string help, IDictionary<uint, IConsoleNodeBase> nodes)
+		/// <param name="kvps"></param>
+		private ConsoleNodeGroup(string name, string help, IEnumerable<KeyValuePair<uint, IConsoleNodeBase>> kvps)
 		{
+			if (kvps == null)
+				throw new ArgumentNullException("kvps");
+
 			m_ConsoleName = name;
 			m_Help = help;
-			m_Nodes = new Dictionary<uint, IConsoleNodeBase>(nodes);
+			m_Enumerable = kvps;
 		}
 
 		#endregion
@@ -121,6 +139,9 @@ namespace ICD.Connect.API.Nodes
 		/// <returns></returns>
 		public IDictionary<uint, IConsoleNodeBase> GetConsoleNodes()
 		{
+			if (m_Nodes == null)
+				m_Nodes = m_Enumerable.ToDictionary();
+
 			return new Dictionary<uint, IConsoleNodeBase>(m_Nodes);
 		}
 
