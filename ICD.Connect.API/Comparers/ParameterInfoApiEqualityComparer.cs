@@ -16,19 +16,19 @@ namespace ICD.Connect.API.Comparers
 			get { return s_Instance ?? (s_Instance = new ParameterInfoApiEqualityComparer()); }
 		}
 
-		public bool Equals(ParameterInfo a, ParameterInfo b)
+		public bool Equals(ParameterInfo x, ParameterInfo y)
 		{
-			return a.Position == b.Position && a.ParameterType == b.ParameterType;
+			return x.Position == y.Position && x.ParameterType == y.ParameterType;
 		}
 
-		public int GetHashCode(ParameterInfo info)
+		public int GetHashCode(ParameterInfo obj)
 		{
 			unchecked
 			{
 				int hash = 17;
 
-				hash = hash * 23 + info.Position;
-				hash = hash * 23 + info.ParameterType.GetHashCode();
+				hash = hash * 23 + obj.Position;
+				hash = hash * 23 + obj.ParameterType.GetHashCode();
 
 				return hash;
 			}
