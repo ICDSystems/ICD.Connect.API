@@ -138,6 +138,31 @@ namespace ICD.Connect.API
 		}
 #endif
 
+		/// <summary>
+		/// Splits the given command into its individual parts.
+		/// Enquoted sequences are not split.
+		/// 
+		/// E.g.
+		///		"one \"two three\" four"
+		/// Yields
+		///		"one"
+		///		"two three"
+		///		"four"
+		/// </summary>
+		/// <param name="command"></param>
+		/// <returns></returns>
+		public static IEnumerable<string> Split(string command)
+		{
+			if (command == null)
+				throw new ArgumentNullException("command");
+
+			return Regex.Matches(command, @"[\""].+?[\""]|[^ ]+")
+			            .Cast<Match>()
+			            .Select(m => m.Value)
+			            .Where(s => !string.IsNullOrEmpty(s))
+			            .Select(s => StringUtils.UnEnquote(s));
+		}
+
 		#endregion
 
 		/// <summary>
