@@ -45,9 +45,7 @@ namespace ICD.Connect.API.Nodes
 			if (command == null)
 				throw new ArgumentNullException("command");
 
-			string[] split = command.Split()
-			                        .Where(s => !string.IsNullOrEmpty(s))
-			                        .ToArray();
+			string[] split = ApiConsole.Split(command).ToArray();
 
 			try
 			{
@@ -90,7 +88,7 @@ namespace ICD.Connect.API.Nodes
 			// Child
 			IConsoleNodeBase[] children = extends.GetConsoleNodesBySelector(first).ToArray();
 			if (children.Length == 0)
-				return string.Format("Unexpected command {0}", first);
+				return string.Format("Unexpected command {0}", StringUtils.ToRepresentation(first));
 
 			foreach (IConsoleNodeBase child in children)
 			{
