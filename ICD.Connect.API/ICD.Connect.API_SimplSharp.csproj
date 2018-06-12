@@ -73,6 +73,7 @@
     <Compile Include="ApiFeedbackCacheItem.cs" />
     <Compile Include="ApiRequestor.cs" />
     <Compile Include="Attributes\ApiEventAttribute.cs" />
+    <Compile Include="Comparers\ParameterInfoApiEqualityComparer.cs" />
     <Compile Include="EventArguments\AbstractApiEventArgs.cs" />
     <Compile Include="EventArguments\AbstractGenericApiEventArgs.cs" />
     <Compile Include="EventArguments\ApiClassInfoEventArgs.cs" />

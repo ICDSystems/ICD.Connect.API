@@ -24,12 +24,7 @@ namespace ICD.Connect.API.Comparers
 
 		public bool Equals(MethodInfo a, MethodInfo b)
 		{
-			return a.Name == b.Name && a.GetParameters().SequenceEqual(b.GetParameters(), ParamComparer);
-		}
-
-		private static bool ParamComparer(ParameterInfo arg1, ParameterInfo arg2)
-		{
-			return arg1.Position == arg2.Position && arg1.ParameterType == arg2.ParameterType;
+			return a.Name == b.Name && a.GetParameters().SequenceEqual(b.GetParameters(), ParameterInfoApiEqualityComparer.Instance);
 		}
 
 		public int GetHashCode(MethodInfo info)
@@ -40,10 +35,7 @@ namespace ICD.Connect.API.Comparers
 				hash = hash * 23 + info.Name.GetHashCode();
 
 				foreach (ParameterInfo param in info.GetParameters())
-				{
-					hash = hash * 23 + param.Position;
-					hash = hash * 23 + param.ParameterType.GetHashCode();
-				}
+					hash = hash * 23 + ParameterInfoApiEqualityComparer.Instance.GetHashCode(param);
 
 				return hash;
 			}
