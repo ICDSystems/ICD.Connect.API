@@ -76,11 +76,22 @@ namespace ICD.Connect.API.Nodes
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
+			return GetConsoleNodesBySelectorIterator(extends, selector);
+		}
+
+		/// <summary>
+		/// Gets the child console nodes based on the given selector (e.g. index, all, etc).
+		/// </summary>
+		/// <param name="node"></param>
+		/// <param name="selector"></param>
+		/// <returns></returns>
+		private static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelectorIterator(IConsoleNodeBase node, string selector)
+		{
 			// Selector is an index.
 			uint index;
 			if (StringUtils.TryParse(selector, out index))
 			{
-				IConsoleNodeBase indexed = extends.GetConsoleNodeByKey(index);
+				IConsoleNodeBase indexed = node.GetConsoleNodeByKey(index);
 				if (indexed != null)
 					yield return indexed;
 				yield break;
@@ -89,13 +100,13 @@ namespace ICD.Connect.API.Nodes
 			// Selector is all
 			if (selector.Equals(ApiConsole.ALL_COMMAND, StringComparison.CurrentCultureIgnoreCase))
 			{
-				foreach (IConsoleNodeBase node in extends.GetConsoleNodes())
-					yield return node;
+				foreach (IConsoleNodeBase child in node.GetConsoleNodes())
+					yield return child;
 				yield break;
 			}
 
 			// Selector is a name
-			IConsoleNodeBase named = extends.GetConsoleNodeByName(selector);
+			IConsoleNodeBase named = node.GetConsoleNodeByName(selector);
 			if (named != null)
 				yield return named;
 		}
