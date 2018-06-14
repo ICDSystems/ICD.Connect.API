@@ -143,7 +143,15 @@ namespace ICD.Connect.API.Nodes
 			if (m_Nodes == null)
 			{
 				m_Nodes = new IcdOrderedDictionary<uint, IConsoleNodeBase>();
-				m_Nodes.AddRange(m_Enumerable);
+
+				foreach (KeyValuePair<uint, IConsoleNodeBase> pair in m_Enumerable)
+				{
+					if (m_Nodes.ContainsKey(pair.Key))
+						throw new InvalidOperationException(string.Format("{0} {1} already contains key {2}", GetType().Name,
+						                                                  this.GetSafeConsoleName(), pair.Key));
+
+					m_Nodes.Add(pair.Key, pair.Value);
+				}
 			}
 
 			return new Dictionary<uint, IConsoleNodeBase>(m_Nodes);
