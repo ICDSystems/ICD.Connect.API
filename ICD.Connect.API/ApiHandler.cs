@@ -157,7 +157,7 @@ namespace ICD.Connect.API
 						return;
 
 					default:
-						throw new ArgumentOutOfRangeException();
+						throw new ArgumentOutOfRangeException("info", "Unknown subscribe action");
 				}
 			}
 			finally
