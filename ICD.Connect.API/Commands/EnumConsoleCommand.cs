@@ -7,6 +7,7 @@ namespace ICD.Connect.API.Commands
 {
 	[PublicAPI]
 	public sealed class EnumConsoleCommand<T> : AbstractConsoleCommand
+		where T : struct, IConvertible
 	{
 		private readonly Func<T, string> m_Callback;
 
