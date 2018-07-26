@@ -1,7 +1,4 @@
-﻿#if !SIMPLSHARP
-using System.Reflection;
-#endif
-using System.Globalization;
+﻿using System.Globalization;
 using ICD.Common.Utils;
 
 namespace ICD.Connect.API.Commands
@@ -64,10 +61,7 @@ namespace ICD.Connect.API.Commands
 		/// <returns></returns>
 		protected bool ValidateParamsCount(string[] parameters, int targetCount)
 		{
-			if (targetCount == parameters.Length)
-				return true;
-
-			return false;
+			return targetCount == parameters.Length;
 		}
 
 		/// <summary>
@@ -78,13 +72,8 @@ namespace ICD.Connect.API.Commands
 		/// <returns></returns>
 		protected static T Convert<T>(string value)
 		{
-			// Type.IsEnum will be in .NET Standard 2.0
-#if SIMPLSHARP
-			if (typeof(T).IsEnum)
-#else
-            if (typeof(T).GetTypeInfo().IsEnum)
-#endif
-				return EnumUtils.ParseStrict<T>(value, true);
+			if (EnumUtils.IsEnumType<T>())
+				return (T)(object)EnumUtils.ParseStrict(typeof(T), value, true);
 
 			return (T)System.Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
 		}
