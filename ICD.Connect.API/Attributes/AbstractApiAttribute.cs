@@ -15,15 +15,18 @@ namespace ICD.Connect.API.Attributes
 		private readonly string m_Name;
 		private readonly string m_Help;
 
+		private string m_FormattedName;
+		private string m_FormattedHelp;
+
 		/// <summary>
 		/// Gets the name for the decorated item. 
 		/// </summary>
-		public string Name { get { return m_Name; } }
+		public string Name { get { return m_FormattedName = (m_FormattedName ?? FormatName(m_Name)); } }
 
 		/// <summary>
 		/// Gets the help string for the decorated item.
 		/// </summary>
-		public string Help { get { return m_Help; } }
+		public string Help { get { return m_FormattedHelp = (m_FormattedHelp ?? FormatHelp(m_Help)); } }
 
 		/// <summary>
 		/// Gets the binding flags for API discovery.
@@ -47,8 +50,8 @@ namespace ICD.Connect.API.Attributes
 		/// <param name="help"></param>
 		protected AbstractApiAttribute(string name, string help)
 		{
-			m_Name = FormatName(name);
-			m_Help = FormatHelp(help);
+			m_Name = name;
+			m_Help = help;
 		}
 
 		/// <summary>
@@ -71,7 +74,7 @@ namespace ICD.Connect.API.Attributes
 		/// </summary>
 		/// <param name="help"></param>
 		/// <returns></returns>
-		private string FormatHelp(string help)
+		private static string FormatHelp(string help)
 		{
 			if (help == null)
 				return string.Empty;
