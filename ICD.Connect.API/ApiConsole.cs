@@ -222,6 +222,8 @@ namespace ICD.Connect.API
 				                            StringUtils.ArrayFormat(EnumUtils.GetValues<eSeverity>().OrderBy(e => (int)e)));
 				yield return new GenericConsoleCommand<eSeverity>("SetLoggingSeverity", help, s => logger.SeverityLevel = s);
 			}
+
+			yield return new ConsoleCommand("PrintThreads", "Prints a table of the known active threads", () => ThreadingUtils.PrintThreads());
 		}
 
 		#endregion
