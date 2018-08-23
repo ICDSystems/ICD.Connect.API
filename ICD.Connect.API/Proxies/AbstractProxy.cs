@@ -131,6 +131,17 @@ namespace ICD.Connect.API.Proxies
 			SendCommand(command);
 		}
 
+		/// <summary>
+		/// Builds and raises a set property command.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="value"></param>
+		protected void SetProperty(string name, object value)
+		{
+			ApiClassInfo command = ApiCommandBuilder.SetPropertyCommand(name, value);
+			SendCommand(command);
+		}
+
 		#endregion
 
 		#region Parsing

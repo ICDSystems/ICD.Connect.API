@@ -64,6 +64,17 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
+		/// Builds a SetProperty command with the given name.
+		/// </summary>
+		/// <param name="name"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static ApiClassInfo SetPropertyCommand(string name, object value)
+		{
+			return NewCommand().SetProperty(name, value).Complete();
+		}
+
+		/// <summary>
 		/// Performs a copy of the given sequence of items, excluding anything outside of the path.
 		/// </summary>
 		/// <param name="path"></param>
