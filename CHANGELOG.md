@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [3.2.0.0] - 2018-09-14
+### Added
+ - Added methods for setting properties via API
+
+### Changed
+ - Small optimizations
+
 ## [3.1.0.0] - 2018-06-19
 ### Added
  - Adding support for quoted console commands/parameters
