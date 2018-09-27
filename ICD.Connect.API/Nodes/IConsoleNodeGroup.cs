@@ -96,7 +96,7 @@ namespace ICD.Connect.API.Nodes
 			{
 				IConsoleNodeBase node = kvp.Value;
 				string name = node.GetSafeConsoleName();
-				string type = node.GetType().Name;
+				string type = node.GetType().GetSyntaxName();
 				string help = node.ConsoleHelp;
 
 				builder.AddRow(kvp.Key.ToString(), name, type, help);
