@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 
@@ -40,18 +41,7 @@ namespace ICD.Connect.API.Nodes
 			if (first.Equals(ApiConsole.HELP_COMMAND, StringComparison.CurrentCultureIgnoreCase))
 				return extends.PrintConsoleHelp();
 
-			// Child
-			uint index;
-			bool isIndex = StringUtils.TryParse(first, out index);
-			bool all = !isIndex && first.Equals(ApiConsole.ALL_COMMAND, StringComparison.CurrentCultureIgnoreCase);
-
-			// If the user didnt specify an index, the first part of the command is part of the next command
-			if (!isIndex && !all)
-				remaining = command;
-
-			IConsoleNodeBase[] nodes = extends.GetConsoleNodes(all, index).ToArray();
-			if (nodes.Length == 0)
-				return string.Format("Unexpected command {0}", first);
+			IConsoleNodeBase[] nodes = GetConsoleNodesBySelector(extends, first).ToArray();
 
 			string output = null;
 
@@ -66,22 +56,93 @@ namespace ICD.Connect.API.Nodes
 		}
 
 		/// <summary>
-		/// Convenience method for getting the child nodes based on user selection.
+		/// Gets the child console nodes based on the given selector (e.g. index, all, etc).
 		/// </summary>
 		/// <param name="extends"></param>
-		/// <param name="all"></param>
-		/// <param name="index"></param>
+		/// <param name="selector"></param>
 		/// <returns></returns>
-		private static IEnumerable<IConsoleNodeBase> GetConsoleNodes(this IConsoleNodeGroup extends, bool all, uint index)
+		public static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelector(this IConsoleNodeGroup extends, string selector)
 		{
-			if (all)
-				return extends.GetConsoleNodes().OrderValuesByKey();
+			if (extends == null)
+				throw new ArgumentNullException("extends");
 
-			IConsoleNodeBase output;
-			if (extends.GetConsoleNodes().TryGetValue(index, out output))
-				return new[] {output};
+			return GetConsoleNodesBySelectorIterator(extends, selector);
+		}
 
-			return Enumerable.Empty<IConsoleNodeBase>();
+		/// <summary>
+		/// Gets the child console nodes based on the given selector (e.g. index, all, etc).
+		/// </summary>
+		/// <param name="node"></param>
+		/// <param name="selector"></param>
+		/// <returns></returns>
+		private static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelectorIterator(IConsoleNodeGroup node, string selector)
+		{
+			// Selector is an index.
+			uint index;
+			if (StringUtils.TryParse(selector, out index))
+			{
+				IConsoleNodeBase indexed = node.GetConsoleNodeByKey(index);
+				if (indexed != null)
+					yield return indexed;
+				yield break;
+			}
+
+			// Selector is all
+			if (selector.Equals(ApiConsole.ALL_COMMAND, StringComparison.CurrentCultureIgnoreCase))
+			{
+				foreach (IConsoleNodeBase child in node.GetConsoleNodes().Values)
+					yield return child;
+				yield break;
+			}
+
+			// Selector is a name
+			IConsoleNodeBase named = node.GetConsoleNodeByName(selector);
+			if (named != null)
+				yield return named;
+		}
+
+		/// <summary>
+		/// Gets the child console node with the given name. Otherwise returns null.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		[CanBeNull]
+		private static IConsoleNodeBase GetConsoleNodeByName(this IConsoleNodeGroup extends, string name)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			return extends.GetConsoleNodes()
+			              .Values
+			              .FirstOrDefault(v => name.Equals(v.GetSafeConsoleName(), StringComparison.CurrentCultureIgnoreCase));
+		}
+
+		/// <summary>
+		/// Gets the child console node with the given key/index.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="key"></param>
+		/// <returns></returns>
+		private static IConsoleNodeBase GetConsoleNodeByKey(this IConsoleNodeBase extends, uint key)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			IConsoleNodeGroup group = extends as IConsoleNodeGroup;
+			if (group != null)
+			{
+				IConsoleNodeBase output;
+				if (group.GetConsoleNodes().TryGetValue(key, out output))
+					return output;
+			}
+
+			IConsoleNode node = extends as IConsoleNode;
+			if (node != null)
+				return node.GetConsoleNodes().ElementAtOrDefault((int)key);
+
+			throw new ArgumentOutOfRangeException("extends", "Unable to execute console command for type "
+			                                                 + extends.GetType().Name);
 		}
 
 		/// <summary>
