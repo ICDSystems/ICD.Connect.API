@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using ICD.Common.Utils;
 
 namespace ICD.Connect.API.Commands
@@ -72,10 +73,15 @@ namespace ICD.Connect.API.Commands
 		/// <returns></returns>
 		protected static T Convert<T>(string value)
 		{
-			if (EnumUtils.IsEnumType<T>())
-				return (T)(object)EnumUtils.ParseStrict(typeof(T), value, true);
+			return (T)Convert(value, typeof(T));
+		}
 
-			return (T)System.Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
+		public static object Convert(string value, Type type)
+		{
+			if (EnumUtils.IsEnumType(type))
+				return EnumUtils.ParseStrict(type, value, true);
+
+			return System.Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
 		}
 	}
 }
