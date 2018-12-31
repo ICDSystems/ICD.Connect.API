@@ -233,13 +233,13 @@ namespace ICD.Connect.API.Info
 		public void AddEvent(ApiEventInfo eventInfo)
 		{
 			if (eventInfo == null)
-				throw new ArgumentNullException("eventInfo");
+				throw new ArgumentNullException("eventInfo", string.Format("{0} can not add event info with null name", this));
 
 			if (m_Events == null)
 				m_Events = new Dictionary<string, ApiEventInfo>();
 
 			if (m_Events.ContainsKey(eventInfo.Name))
-				throw new ArgumentException("Failed to add duplicate event info with name " + eventInfo.Name); 
+				throw new ArgumentException(string.Format("{0} failed to add duplicate event info with name {1}", this, eventInfo.Name)); 
 
 			m_Events.Add(eventInfo.Name, eventInfo);
 		}
@@ -288,13 +288,13 @@ namespace ICD.Connect.API.Info
 		public void AddMethod(ApiMethodInfo method)
 		{
 			if (method == null)
-				throw new ArgumentNullException("method");
+				throw new ArgumentNullException("method", string.Format("{0} can not add method info with null name", this));
 
 			if (m_Methods == null)
 				m_Methods = new Dictionary<string, ApiMethodInfo>();
 
 			if (m_Methods.ContainsKey(method.Name))
-				throw new ArgumentException("Failed to add duplicate method info with name " + method.Name); 
+				throw new ArgumentException(string.Format("{0} failed to add duplicate method info with name {1}", this, method.Name)); 
 
 			m_Methods.Add(method.Name, method);
 		}
@@ -343,13 +343,13 @@ namespace ICD.Connect.API.Info
 		public void AddProperty(ApiPropertyInfo property)
 		{
 			if (property == null)
-				throw new ArgumentNullException("property");
+				throw new ArgumentNullException("property", string.Format("{0} can not add property info with null name", this));
 
 			if (m_Properties == null)
 				m_Properties = new Dictionary<string, ApiPropertyInfo>();
 
 			if (m_Properties.ContainsKey(property.Name))
-				throw new ArgumentException("Failed to add duplicate property info with name " + property.Name); 
+				throw new ArgumentException(string.Format("{0} failed to add duplicate property info with name {1}", this, property.Name)); 
 			
 			m_Properties.Add(property.Name, property);
 		}
@@ -398,13 +398,13 @@ namespace ICD.Connect.API.Info
 		public void AddNode(ApiNodeInfo node)
 		{
 			if (node == null)
-				throw new ArgumentNullException("node");
+				throw new ArgumentNullException("node", string.Format("{0} can not add node info with null name", this));
 
 			if (m_Nodes == null)
 				m_Nodes = new Dictionary<string, ApiNodeInfo>();
 
 			if (m_Nodes.ContainsKey(node.Name))
-				throw new ArgumentException("Failed to add duplicate node info with name " + node.Name); 
+				throw new ArgumentException(string.Format("{0} failed to add duplicate node info with name {1}", this, node.Name)); 
 
 			m_Nodes.Add(node.Name, node);
 		}
@@ -490,13 +490,13 @@ namespace ICD.Connect.API.Info
 		public void AddNodeGroup(ApiNodeGroupInfo nodeGroup)
 		{
 			if (nodeGroup == null)
-				throw new ArgumentNullException("nodeGroup");
+				throw new ArgumentNullException("nodeGroup", string.Format("{0} can not add node group info with null name", this));
 
 			if (m_NodeGroups == null)
 				m_NodeGroups = new Dictionary<string, ApiNodeGroupInfo>();
 
 			if (m_NodeGroups.ContainsKey(nodeGroup.Name))
-				throw new ArgumentException("Failed to add duplicate node group info with name " + nodeGroup.Name); 
+				throw new ArgumentException(string.Format("{0} failed to add duplicate node group info with name {1}", this, nodeGroup.Name));
 
 			m_NodeGroups.Add(nodeGroup.Name, nodeGroup);
 		}
