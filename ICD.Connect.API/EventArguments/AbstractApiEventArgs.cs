@@ -39,7 +39,7 @@ namespace ICD.Connect.API.EventArguments
 			ReprBuilder builder = new ReprBuilder(this);
 
 			builder.AppendProperty("EventName", m_EventName);
-			ToString(builder.AppendProperty);
+			ToString((n, v) => builder.AppendProperty(n, v));
 
 			return builder.ToString();
 		}
