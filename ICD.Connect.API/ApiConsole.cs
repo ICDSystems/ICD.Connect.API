@@ -20,7 +20,7 @@ namespace ICD.Connect.API
 	/// </summary>
 	public sealed class ApiConsole : IConsoleNode
 	{
-		private const string ROOT_COMMAND = "ICD";
+		public const string ROOT_COMMAND = "ICD";
 		private const string ROOT_HELP = "Root node for dynamic console commands";
 
 		public const string ALL_COMMAND = "A";
@@ -99,8 +99,21 @@ namespace ICD.Connect.API
 			if (command == null)
 				throw new ArgumentNullException("command");
 
+			IcdConsole.ConsoleCommandResponseLine(ExecuteCommandForResponse(command));
+		}
+
+		/// <summary>
+		/// Executes the command and retuns the response
+		/// </summary>
+		/// <param name="command"></param>
+		/// <returns></returns>
+		public static string ExecuteCommandForResponse(string command)
+		{
+			if (command == null)
+				throw new ArgumentNullException("command");
+
 			command = command.Trim();
-			IcdConsole.ConsoleCommandResponseLine(s_Singleton.ExecuteConsoleCommand(command));
+			return s_Singleton.ExecuteConsoleCommand(command);
 		}
 
 #if SIMPLSHARP
