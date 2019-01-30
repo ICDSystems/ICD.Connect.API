@@ -12,6 +12,7 @@ namespace ICD.Connect.API
 		private readonly ApiClassInfo m_Command;
 		private readonly ApiEventInfo m_Event;
 		private readonly IcdHashSet<IApiRequestor> m_Requestors;
+		private readonly Delegate m_Callback;
 
 		#region Properties
 
@@ -25,6 +26,16 @@ namespace ICD.Connect.API
 		/// </summary>
 		public ApiEventInfo Event { get { return m_Event; } }
 
+		/// <summary>
+		/// Gets the delegate for the event subscription.
+		/// </summary>
+		public Delegate Callback { get { return m_Callback; } }
+
+		/// <summary>
+		/// Gets the number of requestors that are currently registered.
+		/// </summary>
+		public int Count { get { return m_Requestors.Count; } }
+
 		#endregion
 
 		#region Factories
@@ -35,7 +46,9 @@ namespace ICD.Connect.API
 		/// <param name="path"></param>
 		/// <param name="command"></param>
 		/// <param name="eventInfo"></param>
-		private ApiFeedbackCacheItem(IEnumerable<IApiInfo> path, ApiClassInfo command, ApiEventInfo eventInfo)
+		/// <param name="callback"></param>
+		private ApiFeedbackCacheItem(IEnumerable<IApiInfo> path, ApiClassInfo command, ApiEventInfo eventInfo,
+		                             Delegate callback)
 		{
 			if (path == null)
 				throw new ArgumentNullException("path");
@@ -53,36 +66,45 @@ namespace ICD.Connect.API
 			m_Command = command;
 			m_Event = eventInfo;
 			m_Requestors = new IcdHashSet<IApiRequestor>();
+			m_Callback = callback;
 		}
 
 		/// <summary>
 		/// Creates a new instance from the given command path.
 		/// </summary>
 		/// <param name="path"></param>
+		/// <param name="callback"></param>
 		/// <returns></returns>
-		public static ApiFeedbackCacheItem FromPath(Stack<IApiInfo> path)
+		public static ApiFeedbackCacheItem FromPath(Stack<IApiInfo> path, Delegate callback)
 		{
 			if (path == null)
 				throw new ArgumentNullException("path");
 
-			return FromPath(path.Reverse());
+			if (callback == null)
+				throw new ArgumentNullException("callback");
+
+			return FromPath(path.Reverse(), callback);
 		}
 
 		/// <summary>
 		/// Creates a new instance from the given command path.
 		/// </summary>
 		/// <param name="path"></param>
+		/// <param name="callback"></param>
 		/// <returns></returns>
-		public static ApiFeedbackCacheItem FromPath(IEnumerable<IApiInfo> path)
+		public static ApiFeedbackCacheItem FromPath(IEnumerable<IApiInfo> path, Delegate callback)
 		{
 			if (path == null)
 				throw new ArgumentNullException("path");
+
+			if (callback == null)
+				throw new ArgumentNullException("callback");
 
 			ApiClassInfo root;
 			IApiInfo leaf;
 			IEnumerable<IApiInfo> pathCopy = ApiCommandBuilder.CopyPath(path, out root, out leaf);
 
-			return new ApiFeedbackCacheItem(pathCopy, root, leaf as ApiEventInfo);
+			return new ApiFeedbackCacheItem(pathCopy, root, leaf as ApiEventInfo, callback);
 		}
 
 		#endregion
@@ -95,7 +117,7 @@ namespace ICD.Connect.API
 		/// <returns></returns>
 		public ApiFeedbackCacheItem CommandCopy()
 		{
-			return FromPath(m_Path);
+			return FromPath(m_Path, m_Callback);
 		}
 
 		/// <summary>

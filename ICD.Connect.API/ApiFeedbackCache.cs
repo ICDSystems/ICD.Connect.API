@@ -66,18 +66,22 @@ namespace ICD.Connect.API
 
 			string key = path.Peek().Name;
 
-			if (!m_SubscribedEventsMap.ContainsKey(instance))
-				m_SubscribedEventsMap.Add(instance, new Dictionary<string, ApiFeedbackCacheItem>());
-
-			if (!m_SubscribedEventsMap[instance].ContainsKey(key))
+			Dictionary<string, ApiFeedbackCacheItem> events;
+			if (!m_SubscribedEventsMap.TryGetValue(instance, out events))
 			{
-				// Create a new subscription
-				ReflectionUtils.SubscribeEvent(instance, eventInfo, this, EventCallbackMethod);
-				ApiFeedbackCacheItem info = ApiFeedbackCacheItem.FromPath(path);
-				m_SubscribedEventsMap[instance].Add(key, info);
+				events = new Dictionary<string, ApiFeedbackCacheItem>();
+				m_SubscribedEventsMap.Add(instance, events);
 			}
 
-			ApiFeedbackCacheItem callbackInfo = m_SubscribedEventsMap[instance][key];
+			ApiFeedbackCacheItem callbackInfo;
+			if (!events.TryGetValue(key, out callbackInfo))
+			{
+				// Create a new subscription
+				Delegate callback = ReflectionUtils.SubscribeEvent(instance, eventInfo, this, EventCallbackMethod);
+				callbackInfo = ApiFeedbackCacheItem.FromPath(path, callback);
+				events.Add(key, callbackInfo);
+			}
+
 			callbackInfo.AddRequestor(requestor);
 		}
 
@@ -104,14 +108,24 @@ namespace ICD.Connect.API
 
 			string key = path.Peek().Name;
 
-			if (!m_SubscribedEventsMap.ContainsKey(instance))
+			Dictionary<string, ApiFeedbackCacheItem> events;
+			if (!m_SubscribedEventsMap.TryGetValue(instance, out events))
 				return;
 
-			if (!m_SubscribedEventsMap[instance].ContainsKey(key))
+			ApiFeedbackCacheItem callbackInfo;
+			if (!events.TryGetValue(key, out callbackInfo))
 				return;
 
-			ApiFeedbackCacheItem callbackInfo = m_SubscribedEventsMap[instance][key];
 			callbackInfo.RemoveRequestor(requestor);
+			if (callbackInfo.Count > 0)
+				return;
+
+			// Remove the subscription
+			ReflectionUtils.UnsubscribeEvent(instance, eventInfo, callbackInfo.Callback);
+			events.Remove(key);
+
+			if (events.Count == 0)
+				m_SubscribedEventsMap.Remove(instance);
 		}
 
 		/// <summary>
