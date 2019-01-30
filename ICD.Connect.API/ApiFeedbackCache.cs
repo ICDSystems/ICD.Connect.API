@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Connect.API.EventArguments;
@@ -15,6 +16,24 @@ namespace ICD.Connect.API
 	public sealed class ApiFeedbackCache
 	{
 		private readonly WeakKeyDictionary<object, Dictionary<string, ApiFeedbackCacheItem>> m_SubscribedEventsMap;
+		private static MethodInfo s_EventCallbackMethod;
+
+		/// <summary>
+		/// Gets a reference to the callback method used with API events.
+		/// </summary>
+		private static MethodInfo EventCallbackMethod
+		{
+			get
+			{
+				return s_EventCallbackMethod =
+				       s_EventCallbackMethod ?? typeof(ApiFeedbackCache)
+#if SIMPLSHARP
+					                                .GetCType()
+#endif
+					                                .GetMethod("EventCallback",
+					                                           BindingFlags.NonPublic | BindingFlags.Instance);
+			}
+		}
 
 		/// <summary>
 		/// Constructor.
@@ -58,7 +77,7 @@ namespace ICD.Connect.API
 			if (!events.TryGetValue(key, out callbackInfo))
 			{
 				// Create a new subscription
-				Delegate callback = ReflectionUtils.SubscribeEvent<IApiEventArgs>(instance, eventInfo, EventCallback);
+				Delegate callback = ReflectionUtils.SubscribeEvent(instance, eventInfo, this, EventCallbackMethod);
 				callbackInfo = ApiFeedbackCacheItem.FromPath(path, callback);
 				events.Add(key, callbackInfo);
 			}
@@ -110,10 +129,11 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
-		/// Only support subscribing to events matching the signature of this method.
+		/// Only support subscribing to events matching the siganture of this method.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="args"></param>
+		[UsedImplicitly]
 		private void EventCallback(object sender, IApiEventArgs args)
 		{
 			if (sender == null)
