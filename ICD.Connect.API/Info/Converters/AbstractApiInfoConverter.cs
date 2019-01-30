@@ -28,11 +28,13 @@ namespace ICD.Connect.API.Info.Converters
 			}
 
 			// Help
+			/*
 			if (!string.IsNullOrEmpty(value.Help))
 			{
 				writer.WritePropertyName(PROPERTY_HELP);
 				writer.WriteValue(value.Help);
 			}
+			*/
 
 			// Reponse
 			if (value.Result != null)
