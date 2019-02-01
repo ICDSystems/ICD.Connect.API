@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Comparers;
 #if SIMPLSHARP
@@ -20,6 +21,10 @@ namespace ICD.Connect.API.Attributes
 		private static readonly Dictionary<Type, PropertyInfo[]> s_TypeToProperties;
 		private static readonly Dictionary<PropertyInfo, ApiPropertyAttribute> s_PropertyToAttribute;
 
+		private static readonly SafeCriticalSection s_AttributeNameToPropertySection;
+		private static readonly SafeCriticalSection s_TypeToPropertiesSection;
+		private static readonly SafeCriticalSection s_PropertyToAttributeSection;
+
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
@@ -28,6 +33,10 @@ namespace ICD.Connect.API.Attributes
 			s_AttributeNameToProperty = new Dictionary<Type, Dictionary<string, PropertyInfo>>();
 			s_TypeToProperties = new Dictionary<Type, PropertyInfo[]>();
 			s_PropertyToAttribute = new Dictionary<PropertyInfo, ApiPropertyAttribute>();
+
+			s_AttributeNameToPropertySection = new SafeCriticalSection();
+			s_TypeToPropertiesSection = new SafeCriticalSection();
+			s_PropertyToAttributeSection = new SafeCriticalSection();
 		}
 
 		/// <summary>
@@ -67,10 +76,18 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			if (!s_AttributeNameToProperty.ContainsKey(type))
-				CacheType(type);
+			s_AttributeNameToPropertySection.Enter();
+			try
+			{
+				if (!s_AttributeNameToProperty.ContainsKey(type))
+					CacheType(type);
 
-			return s_AttributeNameToProperty[type].GetDefault(info.Name, null);
+				return s_AttributeNameToProperty[type].GetDefault(info.Name, null);
+			}
+			finally
+			{
+				s_AttributeNameToPropertySection.Leave();
+			}
 		}
 
 		#endregion
@@ -82,18 +99,26 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			if (s_AttributeNameToProperty.ContainsKey(type))
-				return;
-
-			s_AttributeNameToProperty[type] = new Dictionary<string, PropertyInfo>();
-
-			foreach (PropertyInfo property in GetProperties(type))
+			s_AttributeNameToPropertySection.Enter();
+			try
 			{
-				ApiPropertyAttribute attribute = GetAttribute(property);
-				if (attribute == null)
-					continue;
+				if (s_AttributeNameToProperty.ContainsKey(type))
+					return;
 
-				s_AttributeNameToProperty[type].Add(attribute.Name, property);
+				s_AttributeNameToProperty[type] = new Dictionary<string, PropertyInfo>();
+
+				foreach (PropertyInfo property in GetProperties(type))
+				{
+					ApiPropertyAttribute attribute = GetAttribute(property);
+					if (attribute == null)
+						continue;
+
+					s_AttributeNameToProperty[type].Add(attribute.Name, property);
+				}
+			}
+			finally
+			{
+				s_AttributeNameToPropertySection.Leave();
 			}
 		}
 
@@ -102,25 +127,34 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			if (!s_TypeToProperties.ContainsKey(type))
+			s_TypeToPropertiesSection.Enter();
+			try
 			{
-				PropertyInfo[] properties =
-					type.GetAllTypes()
-					    .SelectMany(t =>
+				PropertyInfo[] properties;
+				if (!s_TypeToProperties.TryGetValue(type, out properties))
+				{
+					properties =
+						type.GetAllTypes()
+						    .SelectMany(t =>
 #if SIMPLSHARP
-					                ((CType)t)
+						                ((CType)t)
 #else
 										t.GetTypeInfo()
 #endif
-						                .GetProperties(BindingFlags))
-					    .Where(p => GetAttribute(p) != null)
-					    .Distinct(PropertyInfoApiEqualityComparer.Instance)
-					    .ToArray();
+							                .GetProperties(BindingFlags))
+						    .Where(p => GetAttribute(p) != null)
+						    .Distinct(PropertyInfoApiEqualityComparer.Instance)
+						    .ToArray();
 
-				s_TypeToProperties.Add(type, properties);
+					s_TypeToProperties.Add(type, properties);
+				}
+
+				return properties;
 			}
-
-			return s_TypeToProperties[type];
+			finally
+			{
+				s_TypeToPropertiesSection.Leave();
+			}
 		}
 
 		[CanBeNull]
@@ -129,13 +163,22 @@ namespace ICD.Connect.API.Attributes
 			if (property == null)
 				throw new ArgumentNullException("property");
 
-			if (!s_PropertyToAttribute.ContainsKey(property))
+			s_PropertyToAttributeSection.Enter();
+			try
 			{
-				ApiPropertyAttribute attribute = property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
-				s_PropertyToAttribute.Add(property, attribute);
-			}
+				ApiPropertyAttribute attribute;
+				if (!s_PropertyToAttribute.TryGetValue(property, out attribute))
+				{
+					attribute = property.GetCustomAttributes<ApiPropertyAttribute>(true).FirstOrDefault();
+					s_PropertyToAttribute.Add(property, attribute);
+				}
 
-			return s_PropertyToAttribute[property];
+				return attribute;
+			}
+			finally
+			{
+				s_PropertyToAttributeSection.Leave();
+			}
 		}
 
 		#endregion
