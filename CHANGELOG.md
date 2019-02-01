@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Changed
  - Minor changes to support IcdConsoleServer
+ - ApiClassAttribue collections are now thread safe
 
 ## [3.3.0] - 2019-01-02
 ### Added
