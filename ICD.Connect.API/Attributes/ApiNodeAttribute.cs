@@ -76,12 +76,10 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("type");
 
 			s_AttributeNameToPropertySection.Enter();
+
 			try
 			{
-				if (!s_AttributeNameToProperty.ContainsKey(type))
-					CacheType(type);
-
-				return s_AttributeNameToProperty[type].GetDefault(info.Name, null);
+				return CacheType(type).GetDefault(info.Name, null);
 			}
 			finally
 			{
@@ -93,31 +91,36 @@ namespace ICD.Connect.API.Attributes
 
 		#region Private Methods
 
-		private static void CacheType(Type type)
+		[NotNull]
+		private static Dictionary<string, PropertyInfo> CacheType(Type type)
 		{
 			if (type == null)
 				throw new ArgumentNullException("type");
 
 			s_AttributeNameToPropertySection.Enter();
+
 			try
 			{
-
-				if (s_AttributeNameToProperty.ContainsKey(type))
-					return;
-
-				s_AttributeNameToProperty[type] = new Dictionary<string, PropertyInfo>();
-
-				foreach (PropertyInfo property in GetProperties(type))
+				Dictionary<string, PropertyInfo> propertyMap;
+				if (!s_AttributeNameToProperty.TryGetValue(type, out propertyMap))
 				{
-					if (!property.CanRead)
-						continue;
+					propertyMap = new Dictionary<string, PropertyInfo>();
+					s_AttributeNameToProperty.Add(type, propertyMap);
 
-					ApiNodeAttribute attribute = GetAttribute(property);
-					if (attribute == null)
-						continue;
+					foreach (PropertyInfo property in GetProperties(type))
+					{
+						if (!property.CanRead)
+							continue;
 
-					s_AttributeNameToProperty[type].Add(attribute.Name, property);
+						ApiNodeAttribute attribute = GetAttribute(property);
+						if (attribute == null)
+							continue;
+
+						propertyMap.Add(attribute.Name, property);
+					}
 				}
+
+				return propertyMap;
 			}
 			finally
 			{
@@ -131,6 +134,7 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("type");
 
 			s_TypeToPropertiesSection.Enter();
+
 			try
 			{
 				PropertyInfo[] properties;
@@ -167,6 +171,7 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("property");
 			
 			s_PropertyToAttributesSection.Enter();
+
 			try
 			{
 				ApiNodeAttribute attribute;

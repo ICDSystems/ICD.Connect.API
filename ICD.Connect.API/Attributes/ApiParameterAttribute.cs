@@ -60,6 +60,7 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("method");
 
 			s_MethodToParametersSection.Enter();
+
 			try
 			{
 				ParameterInfo[] parameters;
@@ -84,6 +85,7 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("parameter");
 
 			s_ParameterToAttributeSection.Enter();
+
 			try
 			{
 				ApiParameterAttribute attribute;

@@ -104,11 +104,7 @@ namespace ICD.Connect.API.Attributes
 
 			try
 			{
-
-				if (!s_AttributeNameToMethod.ContainsKey(type))
-					CacheType(type);
-
-				return s_AttributeNameToMethod[type].GetDefault(info.Name, null);
+				return CacheType(type).GetDefault(info.Name, null);
 			}
 			finally
 			{
@@ -120,28 +116,33 @@ namespace ICD.Connect.API.Attributes
 
 		#region Private Methods
 
-		private static void CacheType(Type type)
+		[NotNull]
+		private static Dictionary<string, MethodInfo> CacheType(Type type)
 		{
 			if (type == null)
 				throw new ArgumentNullException("type");
 
 			s_AttributeNameToMethodSection.Enter();
+
 			try
 			{
-
-				if (s_AttributeNameToMethod.ContainsKey(type))
-					return;
-
-				s_AttributeNameToMethod[type] = new Dictionary<string, MethodInfo>();
-
-				foreach (MethodInfo method in GetMethods(type))
+				Dictionary<string, MethodInfo> methodMap;
+				if (!s_AttributeNameToMethod.TryGetValue(type, out methodMap))
 				{
-					ApiMethodAttribute attribute = GetAttribute(method);
-					if (attribute == null)
-						continue;
+					methodMap = new Dictionary<string, MethodInfo>();
+					s_AttributeNameToMethod.Add(type, methodMap);
 
-					s_AttributeNameToMethod[type].Add(attribute.Name, method);
+					foreach (MethodInfo method in GetMethods(type))
+					{
+						ApiMethodAttribute attribute = GetAttribute(method);
+						if (attribute == null)
+							continue;
+
+						methodMap.Add(attribute.Name, method);
+					}
 				}
+
+				return methodMap;
 			}
 			finally
 			{
@@ -155,6 +156,7 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("type");
 			
 			s_TypeToMethodsSection.Enter();
+
 			try
 			{
 				MethodInfo[] methods;
@@ -192,6 +194,7 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("method");
 
 			s_MethodToAttributeSection.Enter();
+
 			try
 			{
 				ApiMethodAttribute attribute;

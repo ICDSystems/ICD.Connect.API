@@ -100,12 +100,10 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("type");
 
 			s_AttributeNameToEventSection.Enter();
+
 			try
 			{
-				if (!s_AttributeNameToEvent.ContainsKey(type))
-					CacheType(type);
-
-				return s_AttributeNameToEvent[type].GetDefault(info.Name, null);
+				return CacheType(type).GetDefault(info.Name, null);
 			}
 			finally
 			{
@@ -117,28 +115,33 @@ namespace ICD.Connect.API.Attributes
 
 		#region Private Events
 
-		private static void CacheType(Type type)
+		[NotNull]
+		private static Dictionary<string, EventInfo> CacheType(Type type)
 		{
 			if (type == null)
 				throw new ArgumentNullException("type");
-
-			if (s_AttributeNameToEvent.ContainsKey(type))
-				return;
 
 			s_AttributeNameToEventSection.Enter();
 
 			try
 			{
-				s_AttributeNameToEvent[type] = new Dictionary<string, EventInfo>();
-
-				foreach (EventInfo eventInfo in GetEvents(type))
+				Dictionary<string, EventInfo> eventMap;
+				if (!s_AttributeNameToEvent.TryGetValue(type, out eventMap))
 				{
-					ApiEventAttribute attribute = GetAttribute(eventInfo);
-					if (attribute == null)
-						continue;
+					eventMap = new Dictionary<string, EventInfo>();
+					s_AttributeNameToEvent.Add(type, eventMap);
 
-					s_AttributeNameToEvent[type].Add(attribute.Name, eventInfo);
+					foreach (EventInfo eventInfo in GetEvents(type))
+					{
+						ApiEventAttribute attribute = GetAttribute(eventInfo);
+						if (attribute == null)
+							continue;
+
+						eventMap.Add(attribute.Name, eventInfo);
+					}
 				}
+
+				return eventMap;
 			}
 			finally
 			{
@@ -152,6 +155,7 @@ namespace ICD.Connect.API.Attributes
 				throw new ArgumentNullException("type");
 
 			s_TypeToEventsSection.Enter();
+
 			try
 			{
 				EventInfo[] events;
