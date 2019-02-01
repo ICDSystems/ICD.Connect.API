@@ -74,7 +74,7 @@ namespace ICD.Connect.API.Attributes
 			}
 			finally
 			{
-				s_MethodToParametersSection.Enter();
+				s_MethodToParametersSection.Leave();
 			}
 		}
 

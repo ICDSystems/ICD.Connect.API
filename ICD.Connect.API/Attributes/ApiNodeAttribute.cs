@@ -160,7 +160,7 @@ namespace ICD.Connect.API.Attributes
 			}
 			finally
 			{
-				s_TypeToPropertiesSection.Enter();
+				s_TypeToPropertiesSection.Leave();
 			}
 		}
 
