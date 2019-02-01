@@ -20,6 +20,10 @@ namespace ICD.Connect.API.Attributes
 		private static readonly Dictionary<Type, ApiClassAttribute[]> s_TypeAttributes;
 		private static readonly Dictionary<Type, Type[]> s_TypeProxyTypes;
 
+		private static readonly SafeCriticalSection s_AttributeCacheCriticalSection;
+		private static readonly SafeCriticalSection s_TypeAttributesCriticalSection;
+		private static readonly SafeCriticalSection s_TypeProxyTypesCriticalSection;
+
 		private readonly Type m_ProxyType;
 		private readonly Type m_Overrides;
 
@@ -45,6 +49,9 @@ namespace ICD.Connect.API.Attributes
 			s_AttributeCache = new Dictionary<Type, ApiClassAttribute>();
 			s_TypeAttributes = new Dictionary<Type, ApiClassAttribute[]>();
 			s_TypeProxyTypes = new Dictionary<Type, Type[]>();
+			s_AttributeCacheCriticalSection = new SafeCriticalSection();
+			s_TypeAttributesCriticalSection = new SafeCriticalSection();
+			s_TypeProxyTypesCriticalSection = new SafeCriticalSection();
 		}
 
 		/// <summary>
@@ -156,19 +163,30 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			if (!s_TypeProxyTypes.ContainsKey(type))
+			s_TypeProxyTypesCriticalSection.Enter();
+
+			try
 			{
-				Type[] proxyTypes =
-					GetAttributes(type).Select(a => a.ProxyType)
-					                   .Where(t => t != null)
-					                   .Distinct()
-					                   .ToArray();
+				Type[] proxyTypes;
 
-				s_TypeProxyTypes.Add(type, proxyTypes);
+				if (!s_TypeProxyTypes.TryGetValue(type, out proxyTypes))
+				{
+					proxyTypes =
+						GetAttributes(type).Select(a => a.ProxyType)
+						                   .Where(t => t != null)
+						                   .Distinct()
+						                   .ToArray();
+
+					s_TypeProxyTypes.Add(type, proxyTypes);
+				}
+
+				return proxyTypes;
 			}
-
-			return s_TypeProxyTypes[type];
-		}
+			finally
+			{
+				s_TypeProxyTypesCriticalSection.Leave();
+			}
+	}
 
 		#endregion
 
@@ -184,27 +202,39 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			if (!s_TypeAttributes.ContainsKey(type))
+			s_TypeAttributesCriticalSection.Enter();
+
+			try
 			{
-				List<ApiClassAttribute> attributes = new List<ApiClassAttribute>();
+				ApiClassAttribute[] attributes;
 
-				// Get the attribute for the immediate type.
-				ApiClassAttribute attribute = GetAttribute(type);
-				if (attribute != null)
-					attributes.Add(attribute);
+				if (!s_TypeAttributes.TryGetValue(type, out attributes))
+				{
+					List<ApiClassAttribute> attributesList = new List<ApiClassAttribute>();
 
-				// Recurse over the overridden types.
-				Type overrides = attribute == null ? null : attribute.Overrides;
-				if (overrides == type)
-					throw new InvalidOperationException(string.Format("Cyclic override of {0}", type.Name));
+					// Get the attribute for the immediate type.
+					ApiClassAttribute attribute = GetAttribute(type);
+					if (attribute != null)
+						attributesList.Add(attribute);
 
-				if (overrides != null)
-					attributes.AddRange(GetAttributes(overrides));
+					// Recurse over the overridden types.
+					Type overrides = attribute == null ? null : attribute.Overrides;
+					if (overrides == type)
+						throw new InvalidOperationException(string.Format("Cyclic override of {0}", type.Name));
 
-				s_TypeAttributes.Add(type, attributes.ToArray(attributes.Count));
+					if (overrides != null)
+						attributesList.AddRange(GetAttributes(overrides));
+
+					s_TypeAttributes.Add(type, attributesList.ToArray(attributesList.Count));
+				}
+
+				return attributes;
+
 			}
-
-			return s_TypeAttributes[type];
+			finally
+			{
+				s_TypeAttributesCriticalSection.Leave();
+			}
 		}
 
 		[CanBeNull]
@@ -213,45 +243,55 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			if (!s_AttributeCache.ContainsKey(type))
+			s_AttributeCacheCriticalSection.Enter();
+
+			try
 			{
-				// First see if we can find an attribute on the class
-				ApiClassAttribute attribute =
+				ApiClassAttribute attribute;
+				if (!s_AttributeCache.TryGetValue(type, out attribute))
+				{
+					// First see if we can find an attribute on the class
+					attribute =
 #if SIMPLSHARP
-					((CType)type)
+						((CType)type)
 #else
 					type
 #endif
-						.GetCustomAttributes<ApiClassAttribute>(true)
-						.FirstOrDefault();
+							.GetCustomAttributes<ApiClassAttribute>(true)
+							.FirstOrDefault();
 
-				// Try walking the interfaces
-				if (attribute == null)
-				{
-					IEnumerable<Type> interfaces =
-						RecursionUtils.BreadthFirstSearch(type, t => t.GetMinimalInterfaces())
-						              .Except(type);
-
-					foreach (Type item in interfaces)
+					// Try walking the interfaces
+					if (attribute == null)
 					{
-						attribute =
+						IEnumerable<Type> interfaces =
+							RecursionUtils.BreadthFirstSearch(type, t => t.GetMinimalInterfaces())
+							              .Except(type);
+
+						foreach (Type item in interfaces)
+						{
+							attribute =
 #if SIMPLSHARP
-							((CType)item)
+								((CType)item)
 #else
 							item
 #endif
-								.GetCustomAttributes<ApiClassAttribute>(false)
-								.FirstOrDefault();
+									.GetCustomAttributes<ApiClassAttribute>(false)
+									.FirstOrDefault();
 
-						if (attribute != null)
-							break;
+							if (attribute != null)
+								break;
+						}
 					}
+
+					s_AttributeCache.Add(type, attribute);
 				}
 
-				s_AttributeCache.Add(type, attribute);
+				return attribute;
 			}
-
-			return s_AttributeCache[type];
+			finally
+			{
+				s_AttributeCacheCriticalSection.Leave();
+			}
 		}
 
 		#endregion
