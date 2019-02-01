@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Comparers;
 #if SIMPLSHARP
@@ -20,6 +21,10 @@ namespace ICD.Connect.API.Attributes
 		private static readonly Dictionary<Type, MethodInfo[]> s_TypeToMethods;
 		private static readonly Dictionary<MethodInfo, ApiMethodAttribute> s_MethodToAttribute;
 
+		private static readonly SafeCriticalSection s_AttributeNameToMethodSection;
+		private static readonly SafeCriticalSection s_TypeToMethodsSection;
+		private static readonly SafeCriticalSection s_MethodToAttributeSection;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -28,6 +33,10 @@ namespace ICD.Connect.API.Attributes
 			s_AttributeNameToMethod = new Dictionary<Type, Dictionary<string, MethodInfo>>();
 			s_TypeToMethods = new Dictionary<Type, MethodInfo[]>();
 			s_MethodToAttribute = new Dictionary<MethodInfo, ApiMethodAttribute>();
+
+			s_AttributeNameToMethodSection = new SafeCriticalSection();
+			s_TypeToMethodsSection = new SafeCriticalSection();
+			s_MethodToAttributeSection = new SafeCriticalSection();
 		}
 
 		/// <summary>
@@ -91,10 +100,20 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			if (!s_AttributeNameToMethod.ContainsKey(type))
-				CacheType(type);
+			s_AttributeNameToMethodSection.Enter();
 
-			return s_AttributeNameToMethod[type].GetDefault(info.Name, null);
+			try
+			{
+
+				if (!s_AttributeNameToMethod.ContainsKey(type))
+					CacheType(type);
+
+				return s_AttributeNameToMethod[type].GetDefault(info.Name, null);
+			}
+			finally
+			{
+				s_AttributeNameToMethodSection.Leave();
+			}
 		}
 
 		#endregion
@@ -106,18 +125,27 @@ namespace ICD.Connect.API.Attributes
 			if (type == null)
 				throw new ArgumentNullException("type");
 
-			if (s_AttributeNameToMethod.ContainsKey(type))
-				return;
-
-			s_AttributeNameToMethod[type] = new Dictionary<string, MethodInfo>();
-
-			foreach (MethodInfo method in GetMethods(type))
+			s_AttributeNameToMethodSection.Enter();
+			try
 			{
-				ApiMethodAttribute attribute = GetAttribute(method);
-				if (attribute == null)
-					continue;
 
-				s_AttributeNameToMethod[type].Add(attribute.Name, method);
+				if (s_AttributeNameToMethod.ContainsKey(type))
+					return;
+
+				s_AttributeNameToMethod[type] = new Dictionary<string, MethodInfo>();
+
+				foreach (MethodInfo method in GetMethods(type))
+				{
+					ApiMethodAttribute attribute = GetAttribute(method);
+					if (attribute == null)
+						continue;
+
+					s_AttributeNameToMethod[type].Add(attribute.Name, method);
+				}
+			}
+			finally
+			{
+				s_AttributeNameToMethodSection.Leave();
 			}
 		}
 
@@ -125,27 +153,36 @@ namespace ICD.Connect.API.Attributes
 		{
 			if (type == null)
 				throw new ArgumentNullException("type");
-
-			if (!s_TypeToMethods.ContainsKey(type))
+			
+			s_TypeToMethodsSection.Enter();
+			try
 			{
-				MethodInfo[] methods =
-					type.GetAllTypes()
-					    .SelectMany(t =>
+				MethodInfo[] methods;
+				if (!s_TypeToMethods.TryGetValue(type, out methods))
+				{
+					methods =
+						type.GetAllTypes()
+						    .SelectMany(t =>
 #if SIMPLSHARP
-					                ((CType)t)
+						                ((CType)t)
 #else
 										t.GetTypeInfo()
 #endif
-						                .GetMethods(BindingFlags))
-					    .Where(m => !m.IsGenericMethod)
-					    .Where(m => GetAttribute(m) != null)
-					    .Distinct(MethodInfoApiEqualityComparer.Instance)
-					    .ToArray();
+							                .GetMethods(BindingFlags))
+						    .Where(m => !m.IsGenericMethod)
+						    .Where(m => GetAttribute(m) != null)
+						    .Distinct(MethodInfoApiEqualityComparer.Instance)
+						    .ToArray();
 
-				s_TypeToMethods.Add(type, methods);
+					s_TypeToMethods.Add(type, methods);
+				}
+
+				return methods;
 			}
-
-			return s_TypeToMethods[type];
+			finally
+			{
+				s_TypeToMethodsSection.Leave();
+			}
 		}
 
 		[CanBeNull]
@@ -154,13 +191,22 @@ namespace ICD.Connect.API.Attributes
 			if (method == null)
 				throw new ArgumentNullException("method");
 
-			if (!s_MethodToAttribute.ContainsKey(method))
+			s_MethodToAttributeSection.Enter();
+			try
 			{
-				ApiMethodAttribute attribute = method.GetCustomAttributes<ApiMethodAttribute>(true).FirstOrDefault();
-				s_MethodToAttribute.Add(method, attribute);
-			}
+				ApiMethodAttribute attribute;
+				if (!s_MethodToAttribute.TryGetValue(method, out attribute))
+				{
+					attribute = method.GetCustomAttributes<ApiMethodAttribute>(true).FirstOrDefault();
+					s_MethodToAttribute.Add(method, attribute);
+				}
 
-			return s_MethodToAttribute[method];
+				return attribute;
+			}
+			finally
+			{
+				s_MethodToAttributeSection.Leave();
+			}
 		}
 
 		#endregion

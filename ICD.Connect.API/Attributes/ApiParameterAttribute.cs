@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -18,6 +19,9 @@ namespace ICD.Connect.API.Attributes
 		private static readonly Dictionary<ParameterInfo, ApiParameterAttribute> s_ParameterToAttribute;
 		private static readonly Dictionary<MethodInfo, ParameterInfo[]> s_MethodToParameters;
 
+		private static readonly SafeCriticalSection s_ParameterToAttributeSection;
+		private static readonly SafeCriticalSection s_MethodToParametersSection;
+
 		/// <summary>
 		/// Static constructor.
 		/// </summary>
@@ -25,6 +29,9 @@ namespace ICD.Connect.API.Attributes
 		{
 			s_ParameterToAttribute = new Dictionary<ParameterInfo, ApiParameterAttribute>();
 			s_MethodToParameters = new Dictionary<MethodInfo, ParameterInfo[]>();
+
+			s_ParameterToAttributeSection = new SafeCriticalSection();
+			s_MethodToParametersSection = new SafeCriticalSection();	
 		}
 
 		/// <summary>
@@ -52,13 +59,22 @@ namespace ICD.Connect.API.Attributes
 			if (method == null)
 				throw new ArgumentNullException("method");
 
-			if (!s_MethodToParameters.ContainsKey(method))
+			s_MethodToParametersSection.Enter();
+			try
 			{
-				ParameterInfo[] parameters = method.GetParameters();
-				s_MethodToParameters.Add(method, parameters);
-			}
+				ParameterInfo[] parameters;
+				if (!s_MethodToParameters.TryGetValue(method, out parameters))
+				{
+					parameters = method.GetParameters();
+					s_MethodToParameters.Add(method, parameters);
+				}
 
-			return s_MethodToParameters[method];
+				return parameters;
+			}
+			finally
+			{
+				s_MethodToParametersSection.Enter();
+			}
 		}
 
 		[CanBeNull]
@@ -67,16 +83,25 @@ namespace ICD.Connect.API.Attributes
 			if (parameter == null)
 				throw new ArgumentNullException("parameter");
 
-			if (!s_ParameterToAttribute.ContainsKey(parameter))
+			s_ParameterToAttributeSection.Enter();
+			try
 			{
-				// Parameter attributes are optional
-				ApiParameterAttribute attribute = parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault() ??
-												  new ApiParameterAttribute(parameter.Name, string.Empty);
+				ApiParameterAttribute attribute;
+				if (!s_ParameterToAttribute.TryGetValue(parameter, out attribute))
+				{
+					// Parameter attributes are optional
+					attribute = parameter.GetCustomAttributes<ApiParameterAttribute>(true).FirstOrDefault() ??
+					                                  new ApiParameterAttribute(parameter.Name, string.Empty);
 
-				s_ParameterToAttribute.Add(parameter, attribute);
+					s_ParameterToAttribute.Add(parameter, attribute);
+				}
+
+				return attribute;
 			}
-
-			return s_ParameterToAttribute[parameter];
+			finally
+			{
+				s_ParameterToAttributeSection.Leave();
+			}
 		}
 	}
 }
