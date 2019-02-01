@@ -186,7 +186,7 @@ namespace ICD.Connect.API.Attributes
 			{
 				s_TypeProxyTypesCriticalSection.Leave();
 			}
-	}
+		}
 
 		#endregion
 
@@ -225,7 +225,9 @@ namespace ICD.Connect.API.Attributes
 					if (overrides != null)
 						attributesList.AddRange(GetAttributes(overrides));
 
-					s_TypeAttributes.Add(type, attributesList.ToArray(attributesList.Count));
+					attributes = attributesList.ToArray(attributesList.Count);
+
+					s_TypeAttributes.Add(type, attributes);
 				}
 
 				return attributes;
