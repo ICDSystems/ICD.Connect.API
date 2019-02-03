@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.Services;
+using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.EventArguments;
 using ICD.Connect.API.Info;
 #if SIMPLSHARP
@@ -15,6 +17,16 @@ namespace ICD.Connect.API
 	public sealed class ApiFeedbackCache
 	{
 		private readonly WeakKeyDictionary<object, Dictionary<string, ApiFeedbackCacheItem>> m_SubscribedEventsMap;
+
+		private ILoggerService m_CachedLogger;
+
+		/// <summary>
+		/// Logger for the originator.
+		/// </summary>
+		private ILoggerService Logger
+		{
+			get { return m_CachedLogger = m_CachedLogger ?? ServiceProvider.TryGetService<ILoggerService>(); }
+		}
 
 		/// <summary>
 		/// Constructor.
@@ -59,6 +71,9 @@ namespace ICD.Connect.API
 			{
 				// Create a new subscription
 				Delegate callback = ReflectionUtils.SubscribeEvent<IApiEventArgs>(instance, eventInfo, EventCallback);
+
+				Logger.AddEntry(eSeverity.Debug, "{0} subscribed to {1} event {2}", requestor, instance, eventInfo.Name);
+
 				callbackInfo = ApiFeedbackCacheItem.FromPath(path, callback);
 				events.Add(key, callbackInfo);
 			}
@@ -103,6 +118,9 @@ namespace ICD.Connect.API
 
 			// Remove the subscription
 			ReflectionUtils.UnsubscribeEvent(instance, eventInfo, callbackInfo.Callback);
+
+			Logger.AddEntry(eSeverity.Debug, "{0} unsubscribed from {1} event {2}", requestor, instance, eventInfo.Name);
+
 			events.Remove(key);
 
 			if (events.Count == 0)
