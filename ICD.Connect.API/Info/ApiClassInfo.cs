@@ -18,8 +18,8 @@ namespace ICD.Connect.API.Info
 	[JsonConverter(typeof(ApiClassInfoConverter))]
 	public sealed class ApiClassInfo : AbstractApiInfo
 	{
-		[CanBeNull]
-		private List<Type> m_ProxyTypes;
+		//[CanBeNull]
+		//private List<Type> m_ProxyTypes;
 
 		[CanBeNull]
 		private Dictionary<string, ApiEventInfo> m_Events;
@@ -34,7 +34,7 @@ namespace ICD.Connect.API.Info
 
 		#region Properties
 
-		public int ProxyTypeCount { get { return m_ProxyTypes == null ? 0 : m_ProxyTypes.Count; } }
+		//public int ProxyTypeCount { get { return m_ProxyTypes == null ? 0 : m_ProxyTypes.Count; } }
 
 		public int EventCount { get { return m_Events == null ? 0 : m_Events.Count; } }
 
@@ -53,7 +53,7 @@ namespace ICD.Connect.API.Info
 		{
 			get
 			{
-				return ProxyTypeCount +
+				return //ProxyTypeCount +
 					   EventCount +
 					   MethodCount +
 					   PropertyCount +
@@ -122,14 +122,14 @@ namespace ICD.Connect.API.Info
 
 			IsProxy = type.IsAssignableTo(typeof(IProxy));
 
-			IEnumerable<Type> proxyTypes = GetProxyTypes(type);
+			//IEnumerable<Type> proxyTypes = GetProxyTypes(type);
 			IEnumerable<ApiEventInfo> events = GetEventInfo(type, instance, depth - 1);
 			IEnumerable<ApiMethodInfo> methods = GetMethodInfo(type, instance, depth - 1);
 			IEnumerable<ApiPropertyInfo> properties = GetPropertyInfo(type, instance, depth - 1);
 			IEnumerable<ApiNodeInfo> nodes = GetNodeInfo(type, instance, depth - 1);
 			IEnumerable<ApiNodeGroupInfo> nodeGroups = GetNodeGroupInfo(type, instance, depth - 1);
 
-			SetProxyTypes(proxyTypes);
+			//SetProxyTypes(proxyTypes);
 			SetEvents(events);
 			SetMethods(methods);
 			SetProperties(properties);
@@ -139,7 +139,7 @@ namespace ICD.Connect.API.Info
 
 		#region Methods
 
-		#region ProxyTypes
+		/*#region ProxyTypes
 
 		/// <summary>
 		/// Clears the proxyTypes for this class.
@@ -189,7 +189,7 @@ namespace ICD.Connect.API.Info
 				m_ProxyTypes.Add(proxyType);
 		}
 
-		#endregion
+		#endregion*/
 
 		#region Events
 
@@ -546,10 +546,10 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
 		}
 
-		private IEnumerable<Type> GetProxyTypes(Type type)
+		/*private IEnumerable<Type> GetProxyTypes(Type type)
 		{
 			return type == null ? Enumerable.Empty<Type>() : ApiClassAttribute.GetProxyTypes(type);
-		}
+		}*/
 
 		private IEnumerable<ApiPropertyInfo> GetPropertyInfo(Type type, object instance, int depth)
 		{

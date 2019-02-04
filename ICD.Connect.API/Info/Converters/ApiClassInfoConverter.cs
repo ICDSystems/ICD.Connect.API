@@ -42,12 +42,12 @@ namespace ICD.Connect.API.Info.Converters
 				writer.WriteValue(value.IsProxy);
 			}
 
-			// Proxy Types
+			/*// Proxy Types
 			if (value.ProxyTypeCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_PROXYTYPES);
 				serializer.SerializeArray(writer, value.GetProxyTypes(), (s, w, item) => w.WriteType(item));
-			}
+			}*/
 
 			// Events
 			if (value.EventCount > 0)
@@ -101,13 +101,13 @@ namespace ICD.Connect.API.Info.Converters
 					instance.IsProxy = reader.GetValueAsBool();
 					break;
 
-				case PROPERTY_PROXYTYPES:
+				/*case PROPERTY_PROXYTYPES:
 					// Skip proxy types that can't be deserialized.
 					// This is by design - we fall back to the best known compatible type.
 					IEnumerable<Type> proxyTypes = serializer.DeserializeArray(reader, (s, r) => r.GetValueAsType())
 					                                         .Where(t => t != null);
 					instance.SetProxyTypes(proxyTypes);
-					break;
+					break;*/
 
 				case PROPERTY_EVENTS:
 					IEnumerable<ApiEventInfo> events = serializer.DeserializeArray<ApiEventInfo>(reader);
