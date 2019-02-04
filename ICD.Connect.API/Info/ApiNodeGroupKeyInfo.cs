@@ -7,7 +7,20 @@ namespace ICD.Connect.API.Info
 	[JsonConverter(typeof(ApiNodeGroupKeyInfoConverter))]
 	public sealed class ApiNodeGroupKeyInfo : AbstractApiInfo
 	{
-		public uint Key { get; set; }
+		private uint m_Key;
+
+		public uint Key
+		{
+			get
+			{
+				return m_Key;
+			}
+			set
+			{
+				m_Key = value;
+				Name = value.ToString();
+			}
+		}
 
 		/// <summary>
 		/// Gets/sets the node.
