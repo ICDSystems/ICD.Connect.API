@@ -27,7 +27,6 @@ namespace ICD.Connect.API.Info
 			return new ApiNodeGroupKeyInfo
 			{
 				Key = key,
-				Name = key.ToString(),
 				Node = classInfo
 			};
 		}

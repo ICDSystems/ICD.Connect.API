@@ -27,8 +27,11 @@ namespace ICD.Connect.API.Info.Converters
 		{
 			base.WriteProperties(writer, value, serializer);
 
-			writer.WritePropertyName(PROPERTY_KEY);
-			writer.WriteValue(value.Key);
+			if (value.Key != 0)
+			{
+				writer.WritePropertyName(PROPERTY_KEY);
+				writer.WriteValue(value.Key);
+			}
 
 			if (value.Node != null)
 			{
