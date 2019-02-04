@@ -30,8 +30,11 @@ namespace ICD.Connect.API.Info.Converters
 			base.WriteProperties(writer, value, serializer);
 
 			// Error Code
-			writer.WritePropertyName(PROPERTY_ERRORCODE);
-			writer.WriteValue(value.ErrorCode);
+			if (value.ErrorCode != default(ApiResult.eErrorCode))
+			{
+				writer.WritePropertyName(PROPERTY_ERRORCODE);
+				writer.WriteValue(value.ErrorCode);
+			}
 
 			// Type
 			if (value.Type != null)
