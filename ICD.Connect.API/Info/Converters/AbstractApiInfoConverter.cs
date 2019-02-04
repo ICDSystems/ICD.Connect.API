@@ -36,7 +36,7 @@ namespace ICD.Connect.API.Info.Converters
 			}
 			*/
 
-			// Reponse
+			// Response
 			if (value.Result != null)
 			{
 				writer.WritePropertyName(PROPERTY_RESULT);

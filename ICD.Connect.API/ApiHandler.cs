@@ -57,8 +57,12 @@ namespace ICD.Connect.API
 			if (info == null)
 				throw new ArgumentNullException("info");
 
-			HandleRequest(requestor, info, typeof(ApiHandler), null, new Stack<IApiInfo>());
+			HandleClassRequest(requestor, info, typeof(ApiHandler), null, new Stack<IApiInfo>());
 		}
+
+		#endregion
+
+		#region Private Methods
 
 		/// <summary>
 		/// Interprets the incoming API request.
@@ -68,7 +72,7 @@ namespace ICD.Connect.API
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(IApiRequestor requestor, ApiClassInfo info, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleClassRequest(IApiRequestor requestor, ApiClassInfo info, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
@@ -89,19 +93,19 @@ namespace ICD.Connect.API
 			try
 			{
 				foreach (ApiEventInfo eventInfo in info.GetEvents())
-					HandleRequest(requestor, eventInfo, type, instance, path);
-
-				foreach (ApiMethodInfo method in info.GetMethods())
-					HandleRequest(requestor, method, type, instance, path);
+					HandleEventRequest(requestor, eventInfo, type, instance, path);
 
 				foreach (ApiPropertyInfo property in info.GetProperties())
-					HandleRequest(requestor, property, type, instance, path);
+					HandlePropertyRequest(property, type, instance, path);
+
+				foreach (ApiMethodInfo method in info.GetMethods())
+					HandleMethodRequest(method, type, instance, path);
 
 				foreach (ApiNodeInfo node in info.GetNodes())
-					HandleRequest(requestor, node, type, instance, path);
+					HandleNodeRequest(requestor, node, type, instance, path);
 
 				foreach (ApiNodeGroupInfo nodeGroup in info.GetNodeGroups())
-					HandleRequest(requestor, nodeGroup, type, instance, path);
+					HandleNodeGroupRequest(requestor, nodeGroup, type, instance, path);
 			}
 			finally
 			{
@@ -117,7 +121,7 @@ namespace ICD.Connect.API
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(IApiRequestor requestor, ApiEventInfo info, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleEventRequest(IApiRequestor requestor, ApiEventInfo info, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
@@ -174,7 +178,7 @@ namespace ICD.Connect.API
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(IApiRequestor requestor, ApiNodeInfo node, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleNodeRequest(IApiRequestor requestor, ApiNodeInfo node, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (node == null)
 				throw new ArgumentNullException("node");
@@ -182,7 +186,7 @@ namespace ICD.Connect.API
 			type = instance == null ? type : instance.GetType();
 			PropertyInfo property = ApiNodeAttribute.GetProperty(node, type);
 
-            // Couldn't find an ApiNodeAttribute for the given info
+			// Couldn't find an ApiNodeAttribute for the given info
 			if (property == null)
 			{
 				node.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingMember};
@@ -207,7 +211,7 @@ namespace ICD.Connect.API
 				}
 
 				Type nodeType = nodeValue.GetType();
-				HandleRequest(requestor, node.Node, nodeType, nodeValue, path);
+				HandleClassRequest(requestor, node.Node, nodeType, nodeValue, path);
 			}
 			finally
 			{
@@ -223,7 +227,7 @@ namespace ICD.Connect.API
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(IApiRequestor requestor, ApiNodeGroupInfo nodeGroup, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleNodeGroupRequest(IApiRequestor requestor, ApiNodeGroupInfo nodeGroup, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (nodeGroup == null)
 				throw new ArgumentNullException("nodeGroup");
@@ -248,11 +252,11 @@ namespace ICD.Connect.API
 				IApiNodeGroup group = property.GetValue(instance, null) as IApiNodeGroup;
 
 				// Found the ApiNodeGroupAttribute but the property value was null
-				if (group == null)
+				if (@group == null)
 				{
 					nodeGroup.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.MissingNode };
 					nodeGroup.Result.SetValue(string.Format("The node group at property {0} is null.",
-															StringUtils.ToRepresentation(nodeGroup.Name)));
+					                                        StringUtils.ToRepresentation(nodeGroup.Name)));
 					nodeGroup.ClearNodes();
 					return;
 				}
@@ -264,7 +268,7 @@ namespace ICD.Connect.API
 					handled = true;
 
 					// The key for the group is invalid
-					if (!group.ContainsKey(node.Key))
+					if (!@group.ContainsKey(node.Key))
 					{
 						node.Node = null;
 						node.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.MissingNode};
@@ -273,7 +277,7 @@ namespace ICD.Connect.API
 						continue;
 					}
 
-					object classInstance = group[node.Key];
+					object classInstance = @group[node.Key];
 
 					// The instance at the given key is null
 					if (classInstance == null)
@@ -291,7 +295,7 @@ namespace ICD.Connect.API
 
 					try
 					{
-						HandleRequest(requestor, node.Node, classType, classInstance, path);
+						HandleClassRequest(requestor, node.Node, classType, classInstance, path);
 					}
 					finally
 					{
@@ -316,12 +320,11 @@ namespace ICD.Connect.API
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
-		/// <param name="requestor"></param>
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(IApiRequestor requestor, ApiMethodInfo info, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandleMethodRequest(ApiMethodInfo info, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
@@ -358,7 +361,7 @@ namespace ICD.Connect.API
 #if SIMPLSHARP
 				                             (Type)
 #endif
-				                             p.ParameterType)
+					                             p.ParameterType)
 				                     .ToArray();
 
 				// Wrong number of parameters.
@@ -366,7 +369,7 @@ namespace ICD.Connect.API
 				{
 					info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.InvalidParameter };
 					info.Result.SetValue(string.Format("Parameters length {0} does not match method parameters length {1}.",
-													   parameters.Length, types.Length));
+					                                   parameters.Length, types.Length));
 					info.ClearParameters();
 					return;
 				}
@@ -393,7 +396,7 @@ namespace ICD.Connect.API
 				{
 					info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.InvalidParameter };
 					info.Result.SetValue(string.Format("Failed to execute method {0} due to one or more invalid parameters.",
-													   StringUtils.ToRepresentation(info.Name)));
+					                                   StringUtils.ToRepresentation(info.Name)));
 					return;
 				}
 
@@ -408,8 +411,8 @@ namespace ICD.Connect.API
 				{
 					info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
 					info.Result.SetValue(string.Format("Failed to execute method {0} due to {1} - {2}.",
-													   StringUtils.ToRepresentation(info.Name),
-													   e.GetType().Name, e.Message));
+					                                   StringUtils.ToRepresentation(info.Name),
+					                                   e.GetType().Name, e.Message));
 					return;
 				}
 
@@ -425,12 +428,11 @@ namespace ICD.Connect.API
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
-		/// <param name="requestor"></param>
 		/// <param name="info"></param>
 		/// <param name="type"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		private static void HandleRequest(IApiRequestor requestor, ApiPropertyInfo info, Type type, object instance, Stack<IApiInfo> path)
+		private static void HandlePropertyRequest(ApiPropertyInfo info, Type type, object instance, Stack<IApiInfo> path)
 		{
 			if (info == null)
 				throw new ArgumentNullException("info");
@@ -467,7 +469,7 @@ namespace ICD.Connect.API
 					{
 						value = ReflectionUtils.ChangeType(info.Value, property.PropertyType);
 					}
-						// Value is the incorrect type.
+					// Value is the incorrect type.
 					catch (Exception)
 					{
 						info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.InvalidParameter};
@@ -479,7 +481,7 @@ namespace ICD.Connect.API
 					{
 						property.SetValue(instance, value, null);
 					}
-						// Property failed to execute.
+					// Property failed to execute.
 					catch (Exception e)
 					{
 						info.Result = new ApiResult {ErrorCode = ApiResult.eErrorCode.Exception};
