@@ -35,8 +35,11 @@ namespace ICD.Connect.API.Info.Converters
 				writer.WriteType(value.Type);
 			}
 
-			writer.WritePropertyName(PROPERTY_VALUE);
-			serializer.Serialize(writer, value.Value);
+			if (value.Value != null)
+			{
+				writer.WritePropertyName(PROPERTY_VALUE);
+				serializer.Serialize(writer, value.Value);
+			}
 
 			if (value.Read)
 			{
