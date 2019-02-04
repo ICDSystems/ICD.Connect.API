@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using ICD.Common.Utils.Extensions;
+﻿using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 
 namespace ICD.Connect.API.Info.Converters
@@ -31,7 +30,16 @@ namespace ICD.Connect.API.Info.Converters
 			if (value.NodeCount > 0)
 			{
 				writer.WritePropertyName(PROPERTY_NODES);
-				serializer.SerializeArray(writer, value.GetNodes());
+
+				writer.WriteStartObject();
+				{
+					foreach (ApiNodeGroupKeyInfo kvp in value.GetNodes())
+					{
+						writer.WritePropertyName(kvp.Key.ToString());
+						serializer.Serialize(writer, kvp.Node);
+					}
+				}
+				writer.WriteEndObject();
 			}
 		}
 
@@ -48,14 +56,25 @@ namespace ICD.Connect.API.Info.Converters
 			switch (property)
 			{
 				case PROPERTY_NODES:
-					IEnumerable<ApiNodeGroupKeyInfo> nodes = serializer.DeserializeArray<ApiNodeGroupKeyInfo>(reader);
-					instance.SetNodes(nodes);
+					reader.ReadObject(serializer,
+					                  (key, valueReader, valueSerializer) => ReadClassInfo(key, valueReader, valueSerializer, instance));
 					break;
 
 				default:
 					base.ReadProperty(property, reader, instance, serializer);
 					break;
 			}
+		}
+
+		private void ReadClassInfo(string keyStr, JsonReader reader, JsonSerializer serializer, ApiNodeGroupInfo instance)
+		{
+			ApiNodeGroupKeyInfo keyInfo = new ApiNodeGroupKeyInfo
+			{
+				Key = uint.Parse(keyStr),
+				Node = serializer.Deserialize<ApiClassInfo>(reader)
+			};
+
+			instance.AddNode(keyInfo);
 		}
 	}
 }
