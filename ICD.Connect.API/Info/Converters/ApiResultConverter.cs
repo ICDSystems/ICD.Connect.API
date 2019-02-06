@@ -6,9 +6,9 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiResultConverter : AbstractGenericJsonConverter<ApiResult>
 	{
-		private const string PROPERTY_ERRORCODE = "errorCode";
-		private const string PROPERTY_TYPE = "type";
-		private const string PROPERTY_VALUE = "value";
+		private const string PROPERTY_ERRORCODE = "e";
+		private const string PROPERTY_TYPE = "t";
+		private const string PROPERTY_VALUE = "v";
 
 		/// <summary>
 		/// Creates a new instance of T.

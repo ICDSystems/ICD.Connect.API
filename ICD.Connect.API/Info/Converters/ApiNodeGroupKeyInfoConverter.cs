@@ -5,8 +5,8 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiNodeGroupKeyInfoConverter : AbstractApiInfoConverter<ApiNodeGroupKeyInfo>
 	{
-		private const string PROPERTY_NODE = "node";
-		private const string PROPERTY_KEY = "key";
+		private const string PROPERTY_VALUE = "v";
+		private const string PROPERTY_KEY = "k";
 
 		/// <summary>
 		/// Creates a new instance of T.
@@ -35,7 +35,7 @@ namespace ICD.Connect.API.Info.Converters
 
 			if (value.Node != null)
 			{
-				writer.WritePropertyName(PROPERTY_NODE);
+				writer.WritePropertyName(PROPERTY_VALUE);
 				serializer.Serialize(writer, value.Node);
 			}
 		}
@@ -56,7 +56,7 @@ namespace ICD.Connect.API.Info.Converters
 					instance.Key = reader.GetValueAsUInt();
 					break;
 
-				case PROPERTY_NODE:
+				case PROPERTY_VALUE:
 					instance.Node = serializer.Deserialize<ApiClassInfo>(reader);
 					break;
 

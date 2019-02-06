@@ -453,7 +453,7 @@ namespace ICD.Connect.API
 			try
 			{
 				// Set the value
-				if (info.Write)
+				if (info.ReadWrite.HasFlag(ApiPropertyInfo.eReadWrite.Write))
 				{
 					// Trying to write to a readonly property.
 					if (!property.CanWrite)

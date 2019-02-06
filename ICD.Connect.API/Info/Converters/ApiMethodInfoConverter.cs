@@ -7,8 +7,8 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiMethodInfoConverter : AbstractApiInfoConverter<ApiMethodInfo>
 	{
-		private const string PROPERTY_PARAMETERS = "params";
-		private const string PROPERTY_EXECUTE = "execute";
+		private const string PROPERTY_PARAMETERS = "ps";
+		private const string PROPERTY_EXECUTE = "e";
 
 		/// <summary>
 		/// Creates a new instance of ApiMethodInfo.

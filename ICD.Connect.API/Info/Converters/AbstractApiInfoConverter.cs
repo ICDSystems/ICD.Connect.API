@@ -6,9 +6,9 @@ namespace ICD.Connect.API.Info.Converters
 	public abstract class AbstractApiInfoConverter<T> : AbstractGenericJsonConverter<T>
 		where T : AbstractApiInfo
 	{
-		private const string PROPERTY_NAME = "name";
-		private const string PROPERTY_HELP = "help";
-		private const string PROPERTY_RESULT = "result";
+		private const string PROPERTY_NAME = "n";
+		private const string PROPERTY_HELP = "h";
+		private const string PROPERTY_RESULT = "r";
 
 		/// <summary>
 		/// Override to serialize additional properties to the JSON.

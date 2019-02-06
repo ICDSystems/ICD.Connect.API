@@ -5,7 +5,7 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiNodeGroupInfoConverter : AbstractApiInfoConverter<ApiNodeGroupInfo>
 	{
-		private const string PROPERTY_NODES = "nodes";
+		private const string PROPERTY_NODES = "ns";
 
 		/// <summary>
 		/// Creates a new instance of ApiNodeInfo.

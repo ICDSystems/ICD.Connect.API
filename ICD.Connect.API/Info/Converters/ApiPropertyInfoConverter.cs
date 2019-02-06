@@ -5,10 +5,9 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiPropertyInfoConverter : AbstractApiInfoConverter<ApiPropertyInfo>
 	{
-		private const string PROPERTY_TYPE = "type";
-		private const string PROPERTY_VALUE = "value";
-		private const string PROPERTY_READ = "read";
-		private const string PROPERTY_WRITE = "write";
+		private const string PROPERTY_TYPE = "t";
+		private const string PROPERTY_VALUE = "v";
+		private const string PROPERTY_READ_WRITE = "rw";
 
 		/// <summary>
 		/// Creates a new instance of ApiPropertyInfo.
@@ -41,16 +40,10 @@ namespace ICD.Connect.API.Info.Converters
 				serializer.Serialize(writer, value.Value);
 			}
 
-			if (value.Read)
+			if (value.ReadWrite != ApiPropertyInfo.eReadWrite.None)
 			{
-				writer.WritePropertyName(PROPERTY_READ);
-				writer.WriteValue(value.Read);
-			}
-
-			if (value.Write)
-			{
-				writer.WritePropertyName(PROPERTY_WRITE);
-				writer.WriteValue(value.Write);
+				writer.WritePropertyName(PROPERTY_READ_WRITE);
+				writer.WriteValue(value.ReadWrite);
 			}
 		}
 
@@ -74,12 +67,8 @@ namespace ICD.Connect.API.Info.Converters
 					instance.Value = serializer.Deserialize(reader, instance.Type);
 					break;
 
-				case PROPERTY_READ:
-					instance.Read = (bool)reader.Value;
-					break;
-
-				case PROPERTY_WRITE:
-					instance.Write = (bool)reader.Value;
+				case PROPERTY_READ_WRITE:
+					instance.ReadWrite = reader.GetValueAsEnum<ApiPropertyInfo.eReadWrite>();
 					break;
 
 				default:

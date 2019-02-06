@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using ICD.Common.Utils.Extensions;
+﻿using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -8,13 +6,13 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiClassInfoConverter : AbstractApiInfoConverter<ApiClassInfo>
 	{
-		private const string PROPERTY_IS_PROXY = "isProxy";
-		private const string PROPERTY_PROXYTYPES = "proxyTypes";
-		private const string PROPERTY_EVENTS = "events";
-		private const string PROPERTY_METHODS = "methods";
-		private const string PROPERTY_PROPERTIES = "properties";
-		private const string PROPERTY_NODES = "nodes";
-		private const string PROPERTY_NODEGROUPS = "nodeGroups";
+		private const string PROPERTY_IS_PROXY = "ip";
+		private const string PROPERTY_PROXYTYPES = "pts";
+		private const string PROPERTY_EVENTS = "es";
+		private const string PROPERTY_METHODS = "ms";
+		private const string PROPERTY_PROPERTIES = "ps";
+		private const string PROPERTY_NODES = "ns";
+		private const string PROPERTY_NODEGROUPS = "ngs";
 
 		/// <summary>
 		/// Creates a new instance of ApiParameterInfo.

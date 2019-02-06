@@ -1,4 +1,5 @@
 ﻿using System;
+using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -13,6 +14,14 @@ namespace ICD.Connect.API.Info
 	[JsonConverter(typeof(ApiPropertyInfoConverter))]
 	public sealed class ApiPropertyInfo : AbstractApiInfo
 	{
+		[Flags]
+		public enum eReadWrite
+		{
+			None = 0,
+			Read = 1,
+			Write = 2
+		}
+
 		/// <summary>
 		/// Gets/sets the type for this property.
 		/// </summary>
@@ -24,14 +33,9 @@ namespace ICD.Connect.API.Info
 		public object Value { get; set; }
 
 		/// <summary>
-		/// Gets/sets if the property can be read.
+		/// Gets/sets the read write flags for the property.
 		/// </summary>
-		public bool Read { get; set; }
-
-		/// <summary>
-		/// Gets/sets if the property can be written.
-		/// </summary>
-		public bool Write { get; set; }
+		public eReadWrite ReadWrite { get; set; }
 
 		/// <summary>
 		/// Constructor.
@@ -76,9 +80,16 @@ namespace ICD.Connect.API.Info
 				return;
 
 			Type = property == null ? null : property.PropertyType;
-			Read = property != null && property.CanRead;
-			Write = property != null && property.CanWrite;
-			Value = instance == null || property == null || !Read ? null : property.GetValue(instance, new object[0]);
+
+			if (property != null && property.CanRead)
+				ReadWrite |= eReadWrite.Read;
+
+			if (property != null && property.CanWrite)
+				ReadWrite |= eReadWrite.Write;
+
+			Value = instance == null || property == null || !ReadWrite.HasFlag(eReadWrite.Read)
+				? null
+				: property.GetValue(instance, new object[0]);
 		}
 
 		#region Methods

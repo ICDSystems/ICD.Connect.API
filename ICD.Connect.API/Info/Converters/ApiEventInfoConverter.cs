@@ -5,7 +5,7 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiEventInfoConverter : AbstractApiInfoConverter<ApiEventInfo>
 	{
-		private const string PROPERTY_ACTION = "action";
+		private const string PROPERTY_ACTION = "a";
 
 		/// <summary>
 		/// Creates a new instance of T.

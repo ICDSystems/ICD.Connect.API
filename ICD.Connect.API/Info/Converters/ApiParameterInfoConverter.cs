@@ -5,8 +5,8 @@ namespace ICD.Connect.API.Info.Converters
 {
 	public sealed class ApiParameterInfoConverter : AbstractApiInfoConverter<ApiParameterInfo>
 	{
-		private const string PROPERTY_TYPE = "type";
-		private const string PROPERTY_VALUE = "value";
+		private const string PROPERTY_TYPE = "t";
+		private const string PROPERTY_VALUE = "v";
 
 		/// <summary>
 		/// Creates a new instance of ApiParameterInfo.

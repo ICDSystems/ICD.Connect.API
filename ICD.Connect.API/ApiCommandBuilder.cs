@@ -219,7 +219,7 @@ namespace ICD.Connect.API
 			ApiPropertyInfo property = new ApiPropertyInfo
 			{
 				Name = name,
-				Read = true
+				ReadWrite = ApiPropertyInfo.eReadWrite.Read
 			};
 
 			m_CurrentClass.AddProperty(property);
@@ -238,7 +238,7 @@ namespace ICD.Connect.API
 			ApiPropertyInfo property = new ApiPropertyInfo
 			{
 				Name = name,
-				Write = true
+				ReadWrite = ApiPropertyInfo.eReadWrite.Write
 			};
 			property.SetValue(value);
 
