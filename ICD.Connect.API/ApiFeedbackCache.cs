@@ -72,8 +72,6 @@ namespace ICD.Connect.API
 				// Create a new subscription
 				Delegate callback = ReflectionUtils.SubscribeEvent<IApiEventArgs>(instance, eventInfo, EventCallback);
 
-				Logger.AddEntry(eSeverity.Debug, "{0} subscribed to {1} event {2}", requestor, instance, eventInfo.Name);
-
 				callbackInfo = ApiFeedbackCacheItem.FromPath(path, callback);
 				events.Add(key, callbackInfo);
 			}
