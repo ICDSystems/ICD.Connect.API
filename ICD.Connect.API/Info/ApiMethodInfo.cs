@@ -92,9 +92,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiParameterInfo> GetParameters()
 		{
-			return m_Parameters == null
-				? Enumerable.Empty<ApiParameterInfo>()
-				: m_Parameters.ToArray(m_Parameters.Count);
+			return m_Parameters ?? Enumerable.Empty<ApiParameterInfo>();
 		}
 
 		/// <summary>

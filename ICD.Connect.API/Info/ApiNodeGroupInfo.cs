@@ -123,7 +123,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		public IEnumerable<ApiNodeGroupKeyInfo> GetNodes()
 		{
-			return m_Nodes == null ? Enumerable.Empty<ApiNodeGroupKeyInfo>() : m_Nodes.Values.ToArray(m_Nodes.Count);
+			return m_Nodes == null ? Enumerable.Empty<ApiNodeGroupKeyInfo>() : m_Nodes.Values;
 		}
 
 		/// <summary>

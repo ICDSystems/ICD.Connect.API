@@ -157,7 +157,7 @@ namespace ICD.Connect.API.Info
 		{
 			return m_ProxyTypes == null
 				       ? Enumerable.Empty<Type>()
-				       : m_ProxyTypes.ToArray(m_ProxyTypes.Count);
+				       : m_ProxyTypes;
 		}
 
 		/// <summary>
@@ -209,7 +209,7 @@ namespace ICD.Connect.API.Info
 		{
 			return m_Events == null
 					   ? Enumerable.Empty<ApiEventInfo>()
-					   : m_Events.Select(kvp => kvp.Value).ToArray(m_Events.Count);
+					   : m_Events.Select(kvp => kvp.Value);
 		}
 
 		/// <summary>
@@ -264,7 +264,7 @@ namespace ICD.Connect.API.Info
 		{
 			return m_Methods == null
 				       ? Enumerable.Empty<ApiMethodInfo>()
-				       : m_Methods.Select(kvp => kvp.Value).ToArray(m_Methods.Count);
+				       : m_Methods.Select(kvp => kvp.Value);
 		}
 
 		/// <summary>
@@ -319,7 +319,7 @@ namespace ICD.Connect.API.Info
 		{
 			return m_Properties == null
 				       ? Enumerable.Empty<ApiPropertyInfo>()
-				       : m_Properties.Select(kvp => kvp.Value).ToArray(m_Properties.Count);
+				       : m_Properties.Select(kvp => kvp.Value);
 		}
 
 		/// <summary>
@@ -374,7 +374,7 @@ namespace ICD.Connect.API.Info
 		{
 			return m_Nodes == null
 				       ? Enumerable.Empty<ApiNodeInfo>()
-				       : m_Nodes.Select(kvp => kvp.Value).ToArray(m_Nodes.Count);
+				       : m_Nodes.Select(kvp => kvp.Value);
 		}
 
 		/// <summary>
@@ -466,7 +466,7 @@ namespace ICD.Connect.API.Info
 		{
 			return m_NodeGroups == null
 				       ? Enumerable.Empty<ApiNodeGroupInfo>()
-				       : m_NodeGroups.Select(kvp => kvp.Value).ToArray(m_NodeGroups.Count);
+				       : m_NodeGroups.Select(kvp => kvp.Value);
 		}
 
 		/// <summary>
