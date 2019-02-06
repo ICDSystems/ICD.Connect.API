@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
-using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info.Converters;
 using ICD.Connect.API.Nodes;
 using Newtonsoft.Json;
@@ -188,6 +187,15 @@ namespace ICD.Connect.API.Info
 				AddNode(child as ApiNodeGroupKeyInfo);
 			else
 				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
+		}
+
+		/// <summary>
+		/// Creates a new instance of the current type.
+		/// </summary>
+		/// <returns></returns>
+		protected override AbstractApiInfo Instantiate()
+		{
+			return new ApiNodeGroupInfo();
 		}
 	}
 }

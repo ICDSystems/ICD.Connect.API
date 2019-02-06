@@ -158,6 +158,15 @@ namespace ICD.Connect.API.Info
 			apiMethodInfo.Execute = Execute;
 		}
 
+		/// <summary>
+		/// Creates a new instance of the current type.
+		/// </summary>
+		/// <returns></returns>
+		protected override AbstractApiInfo Instantiate()
+		{
+			return new ApiMethodInfo();
+		}
+
 		private static IEnumerable<ApiParameterInfo> GetParameterInfo(MethodInfo method, object instance, int depth)
 		{
 			if (method == null)

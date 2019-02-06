@@ -100,5 +100,14 @@ namespace ICD.Connect.API.Info
 			else
 				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
 		}
+
+		/// <summary>
+		/// Creates a new instance of the current type.
+		/// </summary>
+		/// <returns></returns>
+		protected override AbstractApiInfo Instantiate()
+		{
+			return new ApiNodeInfo();
+		}
 	}
 }

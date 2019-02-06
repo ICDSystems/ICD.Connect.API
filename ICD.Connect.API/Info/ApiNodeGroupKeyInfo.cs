@@ -73,5 +73,14 @@ namespace ICD.Connect.API.Info
 
 			apiNodeGroupKeyInfo.Key = Key;
 		}
+
+		/// <summary>
+		/// Creates a new instance of the current type.
+		/// </summary>
+		/// <returns></returns>
+		protected override AbstractApiInfo Instantiate()
+		{
+			return new ApiNodeGroupKeyInfo();
+		}
 	}
 }

@@ -546,6 +546,15 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
 		}
 
+		/// <summary>
+		/// Creates a new instance of the current type.
+		/// </summary>
+		/// <returns></returns>
+		protected override AbstractApiInfo Instantiate()
+		{
+			return new ApiClassInfo();
+		}
+
 		/*private IEnumerable<Type> GetProxyTypes(Type type)
 		{
 			return type == null ? Enumerable.Empty<Type>() : ApiClassAttribute.GetProxyTypes(type);

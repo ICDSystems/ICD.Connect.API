@@ -57,14 +57,14 @@ namespace ICD.Connect.API
 			if (path == null)
 				throw new ArgumentNullException("path");
 
-			string key = path.Peek().Name;
-
 			Dictionary<string, ApiFeedbackCacheItem> events;
 			if (!m_SubscribedEventsMap.TryGetValue(instance, out events))
 			{
 				events = new Dictionary<string, ApiFeedbackCacheItem>();
 				m_SubscribedEventsMap.Add(instance, events);
 			}
+
+			string key = path.Peek().Name;
 
 			ApiFeedbackCacheItem callbackInfo;
 			if (!events.TryGetValue(key, out callbackInfo))

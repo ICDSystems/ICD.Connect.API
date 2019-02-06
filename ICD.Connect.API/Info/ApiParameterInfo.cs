@@ -122,5 +122,14 @@ namespace ICD.Connect.API.Info
 			apiParameterInfo.Type = Type;
 			apiParameterInfo.Value = Value;
 		}
+
+		/// <summary>
+		/// Creates a new instance of the current type.
+		/// </summary>
+		/// <returns></returns>
+		protected override AbstractApiInfo Instantiate()
+		{
+			return new ApiParameterInfo();
+		}
 	}
 }

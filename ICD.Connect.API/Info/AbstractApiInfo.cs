@@ -87,9 +87,6 @@ namespace ICD.Connect.API.Info
 		/// Creates a new instance of the current type.
 		/// </summary>
 		/// <returns></returns>
-		private AbstractApiInfo Instantiate()
-		{
-			return ReflectionUtils.CreateInstance(GetType()) as AbstractApiInfo;
-		}
+		protected abstract AbstractApiInfo Instantiate();
 	}
 }

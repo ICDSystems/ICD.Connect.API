@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info;
 
 namespace ICD.Connect.API
@@ -86,17 +85,27 @@ namespace ICD.Connect.API
 			if (path == null)
 				throw new ArgumentNullException("path");
 
+			root = null;
+			leaf = null;
+
 			IApiInfo[] shallowCopy = path.Select(i => i.ShallowCopy()).ToArray();
 
-			root = shallowCopy.FirstOrDefault() as ApiClassInfo;
-			if (root == null)
-				throw new ArgumentException("First item must be an ApiClassInfo", "path");
-
-			leaf = shallowCopy[shallowCopy.Length - 1];
-
 			// Daisy chain the nodes back together
-			foreach (IApiInfo[] pair in shallowCopy.GetAdjacentPairs())
-				pair[0].AddChild(pair[1]);
+			IApiInfo previous = null;
+			foreach (IApiInfo node in shallowCopy)
+			{
+				if (previous == null)
+				{
+					root = (ApiClassInfo)node;
+				}
+				else
+				{
+					previous.AddChild(node);
+					leaf = node;
+				}
+
+				previous = node;
+			}
 
 			return shallowCopy;
 		}
