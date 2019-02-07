@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
  - Minor changes to support IcdConsoleServer
  - Attribute caches are now threadsafe
+ - Significantly reduced JSON footprint for serialized API info
+ - Various performance improvements for API features
+ 
+### Removed
+ - Removed proxy-types as they are currently unused and impact performance
 
 ## [3.3.0] - 2019-01-02
 ### Added
