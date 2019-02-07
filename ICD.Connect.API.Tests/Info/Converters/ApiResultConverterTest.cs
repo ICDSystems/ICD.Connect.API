@@ -30,7 +30,7 @@ namespace ICD.Connect.API.Tests.Info.Converters
 		public override void ReadJsonTest()
 		{
 			const string json =
-				"{\"errorCode\":1,\"type\":\"System.String, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\",\"value\":\"Test\"}";
+				"{\"e\":1,\"t\":\"System.String\",\"v\":\"Test\"}";
 
 			ApiResult result = JsonConvert.DeserializeObject<ApiResult>(json);
 

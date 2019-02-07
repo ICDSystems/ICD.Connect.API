@@ -22,7 +22,6 @@ namespace ICD.Connect.API.Tests.Info.Converters
 			parameter = JsonConvert.DeserializeObject<ApiParameterInfo>(json);
 
 			Assert.AreEqual("Test", parameter.Name);
-			Assert.AreEqual("Test test.", parameter.Help);
 			Assert.AreEqual(typeof(string), parameter.Type);
 			Assert.AreEqual("Test", parameter.Value);
 		}
@@ -31,12 +30,11 @@ namespace ICD.Connect.API.Tests.Info.Converters
 		public override void ReadJsonTest()
 		{
 			const string json =
-				"{\"name\":\"Test\",\"help\":\"Test test.\",\"type\":\"System.String, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e\",\"value\":\"Test\"}";
+				"{\"n\":\"Test\",\"t\":\"System.String\",\"v\":\"Test\"}";
 
 			ApiParameterInfo parameter = JsonConvert.DeserializeObject<ApiParameterInfo>(json);
 
 			Assert.AreEqual("Test", parameter.Name);
-			Assert.AreEqual("Test test.", parameter.Help);
 			Assert.AreEqual(typeof(string), parameter.Type);
 			Assert.AreEqual("Test", parameter.Value);
 		}

@@ -38,14 +38,14 @@ namespace ICD.Connect.API.Tests.Info.Converters
 
 			string json = JsonConvert.SerializeObject(methodInfo);
 
-			Assert.AreEqual("{\"name\":\"Test\",\"help\":\"Test test.\",\"execute\":true,\"params\":[{\"name\":\"Param1\"},{\"name\":\"Param2\"},{\"name\":\"Param3\"}]}", json);
+			Assert.AreEqual("{\"n\":\"Test\",\"e\":true,\"ps\":[{\"n\":\"Param1\"},{\"n\":\"Param2\"},{\"n\":\"Param3\"}]}", json);
 		}
 
 		[Test]
 		public override void ReadJsonTest()
 		{
 			const string json =
-				"{\"name\":\"Test\",\"help\":\"Test test.\",\"execute\":true,\"params\":[{\"name\":\"Param1\"},{\"name\":\"Param2\"},{\"name\":\"Param3\"}]}";
+				"{\"n\":\"Test\",\"h\":\"Test test.\",\"e\":true,\"ps\":[{\"n\":\"Param1\"},{\"n\":\"Param2\"},{\"n\":\"Param3\"}]}";
 
 			ApiMethodInfo methodInfo = JsonConvert.DeserializeObject<ApiMethodInfo>(json);
 
