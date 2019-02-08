@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Services;
@@ -35,6 +36,8 @@ namespace ICD.Connect.API
 		{
 			m_SubscribedEventsMap = new WeakKeyDictionary<object, Dictionary<string, ApiFeedbackCacheItem>>();
 		}
+
+		#region Methods
 
 		/// <summary>
 		/// Subscribes to the given event on the given instance.
@@ -72,7 +75,7 @@ namespace ICD.Connect.API
 				// Create a new subscription
 				Delegate callback = ReflectionUtils.SubscribeEvent<IApiEventArgs>(instance, eventInfo, EventCallback);
 
-				callbackInfo = ApiFeedbackCacheItem.FromPath(path, callback);
+				callbackInfo = ApiFeedbackCacheItem.FromPath(path, eventInfo, callback);
 				events.Add(key, callbackInfo);
 			}
 
@@ -83,16 +86,12 @@ namespace ICD.Connect.API
 		/// Unsubscribes from the given event on the given instance.
 		/// </summary>
 		/// <param name="requestor"></param>
-		/// <param name="eventInfo"></param>
 		/// <param name="instance"></param>
 		/// <param name="path"></param>
-		public void Unsubscribe(IApiRequestor requestor, EventInfo eventInfo, object instance, Stack<IApiInfo> path)
+		public void Unsubscribe(IApiRequestor requestor, object instance, Stack<IApiInfo> path)
 		{
 			if (requestor == null)
 				throw new ArgumentNullException("requestor");
-
-			if (eventInfo == null)
-				throw new ArgumentNullException("eventInfo");
 
 			if (instance == null)
 				throw new ArgumentNullException("instance");
@@ -115,15 +114,48 @@ namespace ICD.Connect.API
 				return;
 
 			// Remove the subscription
-			ReflectionUtils.UnsubscribeEvent(instance, eventInfo, callbackInfo.Callback);
-
-			Logger.AddEntry(eSeverity.Debug, "{0} unsubscribed from {1} event {2}", requestor, instance, eventInfo.Name);
+			ReflectionUtils.UnsubscribeEvent(instance, callbackInfo.EventInfo, callbackInfo.Callback);
+			Logger.AddEntry(eSeverity.Debug, "{0} unsubscribed from {1} event {2}", requestor, instance, key);
 
 			events.Remove(key);
 
 			if (events.Count == 0)
 				m_SubscribedEventsMap.Remove(instance);
 		}
+
+		/// <summary>
+		/// Removes the requestor from all of the callback infos.
+		/// </summary>
+		/// <param name="requestor"></param>
+		public void UnsubscribeAll(IApiRequestor requestor)
+		{
+			if (requestor == null)
+				throw new ArgumentNullException("requestor");
+
+			foreach (KeyValuePair<object, Dictionary<string, ApiFeedbackCacheItem>> instanceToEventNames in m_SubscribedEventsMap.ToArray())
+			{
+				foreach (KeyValuePair<string, ApiFeedbackCacheItem> eventNameToItem in instanceToEventNames.Value.ToArray())
+				{
+					ApiFeedbackCacheItem item = eventNameToItem.Value;
+
+					item.RemoveRequestor(requestor);
+					if (item.Count != 0)
+						continue;
+
+					instanceToEventNames.Value.Remove(eventNameToItem.Key);
+
+					// Remove the subscription
+					ReflectionUtils.UnsubscribeEvent(instanceToEventNames.Key, item.EventInfo, item.Callback);
+					Logger.AddEntry(eSeverity.Debug, "{0} unsubscribed from {1} event {2}", requestor, instanceToEventNames.Key,
+					                eventNameToItem.Key);
+				}
+
+				if (instanceToEventNames.Value.Count == 0)
+					m_SubscribedEventsMap.Remove(instanceToEventNames.Key);
+			}
+		}
+
+		#endregion
 
 		/// <summary>
 		/// Only support subscribing to events matching the signature of this method.
@@ -147,12 +179,11 @@ namespace ICD.Connect.API
 				return;
 
 			// Create a copy and build the result
-			ApiFeedbackCacheItem copy = callbackInfo.CommandCopy();
-			copy.Event.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
-			args.BuildResult(sender, copy.Event.Result);
+			ApiEventCommandPath copy = callbackInfo.CommandPath.DeepCopy();
+			args.BuildResult(sender, copy.Event);
 
 			foreach (IApiRequestor requestor in callbackInfo.GetRequestors())
-				requestor.HandleFeedback(copy.Command);
+				requestor.HandleFeedback(copy.Root);
 		}
 	}
 }

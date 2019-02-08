@@ -31,6 +31,22 @@ namespace ICD.Connect.API.EventArguments
 		public abstract void BuildResult(object sender, ApiResult result);
 
 		/// <summary>
+		/// Builds an API result for the args.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="eventInfo"></param>
+		public void BuildResult(object sender, ApiEventInfo eventInfo)
+		{
+			if (eventInfo == null)
+				throw new ArgumentNullException("eventInfo");
+
+			ApiResult result = eventInfo.Result ?? (eventInfo.Result = new ApiResult());
+			result.ErrorCode = ApiResult.eErrorCode.Ok;
+
+			BuildResult(sender, result);
+		}
+
+		/// <summary>
 		/// Get the string representation for this instance.
 		/// </summary>
 		/// <returns></returns>

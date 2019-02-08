@@ -60,6 +60,18 @@ namespace ICD.Connect.API
 			HandleClassRequest(requestor, info, typeof(ApiHandler), null, new Stack<IApiInfo>());
 		}
 
+		/// <summary>
+		/// Unsubscribes all feedback for the given requestor.
+		/// </summary>
+		/// <param name="requestor"></param>
+		public static void UnsubscribeAll(IApiRequestor requestor)
+		{
+			if (requestor == null)
+				throw new ArgumentNullException("requestor");
+
+			s_FeedbackCache.UnsubscribeAll(requestor);
+		}
+
 		#endregion
 
 		#region Private Methods
@@ -157,7 +169,7 @@ namespace ICD.Connect.API
 
 					case ApiEventInfo.eSubscribeAction.Unsubscribe:
 						// Unsubscribe from the event
-						info.Result = Unsubscribe(requestor, eventInfo, instance, path);
+						info.Result = Unsubscribe(requestor, instance, path);
 						return;
 
 					default:
@@ -518,6 +530,10 @@ namespace ICD.Connect.API
 			if (path == null)
 				throw new ArgumentNullException("path");
 
+			ApiEventInfo apiEventInfo = path.Peek() as ApiEventInfo;
+			if (apiEventInfo == null)
+				throw new InvalidOperationException();
+
 			try
 			{
 				s_FeedbackCache.Subscribe(requestor, eventInfo, instance, path);
@@ -525,32 +541,33 @@ namespace ICD.Connect.API
 			catch (Exception e)
 			{
 				ApiResult output = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
-				output.SetValue(string.Format("Failed to subscribe to {0} - {1}", eventInfo.Name, e.Message));
+				output.SetValue(string.Format("Failed to subscribe to {0} - {1}", apiEventInfo.Name, e.Message));
 				return output;
 			}
 
 			return new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
 		}
 
-		private static ApiResult Unsubscribe(IApiRequestor requestor, EventInfo eventInfo, object instance, Stack<IApiInfo> path)
+		private static ApiResult Unsubscribe(IApiRequestor requestor, object instance, Stack<IApiInfo> path)
 		{
-			if (eventInfo == null)
-				throw new ArgumentNullException("eventInfo");
-
 			if (instance == null)
 				throw new ArgumentNullException("instance");
 
 			if (path == null)
 				throw new ArgumentNullException("path");
 
+			ApiEventInfo apiEventInfo = path.Peek() as ApiEventInfo;
+			if (apiEventInfo == null)
+				throw new InvalidOperationException();
+
 			try
 			{
-				s_FeedbackCache.Unsubscribe(requestor, eventInfo, instance, path);
+				s_FeedbackCache.Unsubscribe(requestor, instance, path);
 			}
 			catch (Exception e)
 			{
 				ApiResult output = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
-				output.SetValue(string.Format("Failed to unsubscribe from {0} - {1}", eventInfo.Name, e.Message));
+				output.SetValue(string.Format("Failed to unsubscribe from {0} - {1}", apiEventInfo.Name, e.Message));
 				return output;
 			}
 
