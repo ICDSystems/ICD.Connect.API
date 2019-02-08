@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+#if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
+#else
+using System.Reflection;
+#endif
 using ICD.Common.Utils.Collections;
 using ICD.Connect.API.Info;
 
@@ -13,7 +17,7 @@ namespace ICD.Connect.API
 		private readonly EventInfo m_EventInfo;
 		private readonly Delegate m_Callback;
 
-		#region Properties
+#region Properties
 
 		/// <summary>
 		/// Gets the event command.
@@ -35,9 +39,9 @@ namespace ICD.Connect.API
 		/// </summary>
 		public int Count { get { return m_Requestors.Count; } }
 
-		#endregion
+#endregion
 
-		#region Factories
+#region Factories
 
 		/// <summary>
 		/// Constructor.
@@ -66,9 +70,9 @@ namespace ICD.Connect.API
 			return new ApiFeedbackCacheItem(commandPath, eventInfo, callback);
 		}
 
-		#endregion
+#endregion
 
-		#region Methods
+#region Methods
 
 		/// <summary>
 		/// Adds the requestor to the collection for callback.
@@ -97,6 +101,6 @@ namespace ICD.Connect.API
 			return m_Requestors.Keys;
 		}
 
-		#endregion
+#endregion
 	}
 }
