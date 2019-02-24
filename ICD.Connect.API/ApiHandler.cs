@@ -419,6 +419,14 @@ namespace ICD.Connect.API
 					value = method.Invoke(instance, parameters);
 				}
 				// Method failed to execute.
+				catch (TargetInvocationException e)
+				{
+					info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
+					info.Result.SetValue(string.Format("Failed to execute method {0} due to {1} - {2}.",
+													   StringUtils.ToRepresentation(info.Name),
+													   e.InnerException.GetType().Name, e.InnerException.Message));
+					return;
+				}
 				catch (Exception e)
 				{
 					info.Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
