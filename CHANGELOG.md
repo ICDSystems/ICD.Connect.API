@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+ - Clearer error messages when a console command fails to execute
+
 ## [3.3.0] - 2019-01-02
 ### Added
  - Support selecting console node group child by name

@@ -83,7 +83,16 @@ namespace ICD.Connect.API.Nodes
 			// Command
 			IConsoleCommand nodeCommand = extends.GetConsoleCommandByName(first);
 			if (nodeCommand != null)
-				return nodeCommand.Execute(remaining);
+			{
+				try
+				{
+					return nodeCommand.Execute(remaining);
+				}
+				catch (Exception e)
+				{
+					return string.Format("Failed to execute console command {0} - {1}", first, e.Message);
+				}
+			}
 
 			// Child
 			IConsoleNodeBase[] children = extends.GetConsoleNodesBySelector(first).ToArray();
