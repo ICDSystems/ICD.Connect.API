@@ -78,10 +78,22 @@ namespace ICD.Connect.API.Commands
 
 		public static object Convert(string value, Type type)
 		{
-			if (EnumUtils.IsEnumType(type))
-				return EnumUtils.ParseStrict(type, value, true);
+			if (string.IsNullOrEmpty(value))
+				throw new ArgumentException("Value must not be null or empty");
 
-			return System.Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			try
+			{
+				return EnumUtils.IsEnumType(type)
+					? EnumUtils.ParseStrict(type, value, true)
+					: System.Convert.ChangeType(value, type, CultureInfo.InvariantCulture);
+			}
+			catch (FormatException e)
+			{
+				throw new FormatException(string.Format("Failed to convert \"{0}\" to type {1}", value, type.Name), e);
+			}
 		}
 	}
 }

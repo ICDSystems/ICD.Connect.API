@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
  
 ### Removed
  - Removed proxy-types as they are currently unused and impact performance
+ 
+## [3.3.1] - 2019-04-25
+### Changed
+ - Clearer error messages when a console command fails to execute
 
 ## [3.3.0] - 2019-01-02
 ### Added
