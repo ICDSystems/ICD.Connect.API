@@ -21,6 +21,7 @@ namespace ICD.Connect.API
 	public static class ApiHandler
 	{
 		private static readonly ApiFeedbackCache s_FeedbackCache;
+		private static readonly SafeCriticalSection s_FeedbackCacheSection;
 
 		[ApiNode("ControlSystem", "")]
 		public static object ControlSystem { get; set; }
@@ -31,6 +32,7 @@ namespace ICD.Connect.API
 		static ApiHandler()
 		{
 			s_FeedbackCache = new ApiFeedbackCache();
+			s_FeedbackCacheSection = new SafeCriticalSection();
 		}
 
 		#region Handle Requests
@@ -542,15 +544,21 @@ namespace ICD.Connect.API
 			if (apiEventInfo == null)
 				throw new InvalidOperationException();
 
+			s_FeedbackCacheSection.Enter();
+
 			try
 			{
 				s_FeedbackCache.Subscribe(requestor, eventInfo, instance, path);
 			}
 			catch (Exception e)
 			{
-				ApiResult output = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
+				ApiResult output = new ApiResult {ErrorCode = ApiResult.eErrorCode.Exception};
 				output.SetValue(string.Format("Failed to subscribe to {0} - {1}", apiEventInfo.Name, e.Message));
 				return output;
+			}
+			finally
+			{
+				s_FeedbackCacheSection.Leave();
 			}
 
 			return new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
@@ -568,6 +576,8 @@ namespace ICD.Connect.API
 			if (apiEventInfo == null)
 				throw new InvalidOperationException();
 
+			s_FeedbackCacheSection.Enter();
+
 			try
 			{
 				s_FeedbackCache.Unsubscribe(requestor, instance, path);
@@ -577,6 +587,10 @@ namespace ICD.Connect.API
 				ApiResult output = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
 				output.SetValue(string.Format("Failed to unsubscribe from {0} - {1}", apiEventInfo.Name, e.Message));
 				return output;
+			}
+			finally
+			{
+				s_FeedbackCacheSection.Leave();
 			}
 
 			return new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
