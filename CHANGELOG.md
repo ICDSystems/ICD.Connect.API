@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+ - Failing gracefully when a console command uses a bad index
+
 ## [4.0.0] - 2019-02-07
 ### Changed
  - Minor changes to support IcdConsoleServer

@@ -41,7 +41,17 @@ namespace ICD.Connect.API.Nodes
 			if (first.Equals(ApiConsole.HELP_COMMAND, StringComparison.CurrentCultureIgnoreCase))
 				return extends.PrintConsoleHelp();
 
-			IConsoleNodeBase[] nodes = GetConsoleNodesBySelector(extends, first).ToArray();
+			IConsoleNodeBase[] nodes;
+
+			try
+			{
+				nodes = GetConsoleNodesBySelector(extends, first).ToArray();
+			}
+			catch (Exception)
+			{
+				return string.Format("{0} has no item with key {0}", extends.GetSafeConsoleName(),
+				                     StringUtils.ToRepresentation(first));
+			}
 
 			string output = null;
 
@@ -135,6 +145,8 @@ namespace ICD.Connect.API.Nodes
 				IConsoleNodeBase output;
 				if (group.GetConsoleNodes().TryGetValue(key, out output))
 					return output;
+
+				throw new ArgumentOutOfRangeException("extends", "No child with the given key");
 			}
 
 			IConsoleNode node = extends as IConsoleNode;
