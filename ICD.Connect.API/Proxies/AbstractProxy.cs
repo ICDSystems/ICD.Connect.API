@@ -155,8 +155,12 @@ namespace ICD.Connect.API.Proxies
 			if (eventInfo == null)
 				throw new ArgumentNullException("property");
 
+			// The event doesn't have data?
+			if (eventInfo.Result == null)
+				return;
+
 			// Only care about good results
-			if (eventInfo.Result == null || eventInfo.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+			if (eventInfo.Result.ErrorCode != ApiResult.eErrorCode.Ok)
 				return;
 
 			ParseEvent(eventInfo.Name, eventInfo.Result);
@@ -180,8 +184,12 @@ namespace ICD.Connect.API.Proxies
 			if (property == null)
 				throw new ArgumentNullException("property");
 
+			// The property doesn't have data?
+			if (property.Result == null)
+				return;
+
 			// Only care about good results
-			if (property.Result == null || property.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+			if (property.Result.ErrorCode != ApiResult.eErrorCode.Ok)
 				return;
 
 			ParseProperty(property.Name, property.Result);
@@ -205,8 +213,12 @@ namespace ICD.Connect.API.Proxies
 			if (method == null)
 				throw new ArgumentNullException("method");
 
+			// The method result doesn't have data?
+			if (method.Result == null)
+				return;
+
 			// Only care about good results
-			if (method.Result == null || method.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+			if (method.Result.ErrorCode != ApiResult.eErrorCode.Ok)
 				return;
 
 			ParseMethod(method.Name, method.Result);
@@ -231,20 +243,23 @@ namespace ICD.Connect.API.Proxies
 				throw new ArgumentNullException("node");
 
 			// Only care about good results
-			if (node.Result == null || node.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+			if (node.Result != null && node.Result.ErrorCode != ApiResult.eErrorCode.Ok)
 				return;
 
-			ParseNode(node.Name, node.Result);
+			// If we asked for information about the node at this level the response contains the node result.
+			// If we are getting a response for a nested item the response will be null.
+			node = node.Result == null ? node : node.Result.GetValue<ApiNodeInfo>();
+
+			ParseNode(node.Name, node);
 		}
 
 		/// <summary>
 		/// Updates the proxy with a node result.
 		/// </summary>
 		/// <param name="name"></param>
-		/// <param name="result"></param>
-		protected virtual void ParseNode(string name, ApiResult result)
+		/// <param name="node"></param>
+		protected virtual void ParseNode(string name, ApiNodeInfo node)
 		{
-			
 		}
 
 		/// <summary>
@@ -257,18 +272,22 @@ namespace ICD.Connect.API.Proxies
 				throw new ArgumentNullException("nodeGroup");
 
 			// Only care about good results
-			if (nodeGroup.Result == null || nodeGroup.Result.ErrorCode != ApiResult.eErrorCode.Ok)
+			if (nodeGroup.Result != null && nodeGroup.Result.ErrorCode != ApiResult.eErrorCode.Ok)
 				return;
 
-			ParseNodeGroup(nodeGroup.Name, nodeGroup.Result);
+			// If we asked for information about the node group at this level the response contains the node group result.
+			// If we are getting a response for a nested item the response will be null.
+			nodeGroup = nodeGroup.Result == null ? nodeGroup : nodeGroup.Result.GetValue<ApiNodeGroupInfo>();
+
+			ParseNodeGroup(nodeGroup.Name, nodeGroup);
 		}
 
 		/// <summary>
 		/// Updates the proxy with a node group result.
 		/// </summary>
 		/// <param name="name"></param>
-		/// <param name="result"></param>
-		protected virtual void ParseNodeGroup(string name, ApiResult result)
+		/// <param name="nodeGroup"></param>
+		protected virtual void ParseNodeGroup(string name, ApiNodeGroupInfo nodeGroup)
 		{
 		}
 
