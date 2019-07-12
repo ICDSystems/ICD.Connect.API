@@ -111,44 +111,6 @@ namespace ICD.Connect.API.Attributes
 			}
 		}
 
-		#endregion
-
-		#region Private Events
-
-		[NotNull]
-		private static Dictionary<string, EventInfo> CacheType(Type type)
-		{
-			if (type == null)
-				throw new ArgumentNullException("type");
-
-			s_AttributeNameToEventSection.Enter();
-
-			try
-			{
-				Dictionary<string, EventInfo> eventMap;
-				if (!s_AttributeNameToEvent.TryGetValue(type, out eventMap))
-				{
-					eventMap = new Dictionary<string, EventInfo>();
-					s_AttributeNameToEvent.Add(type, eventMap);
-
-					foreach (EventInfo eventInfo in GetEvents(type))
-					{
-						ApiEventAttribute attribute = GetAttribute(eventInfo);
-						if (attribute == null)
-							continue;
-
-						eventMap.Add(attribute.Name, eventInfo);
-					}
-				}
-
-				return eventMap;
-			}
-			finally
-			{
-				s_AttributeNameToEventSection.Leave();
-			}
-		}
-
 		public static IEnumerable<EventInfo> GetEvents(Type type)
 		{
 			if (type == null)
@@ -206,6 +168,48 @@ namespace ICD.Connect.API.Attributes
 			finally
 			{
 				s_EventToAttributeSection.Leave();
+			}
+		}
+
+		#endregion
+
+		#region Private Events
+
+		[NotNull]
+		private static Dictionary<string, EventInfo> CacheType(Type type)
+		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			s_AttributeNameToEventSection.Enter();
+
+			try
+			{
+				Dictionary<string, EventInfo> eventMap;
+				if (!s_AttributeNameToEvent.TryGetValue(type, out eventMap))
+				{
+					eventMap = new Dictionary<string, EventInfo>();
+					s_AttributeNameToEvent.Add(type, eventMap);
+
+					foreach (EventInfo eventInfo in GetEvents(type))
+					{
+						ApiEventAttribute attribute = GetAttribute(eventInfo);
+						if (attribute == null)
+							continue;
+
+						if (eventMap.ContainsKey(attribute.Name))
+							throw new InvalidProgramException(string.Format("{0} has multiple {1}s with name {2}", type.Name,
+							                                                typeof(ApiEventAttribute), attribute.Name));
+
+						eventMap.Add(attribute.Name, eventInfo);
+					}
+				}
+
+				return eventMap;
+			}
+			finally
+			{
+				s_AttributeNameToEventSection.Leave();
 			}
 		}
 

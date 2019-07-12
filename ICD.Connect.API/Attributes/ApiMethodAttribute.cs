@@ -112,44 +112,11 @@ namespace ICD.Connect.API.Attributes
 			}
 		}
 
-		#endregion
-
-		#region Private Methods
-
-		[NotNull]
-		private static Dictionary<string, MethodInfo> CacheType(Type type)
-		{
-			if (type == null)
-				throw new ArgumentNullException("type");
-
-			s_AttributeNameToMethodSection.Enter();
-
-			try
-			{
-				Dictionary<string, MethodInfo> methodMap;
-				if (!s_AttributeNameToMethod.TryGetValue(type, out methodMap))
-				{
-					methodMap = new Dictionary<string, MethodInfo>();
-					s_AttributeNameToMethod.Add(type, methodMap);
-
-					foreach (MethodInfo method in GetMethods(type))
-					{
-						ApiMethodAttribute attribute = GetAttribute(method);
-						if (attribute == null)
-							continue;
-
-						methodMap.Add(attribute.Name, method);
-					}
-				}
-
-				return methodMap;
-			}
-			finally
-			{
-				s_AttributeNameToMethodSection.Leave();
-			}
-		}
-
+		/// <summary>
+		/// Gets the API methods on the given type.
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
 		public static IEnumerable<MethodInfo> GetMethods(Type type)
 		{
 			if (type == null)
@@ -209,6 +176,48 @@ namespace ICD.Connect.API.Attributes
 			finally
 			{
 				s_MethodToAttributeSection.Leave();
+			}
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		[NotNull]
+		private static Dictionary<string, MethodInfo> CacheType(Type type)
+		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			s_AttributeNameToMethodSection.Enter();
+
+			try
+			{
+				Dictionary<string, MethodInfo> methodMap;
+				if (!s_AttributeNameToMethod.TryGetValue(type, out methodMap))
+				{
+					methodMap = new Dictionary<string, MethodInfo>();
+					s_AttributeNameToMethod.Add(type, methodMap);
+
+					foreach (MethodInfo method in GetMethods(type))
+					{
+						ApiMethodAttribute attribute = GetAttribute(method);
+						if (attribute == null)
+							continue;
+
+						if (methodMap.ContainsKey(attribute.Name))
+							throw new InvalidProgramException(string.Format("{0} has multiple {1}s with name {2}", type.Name,
+							                                                typeof(ApiMethodAttribute), attribute.Name));
+
+						methodMap.Add(attribute.Name, method);
+					}
+				}
+
+				return methodMap;
+			}
+			finally
+			{
+				s_AttributeNameToMethodSection.Leave();
 			}
 		}
 

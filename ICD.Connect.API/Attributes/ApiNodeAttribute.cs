@@ -87,47 +87,6 @@ namespace ICD.Connect.API.Attributes
 			}
 		}
 
-		#endregion
-
-		#region Private Methods
-
-		[NotNull]
-		private static Dictionary<string, PropertyInfo> CacheType(Type type)
-		{
-			if (type == null)
-				throw new ArgumentNullException("type");
-
-			s_AttributeNameToPropertySection.Enter();
-
-			try
-			{
-				Dictionary<string, PropertyInfo> propertyMap;
-				if (!s_AttributeNameToProperty.TryGetValue(type, out propertyMap))
-				{
-					propertyMap = new Dictionary<string, PropertyInfo>();
-					s_AttributeNameToProperty.Add(type, propertyMap);
-
-					foreach (PropertyInfo property in GetProperties(type))
-					{
-						if (!property.CanRead)
-							continue;
-
-						ApiNodeAttribute attribute = GetAttribute(property);
-						if (attribute == null)
-							continue;
-
-						propertyMap.Add(attribute.Name, property);
-					}
-				}
-
-				return propertyMap;
-			}
-			finally
-			{
-				s_AttributeNameToPropertySection.Leave();
-			}
-		}
-
 		public static IEnumerable<PropertyInfo> GetProperties(Type type)
 		{
 			if (type == null)
@@ -186,6 +145,51 @@ namespace ICD.Connect.API.Attributes
 			finally
 			{
 				s_PropertyToAttributesSection.Leave();
+			}
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		[NotNull]
+		private static Dictionary<string, PropertyInfo> CacheType(Type type)
+		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			s_AttributeNameToPropertySection.Enter();
+
+			try
+			{
+				Dictionary<string, PropertyInfo> propertyMap;
+				if (!s_AttributeNameToProperty.TryGetValue(type, out propertyMap))
+				{
+					propertyMap = new Dictionary<string, PropertyInfo>();
+					s_AttributeNameToProperty.Add(type, propertyMap);
+
+					foreach (PropertyInfo property in GetProperties(type))
+					{
+						if (!property.CanRead)
+							continue;
+
+						ApiNodeAttribute attribute = GetAttribute(property);
+						if (attribute == null)
+							continue;
+
+						if (propertyMap.ContainsKey(attribute.Name))
+							throw new InvalidProgramException(string.Format("{0} has multiple {1}s with name {2}", type.Name,
+							                                                typeof(ApiNodeAttribute), attribute.Name));
+
+						propertyMap.Add(attribute.Name, property);
+					}
+				}
+
+				return propertyMap;
+			}
+			finally
+			{
+				s_AttributeNameToPropertySection.Leave();
 			}
 		}
 
