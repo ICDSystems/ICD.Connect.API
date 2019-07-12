@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Connect.API.Info.Converters;
 using Newtonsoft.Json;
@@ -67,6 +68,7 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <returns></returns>
+		[CanBeNull]
 		public T GetValue<T>()
 		{
 			return (T)GetValue(typeof(T));
@@ -77,6 +79,7 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
+		[CanBeNull]
 		public object GetValue(Type type)
 		{
 			return ReflectionUtils.ChangeType(Value, type);
