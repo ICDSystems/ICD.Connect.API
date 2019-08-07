@@ -274,11 +274,15 @@ namespace ICD.Connect.API
 
 			try
 			{
+				bool first = true;
 				object lastObject = null;
 				string lastEvent = null;
 
 				foreach (KeyValuePair<object, Dictionary<string, ApiFeedbackCacheItem>> item in m_SubscribedEventsMap.OrderBy(kvp => kvp.Key.GetType().Name))
 				{
+					if (!first)
+						builder.AddSeparator();
+
 					foreach (KeyValuePair<string, ApiFeedbackCacheItem> eventName in item.Value.OrderBy(kvp => kvp.Key))
 					{
 						foreach (IApiRequestor subscriber in eventName.Value.GetRequestors().OrderBy(s => s.Name))
@@ -295,6 +299,7 @@ namespace ICD.Connect.API
 						lastEvent = null;
 					}
 
+					first = false;
 					lastObject = null;
 				}
 			}
