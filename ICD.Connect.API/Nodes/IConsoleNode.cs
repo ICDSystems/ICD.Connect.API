@@ -157,6 +157,8 @@ namespace ICD.Connect.API.Nodes
 				throw new ArgumentNullException("extends");
 
 			TableBuilder builder = new TableBuilder("Property", "Value");
+			builder.AddRow("Type", extends.GetType().Name);
+
 			AddStatusRowDelegate callback = (name, value) => builder.AddRow(name, string.Format("{0}", value));
 
 			extends.BuildConsoleStatus(callback);
