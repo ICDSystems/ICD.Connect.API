@@ -18,6 +18,7 @@ namespace ICD.Connect.API
 	public sealed class ApiFeedbackCache
 	{
 		private readonly WeakKeyDictionary<object, Dictionary<string, ApiFeedbackCacheItem>> m_SubscribedEventsMap;
+		private readonly SafeCriticalSection m_SubscribedEventsSection;
 
 		private ILoggerService m_CachedLogger;
 
@@ -35,6 +36,7 @@ namespace ICD.Connect.API
 		public ApiFeedbackCache()
 		{
 			m_SubscribedEventsMap = new WeakKeyDictionary<object, Dictionary<string, ApiFeedbackCacheItem>>();
+			m_SubscribedEventsSection = new SafeCriticalSection();
 		}
 
 		#region Methods
@@ -60,26 +62,35 @@ namespace ICD.Connect.API
 			if (path == null)
 				throw new ArgumentNullException("path");
 
-			Dictionary<string, ApiFeedbackCacheItem> events;
-			if (!m_SubscribedEventsMap.TryGetValue(instance, out events))
+			m_SubscribedEventsSection.Enter();
+
+			try
 			{
-				events = new Dictionary<string, ApiFeedbackCacheItem>();
-				m_SubscribedEventsMap.Add(instance, events);
+				Dictionary<string, ApiFeedbackCacheItem> events;
+				if (!m_SubscribedEventsMap.TryGetValue(instance, out events))
+				{
+					events = new Dictionary<string, ApiFeedbackCacheItem>();
+					m_SubscribedEventsMap.Add(instance, events);
+				}
+
+				string key = path.Peek().Name;
+
+				ApiFeedbackCacheItem callbackInfo;
+				if (!events.TryGetValue(key, out callbackInfo))
+				{
+					// Create a new subscription
+					Delegate callback = ReflectionUtils.SubscribeEvent<IApiEventArgs>(instance, eventInfo, EventCallback);
+
+					callbackInfo = ApiFeedbackCacheItem.FromPath(path, eventInfo, callback);
+					events.Add(key, callbackInfo);
+				}
+
+				callbackInfo.AddRequestor(requestor);
 			}
-
-			string key = path.Peek().Name;
-
-			ApiFeedbackCacheItem callbackInfo;
-			if (!events.TryGetValue(key, out callbackInfo))
+			finally
 			{
-				// Create a new subscription
-				Delegate callback = ReflectionUtils.SubscribeEvent<IApiEventArgs>(instance, eventInfo, EventCallback);
-
-				callbackInfo = ApiFeedbackCacheItem.FromPath(path, eventInfo, callback);
-				events.Add(key, callbackInfo);
+				m_SubscribedEventsSection.Leave();
 			}
-
-			callbackInfo.AddRequestor(requestor);
 		}
 
 		/// <summary>
@@ -101,26 +112,35 @@ namespace ICD.Connect.API
 
 			string key = path.Peek().Name;
 
-			Dictionary<string, ApiFeedbackCacheItem> events;
-			if (!m_SubscribedEventsMap.TryGetValue(instance, out events))
-				return;
+			m_SubscribedEventsSection.Enter();
 
-			ApiFeedbackCacheItem callbackInfo;
-			if (!events.TryGetValue(key, out callbackInfo))
-				return;
+			try
+			{
+				Dictionary<string, ApiFeedbackCacheItem> events;
+				if (!m_SubscribedEventsMap.TryGetValue(instance, out events))
+					return;
 
-			callbackInfo.RemoveRequestor(requestor);
-			if (callbackInfo.Count > 0)
-				return;
+				ApiFeedbackCacheItem callbackInfo;
+				if (!events.TryGetValue(key, out callbackInfo))
+					return;
 
-			// Remove the subscription
-			ReflectionUtils.UnsubscribeEvent(instance, callbackInfo.EventInfo, callbackInfo.Callback);
-			Logger.AddEntry(eSeverity.Debug, "{0} unsubscribed from {1} event {2}", requestor, instance, key);
+				callbackInfo.RemoveRequestor(requestor);
+				if (callbackInfo.Count > 0)
+					return;
 
-			events.Remove(key);
+				// Remove the subscription
+				ReflectionUtils.UnsubscribeEvent(instance, callbackInfo.EventInfo, callbackInfo.Callback);
+				Logger.AddEntry(eSeverity.Debug, "{0} unsubscribed from {1} event {2}", requestor, instance, key);
 
-			if (events.Count == 0)
-				m_SubscribedEventsMap.Remove(instance);
+				events.Remove(key);
+
+				if (events.Count == 0)
+					m_SubscribedEventsMap.Remove(instance);
+			}
+			finally
+			{
+				m_SubscribedEventsSection.Leave();
+			}
 		}
 
 		/// <summary>
@@ -132,26 +152,35 @@ namespace ICD.Connect.API
 			if (requestor == null)
 				throw new ArgumentNullException("requestor");
 
-			foreach (KeyValuePair<object, Dictionary<string, ApiFeedbackCacheItem>> instanceToEventNames in m_SubscribedEventsMap.ToArray())
+			m_SubscribedEventsSection.Enter();
+
+			try
 			{
-				foreach (KeyValuePair<string, ApiFeedbackCacheItem> eventNameToItem in instanceToEventNames.Value.ToArray())
+				foreach (KeyValuePair<object, Dictionary<string, ApiFeedbackCacheItem>> instanceToEventNames in m_SubscribedEventsMap.ToArray())
 				{
-					ApiFeedbackCacheItem item = eventNameToItem.Value;
+					foreach (KeyValuePair<string, ApiFeedbackCacheItem> eventNameToItem in instanceToEventNames.Value.ToArray())
+					{
+						ApiFeedbackCacheItem item = eventNameToItem.Value;
 
-					item.RemoveRequestor(requestor);
-					if (item.Count != 0)
-						continue;
+						item.RemoveRequestor(requestor);
+						if (item.Count != 0)
+							continue;
 
-					instanceToEventNames.Value.Remove(eventNameToItem.Key);
+						instanceToEventNames.Value.Remove(eventNameToItem.Key);
 
-					// Remove the subscription
-					ReflectionUtils.UnsubscribeEvent(instanceToEventNames.Key, item.EventInfo, item.Callback);
-					Logger.AddEntry(eSeverity.Debug, "{0} unsubscribed from {1} event {2}", requestor, instanceToEventNames.Key,
-					                eventNameToItem.Key);
+						// Remove the subscription
+						ReflectionUtils.UnsubscribeEvent(instanceToEventNames.Key, item.EventInfo, item.Callback);
+						Logger.AddEntry(eSeverity.Debug, "{0} unsubscribed from {1} event {2}", requestor, instanceToEventNames.Key,
+						                eventNameToItem.Key);
+					}
+
+					if (instanceToEventNames.Value.Count == 0)
+						m_SubscribedEventsMap.Remove(instanceToEventNames.Key);
 				}
-
-				if (instanceToEventNames.Value.Count == 0)
-					m_SubscribedEventsMap.Remove(instanceToEventNames.Key);
+			}
+			finally
+			{
+				m_SubscribedEventsSection.Leave();
 			}
 		}
 
@@ -170,13 +199,23 @@ namespace ICD.Connect.API
 			if (args == null)
 				throw new ArgumentNullException("args");
 
-			Dictionary<string, ApiFeedbackCacheItem> map;
-			if (!m_SubscribedEventsMap.TryGetValue(sender, out map))
-				return;
-
 			ApiFeedbackCacheItem callbackInfo;
-			if (!map.TryGetValue(args.EventName, out callbackInfo))
-				return;
+
+			m_SubscribedEventsSection.Enter();
+
+			try
+			{
+				Dictionary<string, ApiFeedbackCacheItem> map;
+				if (!m_SubscribedEventsMap.TryGetValue(sender, out map))
+					return;
+
+				if (!map.TryGetValue(args.EventName, out callbackInfo))
+					return;
+			}
+			finally
+			{
+				m_SubscribedEventsSection.Leave();
+			}
 
 			// Create a copy and build the result
 			ApiEventCommandPath copy = callbackInfo.CommandPath.DeepCopy();

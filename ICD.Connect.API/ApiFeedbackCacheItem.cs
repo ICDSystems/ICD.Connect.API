@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ICD.Common.Utils;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -13,11 +15,13 @@ namespace ICD.Connect.API
 	public sealed class ApiFeedbackCacheItem
 	{
 		private readonly WeakKeyDictionary<IApiRequestor, object> m_Requestors;
+		private readonly SafeCriticalSection m_RequestorsSection;
+
 		private readonly ApiEventCommandPath m_CommandPath;
 		private readonly EventInfo m_EventInfo;
 		private readonly Delegate m_Callback;
 
-#region Properties
+		#region Properties
 
 		/// <summary>
 		/// Gets the event command.
@@ -37,11 +41,11 @@ namespace ICD.Connect.API
 		/// <summary>
 		/// Gets the number of requestors that are currently registered.
 		/// </summary>
-		public int Count { get { return m_Requestors.Count; } }
+		public int Count { get { return m_RequestorsSection.Execute(() => m_Requestors.Count); } }
 
-#endregion
+		#endregion
 
-#region Factories
+		#region Factories
 
 		/// <summary>
 		/// Constructor.
@@ -52,12 +56,14 @@ namespace ICD.Connect.API
 		private ApiFeedbackCacheItem(ApiEventCommandPath commandPath, EventInfo eventInfo, Delegate callback)
 		{
 			if (commandPath == null)
-				throw new ArgumentNullException("command");
+				throw new ArgumentNullException("commandPath");
 
 			if (callback == null)
 				throw new ArgumentNullException("callback");
 
+			// Easier than making a WeakKeyHashSet from scratch
 			m_Requestors = new WeakKeyDictionary<IApiRequestor, object>();
+			m_RequestorsSection = new SafeCriticalSection();
 
 			m_CommandPath = commandPath;
 			m_EventInfo = eventInfo;
@@ -70,9 +76,9 @@ namespace ICD.Connect.API
 			return new ApiFeedbackCacheItem(commandPath, eventInfo, callback);
 		}
 
-#endregion
+		#endregion
 
-#region Methods
+		#region Methods
 
 		/// <summary>
 		/// Adds the requestor to the collection for callback.
@@ -80,7 +86,7 @@ namespace ICD.Connect.API
 		/// <param name="requestor"></param>
 		public void AddRequestor(IApiRequestor requestor)
 		{
-			m_Requestors[requestor] = null;
+			m_RequestorsSection.Execute(() => m_Requestors[requestor] = null);
 		}
 
 		/// <summary>
@@ -89,7 +95,7 @@ namespace ICD.Connect.API
 		/// <param name="requestor"></param>
 		public void RemoveRequestor(IApiRequestor requestor)
 		{
-			m_Requestors.Remove(requestor);
+			m_RequestorsSection.Execute(() => m_Requestors.Remove(requestor));
 		}
 
 		/// <summary>
@@ -98,9 +104,9 @@ namespace ICD.Connect.API
 		/// <returns></returns>
 		public IEnumerable<IApiRequestor> GetRequestors()
 		{
-			return m_Requestors.Keys;
+			return m_RequestorsSection.Execute(() => m_Requestors.Keys.ToArray());
 		}
 
-#endregion
+		#endregion
 	}
 }
