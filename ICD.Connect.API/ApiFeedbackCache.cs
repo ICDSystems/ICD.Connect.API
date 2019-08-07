@@ -5,8 +5,10 @@ using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
+using ICD.Connect.API.Commands;
 using ICD.Connect.API.EventArguments;
 using ICD.Connect.API.Info;
+using ICD.Connect.API.Nodes;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
 #else
@@ -15,7 +17,7 @@ using System.Reflection;
 
 namespace ICD.Connect.API
 {
-	public sealed class ApiFeedbackCache
+	public sealed class ApiFeedbackCache : IConsoleNode
 	{
 		private readonly WeakKeyDictionary<object, Dictionary<string, ApiFeedbackCacheItem>> m_SubscribedEventsMap;
 		private readonly SafeCriticalSection m_SubscribedEventsSection;
@@ -224,5 +226,86 @@ namespace ICD.Connect.API
 			foreach (IApiRequestor requestor in callbackInfo.GetRequestors())
 				requestor.HandleFeedback(copy.Root);
 		}
+
+		#region Console
+
+		/// <summary>
+		/// Gets the name of the node.
+		/// </summary>
+		public string ConsoleName { get { return "API"; } }
+
+		/// <summary>
+		/// Gets the help information for the node.
+		/// </summary>
+		public string ConsoleHelp { get { return "Provides information about the API"; } }
+
+		/// <summary>
+		/// Gets the child console nodes.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IConsoleNodeBase> GetConsoleNodes()
+		{
+			yield break;
+		}
+
+		/// <summary>
+		/// Calls the delegate for each console status item.
+		/// </summary>
+		/// <param name="addRow"></param>
+		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
+		{
+		}
+
+		/// <summary>
+		/// Gets the child console commands.
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<IConsoleCommand> GetConsoleCommands()
+		{
+			yield return new ConsoleCommand("PrintSubscriptions", "Prints a table of API events and their subscribers",
+			                                () => PrintSubscriptions());
+		}
+
+		private string PrintSubscriptions()
+		{
+			TableBuilder builder = new TableBuilder("Object", "Event", "Subscribers");
+
+			m_SubscribedEventsSection.Enter();
+
+			try
+			{
+				object lastObject = null;
+				string lastEvent = null;
+
+				foreach (KeyValuePair<object, Dictionary<string, ApiFeedbackCacheItem>> item in m_SubscribedEventsMap.OrderBy(kvp => kvp.Key.GetType().Name))
+				{
+					foreach (KeyValuePair<string, ApiFeedbackCacheItem> eventName in item.Value.OrderBy(kvp => kvp.Key))
+					{
+						foreach (IApiRequestor subscriber in eventName.Value.GetRequestors().OrderBy(s => s.Name))
+						{
+							object thisObject = lastObject == null ? item.Key : null;
+							lastObject = item.Key;
+
+							string thisEvent = lastEvent == null ? eventName.Key : null;
+							lastEvent = eventName.Key;
+
+							builder.AddRow(thisObject, thisEvent, subscriber.Name);
+						}
+
+						lastEvent = null;
+					}
+
+					lastObject = null;
+				}
+			}
+			finally
+			{
+				m_SubscribedEventsSection.Leave();
+			}
+
+			return builder.ToString();
+		}
+
+		#endregion
 	}
 }

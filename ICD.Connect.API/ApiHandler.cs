@@ -33,6 +33,8 @@ namespace ICD.Connect.API
 		{
 			s_FeedbackCache = new ApiFeedbackCache();
 			s_FeedbackCacheSection = new SafeCriticalSection();
+
+			ApiConsole.RegisterChild(s_FeedbackCache);
 		}
 
 		#region Handle Requests
