@@ -20,5 +20,10 @@ namespace ICD.Connect.API.Proxies
 		/// Instructs the proxy to raise commands requesting initial values.
 		/// </summary>
 		void Initialize();
+
+		/// <summary>
+		/// Instructs the proxy to clear any initialized values.
+		/// </summary>
+		void Deinitialize();
 	}
 }

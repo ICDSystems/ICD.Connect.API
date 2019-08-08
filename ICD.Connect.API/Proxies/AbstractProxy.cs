@@ -68,6 +68,13 @@ namespace ICD.Connect.API.Proxies
 		}
 
 		/// <summary>
+		/// Instructs the proxy to clear any initialized values.
+		/// </summary>
+		public virtual void Deinitialize()
+		{
+		}
+
+		/// <summary>
 		/// Release resources.
 		/// </summary>
 		public void Dispose()
