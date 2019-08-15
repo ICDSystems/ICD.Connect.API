@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.0.1] - 2019-08-15
 ### Changed
  - Failing gracefully when a console command uses a bad index
 
