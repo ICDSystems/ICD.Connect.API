@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [4.0.1] - 2019-08-15
 ### Changed
  - Failing gracefully when a console command uses a bad index
+ - Fixed a bug when trying to execute a command and nothing is returned in console due to 0 nodes in tree
 
 ## [4.0.0] - 2019-02-07
 ### Changed
