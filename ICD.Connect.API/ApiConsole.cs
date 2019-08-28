@@ -176,6 +176,35 @@ namespace ICD.Connect.API
 			            .Select(s => StringUtils.UnEnquote(s));
 		}
 
+		/// <summary>
+		/// Returns a table with the program compilation date, current uptime, & last restart date.
+		/// </summary>
+		/// <returns></returns>
+		public string Uptime()
+		{
+			string compilationTime = ProgramUtils.CompiledDate;
+
+			TimeSpan progUptime = ProcessorUtils.GetProgramUptime();
+			string uptime = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}.{4:D3}",
+			                              progUptime.Days,
+			                              progUptime.Hours,
+			                              progUptime.Minutes,
+			                              progUptime.Seconds,
+			                              progUptime.Milliseconds);
+
+			TimeSpan systemUptime = ProcessorUtils.GetSystemUptime();
+			string lastRestart = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}.{4:D3} ago",
+			                                   systemUptime.Days,
+			                                   systemUptime.Hours,
+			                                   systemUptime.Minutes,
+			                                   systemUptime.Seconds,
+			                                   systemUptime.Milliseconds);
+
+			TableBuilder builder = new TableBuilder("Program Compilation Date", "Current Uptime", "Last Restart Date");
+
+			return builder.AddRow(compilationTime, uptime, lastRestart).ToString();
+		}
+
 		#endregion
 
 		/// <summary>
@@ -237,6 +266,10 @@ namespace ICD.Connect.API
 			}
 
 			yield return new ConsoleCommand("PrintThreads", "Prints a table of the known active threads", () => ThreadingUtils.PrintThreads());
+
+			yield return new ConsoleCommand("Uptime",
+			                                "Prints a table with the program compilation date, current uptime, & last restart date",
+			                                () => Uptime());
 		}
 
 		#endregion
