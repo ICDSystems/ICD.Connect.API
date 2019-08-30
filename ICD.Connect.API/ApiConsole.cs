@@ -178,13 +178,13 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
-		/// Returns a table with the program install date, current uptime, & last restart date.
+		/// Returns a table with the program install date, current uptime, & time since last restart.
 		/// </summary>
 		/// <returns></returns>
 		public static string Uptime()
 		{
 			DateTime installDateTime = IcdFile.GetCreationTime(string.Format("\\Simpl\\app{0}\\ProgramInfo.config",
-			                                               ProgramUtils.ProgramNumberFormatted));
+			                                                                 ProgramUtils.ProgramNumberFormatted));
 			string installDate = installDateTime.ToString("F");
 
 			TimeSpan progUptime = ProcessorUtils.GetProgramUptime();
@@ -196,16 +196,20 @@ namespace ICD.Connect.API
 			                              progUptime.Milliseconds);
 
 			TimeSpan systemUptime = ProcessorUtils.GetSystemUptime();
-			string lastRestart = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}.{4:D3} ago",
+			string lastRestart = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}.{4:D3}",
 			                                   systemUptime.Days,
 			                                   systemUptime.Hours,
 			                                   systemUptime.Minutes,
 			                                   systemUptime.Seconds,
 			                                   systemUptime.Milliseconds);
 
-			TableBuilder builder = new TableBuilder("Program Install Date", "Current Uptime", "Last Restart Date");
+			TableBuilder builder = new TableBuilder("", "");
 
-			return builder.AddRow(installDate, uptime, lastRestart).ToString();
+			builder.AddRow("Install Date", installDate);
+			builder.AddRow("Current Uptime", uptime);
+			builder.AddRow("Time Since Last Restart", lastRestart);
+
+			return builder.ToString();
 		}
 
 		#endregion
@@ -271,8 +275,9 @@ namespace ICD.Connect.API
 			yield return new ConsoleCommand("PrintThreads", "Prints a table of the known active threads", () => ThreadingUtils.PrintThreads());
 
 			yield return new ConsoleCommand("Uptime",
-			                                "Prints a table with the program install date, current uptime, & last restart date",
+			                                "Prints a table with the program install date, current uptime, & time since last restart",
 			                                () => Uptime());
+
 		}
 
 		#endregion
