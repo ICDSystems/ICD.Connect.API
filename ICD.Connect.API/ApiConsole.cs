@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.IO;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -177,12 +178,14 @@ namespace ICD.Connect.API
 		}
 
 		/// <summary>
-		/// Returns a table with the program compilation date, current uptime, & last restart date.
+		/// Returns a table with the program install date, current uptime, & last restart date.
 		/// </summary>
 		/// <returns></returns>
-		public string Uptime()
+		public static string Uptime()
 		{
-			string compilationTime = ProgramUtils.CompiledDate;
+			DateTime installDateTime = IcdFile.GetCreationTime(string.Format("\\Simpl\\app{0}\\ProgramInfo.config",
+			                                               ProgramUtils.ProgramNumberFormatted));
+			string installDate = installDateTime.ToString("F");
 
 			TimeSpan progUptime = ProcessorUtils.GetProgramUptime();
 			string uptime = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}.{4:D3}",
@@ -200,9 +203,9 @@ namespace ICD.Connect.API
 			                                   systemUptime.Seconds,
 			                                   systemUptime.Milliseconds);
 
-			TableBuilder builder = new TableBuilder("Program Compilation Date", "Current Uptime", "Last Restart Date");
+			TableBuilder builder = new TableBuilder("Program Install Date", "Current Uptime", "Last Restart Date");
 
-			return builder.AddRow(compilationTime, uptime, lastRestart).ToString();
+			return builder.AddRow(installDate, uptime, lastRestart).ToString();
 		}
 
 		#endregion
@@ -268,7 +271,7 @@ namespace ICD.Connect.API
 			yield return new ConsoleCommand("PrintThreads", "Prints a table of the known active threads", () => ThreadingUtils.PrintThreads());
 
 			yield return new ConsoleCommand("Uptime",
-			                                "Prints a table with the program compilation date, current uptime, & last restart date",
+			                                "Prints a table with the program install date, current uptime, & last restart date",
 			                                () => Uptime());
 		}
 
