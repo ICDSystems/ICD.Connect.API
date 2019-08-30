@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 ### Added
- - Console Command "ICD Uptime" which displays a table with the program compilation date, current uptime, and time since last system restart.
+ - Console Command "ICD Uptime" which displays a table with the program install date, current uptime, and time since last system restart.
 
 ## [4.0.1] - 2019-08-15
 ### Changed
