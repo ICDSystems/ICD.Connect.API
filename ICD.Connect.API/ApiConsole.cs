@@ -183,27 +183,24 @@ namespace ICD.Connect.API
 		/// <returns></returns>
 		public static string Uptime()
 		{
-			DateTime installDateTime = IcdFile.GetCreationTime(string.Format("\\Simpl\\app{0}\\ProgramInfo.config",
-			                                                                 ProgramUtils.ProgramNumberFormatted));
-			string installDate = installDateTime.ToString("F");
+			DateTime installDateTime = ProgramUtils.ProgramInstallDate;
+			string installDate = installDateTime.ToString("f");
 
 			TimeSpan progUptime = ProcessorUtils.GetProgramUptime();
-			string uptime = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}.{4:D3}",
+			string uptime = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}",
 			                              progUptime.Days,
 			                              progUptime.Hours,
 			                              progUptime.Minutes,
-			                              progUptime.Seconds,
-			                              progUptime.Milliseconds);
+			                              progUptime.Seconds);
 
 			TimeSpan systemUptime = ProcessorUtils.GetSystemUptime();
-			string lastRestart = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}.{4:D3}",
+			string lastRestart = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}",
 			                                   systemUptime.Days,
 			                                   systemUptime.Hours,
 			                                   systemUptime.Minutes,
-			                                   systemUptime.Seconds,
-			                                   systemUptime.Milliseconds);
+			                                   systemUptime.Seconds);
 
-			TableBuilder builder = new TableBuilder("", "");
+			TableBuilder builder = new TableBuilder("Item", "Value");
 
 			builder.AddRow("Install Date", installDate);
 			builder.AddRow("Current Uptime", uptime);
