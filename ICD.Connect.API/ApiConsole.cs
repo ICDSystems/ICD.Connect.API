@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
+using ICD.Common.Utils.IO;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -176,6 +177,38 @@ namespace ICD.Connect.API
 			            .Select(s => StringUtils.UnEnquote(s));
 		}
 
+		/// <summary>
+		/// Returns a table with the program install date, current uptime, & time since last restart.
+		/// </summary>
+		/// <returns></returns>
+		public static string Uptime()
+		{
+			DateTime installDateTime = ProgramUtils.ProgramInstallDate;
+			string installDate = installDateTime.ToString("f");
+
+			TimeSpan progUptime = ProcessorUtils.GetProgramUptime();
+			string uptime = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}",
+			                              progUptime.Days,
+			                              progUptime.Hours,
+			                              progUptime.Minutes,
+			                              progUptime.Seconds);
+
+			TimeSpan systemUptime = ProcessorUtils.GetSystemUptime();
+			string lastRestart = string.Format("{0} days {1:D2}:{2:D2}:{3:D2}",
+			                                   systemUptime.Days,
+			                                   systemUptime.Hours,
+			                                   systemUptime.Minutes,
+			                                   systemUptime.Seconds);
+
+			TableBuilder builder = new TableBuilder("Item", "Value");
+
+			builder.AddRow("Install Date", installDate);
+			builder.AddRow("Current Uptime", uptime);
+			builder.AddRow("Time Since Last Restart", lastRestart);
+
+			return builder.ToString();
+		}
+
 		#endregion
 
 		/// <summary>
@@ -237,6 +270,11 @@ namespace ICD.Connect.API
 			}
 
 			yield return new ConsoleCommand("PrintThreads", "Prints a table of the known active threads", () => ThreadingUtils.PrintThreads());
+
+			yield return new ConsoleCommand("Uptime",
+			                                "Prints a table with the program install date, current uptime, & time since last restart",
+			                                () => Uptime());
+
 		}
 
 		#endregion
