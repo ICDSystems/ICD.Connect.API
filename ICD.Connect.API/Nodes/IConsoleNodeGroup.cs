@@ -41,17 +41,10 @@ namespace ICD.Connect.API.Nodes
 			if (first.Equals(ApiConsole.HELP_COMMAND, StringComparison.CurrentCultureIgnoreCase))
 				return extends.PrintConsoleHelp();
 
-			IConsoleNodeBase[] nodes;
-
-			try
-			{
-				nodes = GetConsoleNodesBySelector(extends, first).ToArray();
-			}
-			catch (Exception)
-			{
-				return string.Format("{0} has no item with key {0}", extends.GetSafeConsoleName(),
+			IConsoleNodeBase[] nodes = GetConsoleNodesBySelector(extends, first).ToArray();
+			if (nodes.Length == 0)
+				return string.Format("{0} has no item with key {1}", extends.GetSafeConsoleName(),
 				                     StringUtils.ToRepresentation(first));
-			}
 
 			string output = null;
 

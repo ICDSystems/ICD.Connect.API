@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - Console Command "ICD Uptime" which displays a table with the program install date, current uptime, and time since last system restart.
 
+## [4.0.2] - 2019-09-03
+### Changed
+ - Fixed a bug when trying to execute a command and nothing is returned in console due to 0 nodes in tree
+
 ## [4.0.1] - 2019-08-15
 ### Changed
  - Failing gracefully when a console command uses a bad index
