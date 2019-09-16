@@ -5,8 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [4.1.0] - 2019-09-16
 ### Added
- - Console Command "ICD Uptime" which displays a table with the program install date, current uptime, and time since last system restart.
+ - Added console command "ICD Uptime" which displays a table with the program install date, current uptime, and time since last system restart.
+ - Added console command to print current API subscribers
+ 
+### Changed
+ - Fixed bugs with API subscriptions
 
 ## [4.0.2] - 2019-09-03
 ### Changed
