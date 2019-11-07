@@ -64,7 +64,7 @@ namespace ICD.Connect.API.Nodes
 		/// <param name="extends"></param>
 		/// <param name="selector"></param>
 		/// <returns></returns>
-		public static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelector(this IConsoleNodeGroup extends, string selector)
+		private static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelector(this IConsoleNodeGroup extends, string selector)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -84,7 +84,16 @@ namespace ICD.Connect.API.Nodes
 			uint index;
 			if (StringUtils.TryParse(selector, out index))
 			{
-				IConsoleNodeBase indexed = node.GetConsoleNodeByKey(index);
+				IConsoleNodeBase indexed = null;
+				
+				try
+				{
+					indexed = node.GetConsoleNodeByKey(index);
+				}
+				catch (ArgumentOutOfRangeException)
+				{
+				}
+				
 				if (indexed != null)
 					yield return indexed;
 				yield break;
