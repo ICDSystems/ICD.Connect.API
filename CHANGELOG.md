@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.1.1] - 2019-11-18
+### Changed
+ - Failing gracefully when a console command tries to use an index that doesnt exist
+
 ## [4.1.0] - 2019-09-16
 ### Added
  - Added console command "ICD Uptime" which displays a table with the program install date, current uptime, and time since last system restart.
