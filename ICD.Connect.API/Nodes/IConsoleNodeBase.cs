@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Services;
+using ICD.Common.Utils.Services.Logging;
 
 namespace ICD.Connect.API.Nodes
 {
@@ -30,6 +32,33 @@ namespace ICD.Connect.API.Nodes
 	/// </summary>
 	public static class ConsoleNodeBaseExtensions
 	{
+		/// <summary>
+		/// Runs the command.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <param name="command"></param>
+		public static string ExecuteConsoleCommand(this IConsoleNodeBase extends, string command)
+		{
+			if (extends == null)
+				throw new ArgumentNullException("extends");
+
+			if (command == null)
+				throw new ArgumentNullException("command");
+
+			string[] split = ApiConsole.Split(command).ToArray();
+
+			try
+			{
+				return extends.ExecuteConsoleCommand(split);
+			}
+			catch (Exception e)
+			{
+				ServiceProvider.TryGetService<ILoggerService>()
+				               .AddEntry(eSeverity.Error, e, "Failed to execute console command \"{0}\" - {1}", command, e.Message);
+				return string.Format("Failed to execute console command \"{0}\" - {1}", command, e.Message);
+			}
+		}
+
 		/// <summary>
 		/// Runs the command.
 		/// </summary>

@@ -37,6 +37,10 @@ namespace ICD.Connect.API.Nodes
 			string first = command.FirstOrDefault(ApiConsole.HELP_COMMAND);
 			string[] remaining = command.Skip(1).ToArray();
 
+			// Root
+			if (first.Equals(ApiConsole.SET_ROOT_COMMAND, StringComparison.CurrentCultureIgnoreCase))
+				return ApiConsole.ToggleRoot(extends);
+
 			// Help
 			if (first.Equals(ApiConsole.HELP_COMMAND, StringComparison.CurrentCultureIgnoreCase))
 				return extends.PrintConsoleHelp();

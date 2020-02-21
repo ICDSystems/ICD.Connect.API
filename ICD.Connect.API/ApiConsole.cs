@@ -26,11 +26,13 @@ namespace ICD.Connect.API
 
 		public const string ALL_COMMAND = "A";
 		public const string HELP_COMMAND = "?";
+		public const string SET_ROOT_COMMAND = "/";
 		public const string STATUS_COMMAND = "STATUS";
 
 		private static readonly ApiConsole s_Singleton;
 		private static readonly IcdHashSet<IConsoleNodeBase> s_Children;
 		private static readonly SafeCriticalSection s_ChildrenSection;
+		private static readonly WeakReference<IConsoleNodeBase> s_CurrentRoot;
 
 		#region Properties
 
@@ -44,6 +46,20 @@ namespace ICD.Connect.API
 		/// </summary>
 		public string ConsoleHelp { get { return ROOT_HELP; } }
 
+		/// <summary>
+		/// Gets/sets the current root for the ICD console.
+		/// </summary>
+		[CanBeNull]
+		public static IConsoleNodeBase CurrentRoot
+		{
+			get
+			{
+				IConsoleNodeBase currentRoot;
+				return s_CurrentRoot.TryGetTarget(out currentRoot) ? currentRoot : null;
+			}
+			set { s_CurrentRoot.SetTarget(value); }
+		}
+
 		#endregion
 
 		/// <summary>
@@ -54,6 +70,7 @@ namespace ICD.Connect.API
 			s_Singleton = new ApiConsole();
 			s_Children = new IcdHashSet<IConsoleNodeBase>();
 			s_ChildrenSection = new SafeCriticalSection();
+			s_CurrentRoot = new WeakReference<IConsoleNodeBase>(null);
 
 			IcdConsole.AddNewConsoleCommand(ExecuteCommand, ROOT_COMMAND, ROOT_HELP, IcdConsole.eAccessLevel.Operator);
 
@@ -69,7 +86,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="node"></param>
 		[PublicAPI]
-		public static void RegisterChild(IConsoleNodeBase node)
+		public static void RegisterChild([NotNull] IConsoleNodeBase node)
 		{
 			if (node == null)
 				throw new ArgumentNullException("node");
@@ -82,7 +99,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="node"></param>
 		[PublicAPI]
-		public static void UnregisterChild(IConsoleNodeBase node)
+		public static void UnregisterChild([NotNull] IConsoleNodeBase node)
 		{
 			if (node == null)
 				throw new ArgumentNullException("node");
@@ -95,26 +112,29 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="command"></param>
 		[PublicAPI]
-		public static void ExecuteCommand(string command)
+		public static void ExecuteCommand([NotNull] string command)
 		{
 			if (command == null)
 				throw new ArgumentNullException("command");
 
-			IcdConsole.ConsoleCommandResponseLine(ExecuteCommandForResponse(command));
+			string output = ExecuteCommandForResponse(command);
+			IcdConsole.ConsoleCommandResponseLine(output);
 		}
 
 		/// <summary>
-		/// Executes the command and retuns the response
+		/// Executes the command and returns the response
 		/// </summary>
 		/// <param name="command"></param>
 		/// <returns></returns>
-		public static string ExecuteCommandForResponse(string command)
+		public static string ExecuteCommandForResponse([NotNull] string command)
 		{
 			if (command == null)
 				throw new ArgumentNullException("command");
 
 			command = command.Trim();
-			return s_Singleton.ExecuteConsoleCommand(command);
+
+			IConsoleNodeBase root = CurrentRoot ?? s_Singleton;
+			return root.ExecuteConsoleCommand(command);
 		}
 
 #if SIMPLSHARP
@@ -124,7 +144,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="command"></param>
 		[PublicAPI]
-		public static void SPlusUcmd(SimplSharpString command)
+		public static void SPlusUcmd([NotNull] SimplSharpString command)
 		{
 			if (command == null)
 				throw new ArgumentNullException("command");
@@ -165,7 +185,7 @@ namespace ICD.Connect.API
 		/// </summary>
 		/// <param name="command"></param>
 		/// <returns></returns>
-		public static IEnumerable<string> Split(string command)
+		public static IEnumerable<string> Split([NotNull] string command)
 		{
 			if (command == null)
 				throw new ArgumentNullException("command");
@@ -278,5 +298,29 @@ namespace ICD.Connect.API
 		}
 
 		#endregion
+
+		/// <summary>
+		/// If the given node matches the current root, clears the root.
+		/// Otherwise, sets the current root.
+		/// </summary>
+		/// <param name="node"></param>
+		/// <returns></returns>
+		public static string ToggleRoot([CanBeNull] IConsoleNodeBase node)
+		{
+			if (node == CurrentRoot)
+				node = null;
+
+			CurrentRoot = node;
+
+			string output =
+				node == null
+					? "Cleared current root"
+					: "Set current root to " + node.GetSafeConsoleName();
+
+			// Hack - Lets include the help text for the current node
+			string help = ApiConsole.ExecuteCommandForResponse(HELP_COMMAND);
+
+			return string.Format("{0}{1}{1}{2}", output, IcdEnvironment.NewLine, help);
+		}
 	}
 }

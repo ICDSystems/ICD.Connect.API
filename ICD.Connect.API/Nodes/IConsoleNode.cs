@@ -4,8 +4,6 @@ using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
-using ICD.Common.Utils.Services;
-using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 
 namespace ICD.Connect.API.Nodes
@@ -37,33 +35,6 @@ namespace ICD.Connect.API.Nodes
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="command"></param>
-		public static string ExecuteConsoleCommand(this IConsoleNode extends, string command)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			if (command == null)
-				throw new ArgumentNullException("command");
-
-			string[] split = ApiConsole.Split(command).ToArray();
-
-			try
-			{
-				return extends.ExecuteConsoleCommand(split);
-			}
-			catch (Exception e)
-			{
-				ServiceProvider.TryGetService<ILoggerService>()
-				               .AddEntry(eSeverity.Error, e, "Failed to execute console command \"{0}\" - {1}", command, e.Message);
-				return string.Format("Failed to execute console command \"{0}\" - {1}", command, e.Message);
-			}
-		}
-
-		/// <summary>
-		/// Runs the command.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="command"></param>
 		public static string ExecuteConsoleCommand(this IConsoleNode extends, params string[] command)
 		{
 			if (extends == null)
@@ -71,6 +42,10 @@ namespace ICD.Connect.API.Nodes
 
 			string first = command.FirstOrDefault(ApiConsole.HELP_COMMAND);
 			string[] remaining = command.Skip(1).ToArray();
+
+			// Root
+			if (first.Equals(ApiConsole.SET_ROOT_COMMAND, StringComparison.CurrentCultureIgnoreCase))
+				return ApiConsole.ToggleRoot(extends);
 
 			// Help
 			if (first.Equals(ApiConsole.HELP_COMMAND, StringComparison.CurrentCultureIgnoreCase))
