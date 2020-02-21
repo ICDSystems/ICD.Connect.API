@@ -32,7 +32,7 @@ namespace ICD.Connect.API
 		private static readonly ApiConsole s_Singleton;
 		private static readonly IcdHashSet<IConsoleNodeBase> s_Children;
 		private static readonly SafeCriticalSection s_ChildrenSection;
-		private static readonly WeakReference<IConsoleNodeBase> s_CurrentRoot;
+		private static readonly WeakReference s_CurrentRoot;
 
 		#region Properties
 
@@ -51,13 +51,9 @@ namespace ICD.Connect.API
 		/// </summary>
 		[CanBeNull]
 		public static IConsoleNodeBase CurrentRoot
-		{
-			get
-			{
-				IConsoleNodeBase currentRoot;
-				return s_CurrentRoot.TryGetTarget(out currentRoot) ? currentRoot : null;
-			}
-			set { s_CurrentRoot.SetTarget(value); }
+		{ 
+			get { return s_CurrentRoot.Target as IConsoleNodeBase; } 
+			set { s_CurrentRoot.Target = value; }
 		}
 
 		#endregion
@@ -70,7 +66,7 @@ namespace ICD.Connect.API
 			s_Singleton = new ApiConsole();
 			s_Children = new IcdHashSet<IConsoleNodeBase>();
 			s_ChildrenSection = new SafeCriticalSection();
-			s_CurrentRoot = new WeakReference<IConsoleNodeBase>(null);
+			s_CurrentRoot = new WeakReference(null);
 
 			IcdConsole.AddNewConsoleCommand(ExecuteCommand, ROOT_COMMAND, ROOT_HELP, IcdConsole.eAccessLevel.Operator);
 
