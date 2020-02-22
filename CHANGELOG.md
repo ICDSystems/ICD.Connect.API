@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
  - ICD console supports setting/clearing root with '/' command
 
+### Changed
+ - True/False values in the console status are now red/green
+
 ## [4.1.1] - 2019-11-18
 ### Changed
  - Failing gracefully when a console command tries to use an index that doesnt exist

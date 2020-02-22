@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
-using ICD.Common.Utils.IO;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
@@ -314,7 +313,7 @@ namespace ICD.Connect.API
 					: "Set current root to " + node.GetSafeConsoleName();
 
 			// Hack - Lets include the help text for the current node
-			string help = ApiConsole.ExecuteCommandForResponse(HELP_COMMAND);
+			string help = ExecuteCommandForResponse(HELP_COMMAND);
 
 			return string.Format("{0}{1}{1}{2}", output, IcdEnvironment.NewLine, help);
 		}

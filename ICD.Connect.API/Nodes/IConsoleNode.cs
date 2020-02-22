@@ -134,12 +134,30 @@ namespace ICD.Connect.API.Nodes
 			TableBuilder builder = new TableBuilder("Property", "Value");
 			builder.AddRow("Type", extends.GetType().Name);
 
-			AddStatusRowDelegate callback = (name, value) => builder.AddRow(name, string.Format("{0}", value));
+			AddStatusRowDelegate callback = (name, value) =>
+			{
+				string valueString = GetStatusString(value);
+				builder.AddRow(name, valueString);
+			};
 
 			extends.BuildConsoleStatus(callback);
 
 			return string.Format("Status for '{0}':{1}{2}{3}", extends.GetSafeConsoleName(),
 			                     IcdEnvironment.NewLine, IcdEnvironment.NewLine, builder);
+		}
+
+
+		private static string GetStatusString(object value)
+		{
+			string output = value == null ? "NULL" : value.ToString();
+
+			if (value is bool)
+			{
+				string code = (bool)value ? AnsiUtils.COLOR_GREEN : AnsiUtils.COLOR_RED;
+				output = AnsiUtils.Format(output, code);
+			}
+
+			return output;
 		}
 	}
 }
