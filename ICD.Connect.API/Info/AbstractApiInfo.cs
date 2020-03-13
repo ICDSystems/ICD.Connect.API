@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Connect.API.Attributes;
 
@@ -6,6 +10,8 @@ namespace ICD.Connect.API.Info
 {
 	public abstract class AbstractApiInfo : IApiInfo
 	{
+		#region Properties
+
 		/// <summary>
 		/// Gets/sets the name for the API attribute.
 		/// </summary>
@@ -20,6 +26,8 @@ namespace ICD.Connect.API.Info
 		/// Gets/sets the response message for this request.
 		/// </summary>
 		public ApiResult Result { get; set; }
+
+		#endregion
 
 		/// <summary>
 		/// Constructor.
@@ -69,6 +77,22 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="child"></param>
 		protected abstract void AddChild(IApiInfo child);
+
+		/// <summary>
+		/// Gets the children attached to this node.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<IApiInfo> IApiInfo.GetChildren()
+		{
+			return GetChildren();
+		}
+
+
+		/// <summary>
+		/// Gets the children attached to this node.
+		/// </summary>
+		/// <returns></returns>
+		protected abstract IEnumerable<IApiInfo> GetChildren();
 
 		/// <summary>
 		/// Copies the current state onto the given instance.

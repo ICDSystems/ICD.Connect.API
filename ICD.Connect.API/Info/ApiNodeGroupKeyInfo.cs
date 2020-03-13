@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ICD.Connect.API.Info.Converters;
 using Newtonsoft.Json;
 
@@ -9,12 +10,11 @@ namespace ICD.Connect.API.Info
 	{
 		private uint m_Key;
 
+		#region Properties
+
 		public uint Key
 		{
-			get
-			{
-				return m_Key;
-			}
+			get { return m_Key; }
 			set
 			{
 				m_Key = value;
@@ -27,6 +27,10 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		public ApiClassInfo Node { get; set; }
 
+		#endregion
+
+		#region Constructors
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -34,6 +38,10 @@ namespace ICD.Connect.API.Info
 			: base(null)
 		{
 		}
+
+		#endregion
+
+		#region Methods
 
 		public static ApiNodeGroupKeyInfo FromClassInfo(uint key, ApiClassInfo classInfo)
 		{
@@ -43,6 +51,10 @@ namespace ICD.Connect.API.Info
 				Node = classInfo
 			};
 		}
+
+		#endregion
+
+		#region Private Methods
 
 		/// <summary>
 		/// Adds the given item as an immediate child to this node.
@@ -57,6 +69,16 @@ namespace ICD.Connect.API.Info
 				Node = child as ApiClassInfo;
 			else
 				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
+		}
+
+		/// <summary>
+		/// Gets the children attached to this node.
+		/// </summary>
+		/// <returns></returns>
+		protected override IEnumerable<IApiInfo> GetChildren()
+		{
+			if (Node != null)
+				yield return Node;
 		}
 
 		/// <summary>
@@ -82,5 +104,7 @@ namespace ICD.Connect.API.Info
 		{
 			return new ApiNodeGroupKeyInfo();
 		}
+
+		#endregion
 	}
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using ICD.Common.Utils;
 using ICD.Connect.API.Attributes;
 using ICD.Connect.API.Info.Converters;
 using Newtonsoft.Json;
@@ -79,6 +81,15 @@ namespace ICD.Connect.API.Info
 		}
 
 		/// <summary>
+		/// Gets the children attached to this node.
+		/// </summary>
+		/// <returns></returns>
+		protected override IEnumerable<IApiInfo> GetChildren()
+		{
+			yield break;
+		}
+
+		/// <summary>
 		/// Copies the current state onto the given instance.
 		/// </summary>
 		/// <param name="info"></param>
@@ -100,6 +111,106 @@ namespace ICD.Connect.API.Info
 		protected override AbstractApiInfo Instantiate()
 		{
 			return new ApiEventInfo();
+		}
+
+		/// <summary>
+		/// Interprets the incoming API request.
+		/// </summary>
+		/// <param name="requestor"></param>
+		/// <param name="type"></param>
+		/// <param name="instance"></param>
+		/// <param name="path"></param>
+		public void HandleEventRequest(IApiRequestor requestor, Type type, object instance, Stack<IApiInfo> path)
+		{
+			type = instance == null ? type : instance.GetType();
+			EventInfo eventInfo = ApiEventAttribute.GetEvent(this, type);
+
+			// Couldn't find an ApiEventAttribute for the given info.
+			if (eventInfo == null)
+			{
+				Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.MissingMember };
+				Result.SetValue(string.Format("No event with name {0}.", StringUtils.ToRepresentation(Name)));
+				return;
+			}
+
+			path.Push(this);
+
+			try
+			{
+				switch (SubscribeAction)
+				{
+					case ApiEventInfo.eSubscribeAction.None:
+						// We're not doing anything with the event so return info.
+						ApiEventInfo resultInfo = ApiEventAttribute.GetInfo(eventInfo, instance, 3);
+						Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
+						Result.SetValue(resultInfo);
+						return;
+
+					case ApiEventInfo.eSubscribeAction.Subscribe:
+						// Subscribe to the event
+						Result = Subscribe(requestor, eventInfo, instance, path);
+						return;
+
+					case ApiEventInfo.eSubscribeAction.Unsubscribe:
+						// Unsubscribe from the event
+						Result = Unsubscribe(requestor, instance, path);
+						return;
+
+					default:
+						throw new ArgumentOutOfRangeException("SubscribeAction", "Unknown subscribe action");
+				}
+			}
+			finally
+			{
+				path.Pop();
+			}
+		}
+
+		public ApiResult Subscribe(IApiRequestor requestor, EventInfo eventInfo, object instance, Stack<IApiInfo> path)
+		{
+			if (eventInfo == null)
+				throw new ArgumentNullException("eventInfo");
+
+			if (instance == null)
+				throw new ArgumentNullException("instance");
+
+			if (path == null)
+				throw new ArgumentNullException("path");
+
+			try
+			{
+				ApiFeedbackCache.Subscribe(requestor, eventInfo, instance, path);
+			}
+			catch (Exception e)
+			{
+				ApiResult output = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
+				output.SetValue(string.Format("Failed to subscribe to {0} - {1}", Name, e.Message));
+				return output;
+			}
+
+			return new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
+		}
+
+		public ApiResult Unsubscribe(IApiRequestor requestor, object instance, Stack<IApiInfo> path)
+		{
+			if (instance == null)
+				throw new ArgumentNullException("instance");
+
+			if (path == null)
+				throw new ArgumentNullException("path");
+
+			try
+			{
+				ApiFeedbackCache.Unsubscribe(requestor, instance, path);
+			}
+			catch (Exception e)
+			{
+				ApiResult output = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
+				output.SetValue(string.Format("Failed to unsubscribe from {0} - {1}", Name, e.Message));
+				return output;
+			}
+
+			return new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
 		}
 	}
 }

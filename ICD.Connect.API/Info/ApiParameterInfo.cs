@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
@@ -13,6 +15,8 @@ namespace ICD.Connect.API.Info
 	[JsonConverter(typeof(ApiParameterInfoConverter))]
 	public sealed class ApiParameterInfo : AbstractApiInfo
 	{
+		#region Properties
+
 		/// <summary>
 		/// Gets/sets the data type for the parameter.
 		/// </summary>
@@ -22,6 +26,10 @@ namespace ICD.Connect.API.Info
 		/// Gets/sets the value for the parameter.
 		/// </summary>
 		public object Value { get; set; }
+
+		#endregion
+
+		#region Constructors
 
 		/// <summary>
 		/// Constructor.
@@ -68,6 +76,8 @@ namespace ICD.Connect.API.Info
 			Type = parameter == null ? null : parameter.ParameterType;
 		}
 
+		#endregion
+
 		#region Methods
 
 		/// <summary>
@@ -95,6 +105,8 @@ namespace ICD.Connect.API.Info
 
 		#endregion
 
+		#region Private Methods
+
 		/// <summary>
 		/// Adds the given item as an immediate child to this node.
 		/// </summary>
@@ -105,6 +117,15 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("child");
 
 			throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
+		}
+
+		/// <summary>
+		/// Gets the children attached to this node.
+		/// </summary>
+		/// <returns></returns>
+		protected override IEnumerable<IApiInfo> GetChildren()
+		{
+			yield break;
 		}
 
 		/// <summary>
@@ -131,5 +152,7 @@ namespace ICD.Connect.API.Info
 		{
 			return new ApiParameterInfo();
 		}
+
+		#endregion
 	}
 }

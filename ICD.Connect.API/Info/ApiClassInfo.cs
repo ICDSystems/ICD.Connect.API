@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils;
+using ICD.Common.Utils.Collections;
 using ICD.Connect.API.Attributes;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Info.Converters;
@@ -22,17 +24,22 @@ namespace ICD.Connect.API.Info
 		//private List<Type> m_ProxyTypes;
 
 		[CanBeNull]
-		private Dictionary<string, ApiEventInfo> m_Events;
+		private IcdOrderedDictionary<string, ApiEventInfo> m_Events;
 		[CanBeNull]
-		private Dictionary<string, ApiMethodInfo> m_Methods;
+		private IcdOrderedDictionary<string, ApiMethodInfo> m_Methods;
 		[CanBeNull]
-		private Dictionary<string, ApiPropertyInfo> m_Properties;
+		private IcdOrderedDictionary<string, ApiPropertyInfo> m_Properties;
 		[CanBeNull]
-		private Dictionary<string, ApiNodeInfo> m_Nodes;
+		private IcdOrderedDictionary<string, ApiNodeInfo> m_Nodes;
 		[CanBeNull]
-		private Dictionary<string, ApiNodeGroupInfo> m_NodeGroups;
+		private IcdOrderedDictionary<string, ApiNodeGroupInfo> m_NodeGroups;
 
 		#region Properties
+
+		/// <summary>
+		/// The object at the root of the API.
+		/// </summary>
+		public static object Root { get; set; }
 
 		//public int ProxyTypeCount { get { return m_ProxyTypes == null ? 0 : m_ProxyTypes.Count; } }
 
@@ -236,7 +243,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("eventInfo", string.Format("{0} can not add event info with null name", this));
 
 			if (m_Events == null)
-				m_Events = new Dictionary<string, ApiEventInfo>();
+				m_Events = new IcdOrderedDictionary<string, ApiEventInfo>();
 
 			if (m_Events.ContainsKey(eventInfo.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate event info with name {1}", this, eventInfo.Name)); 
@@ -291,7 +298,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("method", string.Format("{0} can not add method info with null name", this));
 
 			if (m_Methods == null)
-				m_Methods = new Dictionary<string, ApiMethodInfo>();
+				m_Methods = new IcdOrderedDictionary<string, ApiMethodInfo>();
 
 			if (m_Methods.ContainsKey(method.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate method info with name {1}", this, method.Name)); 
@@ -346,7 +353,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("property", string.Format("{0} can not add property info with null name", this));
 
 			if (m_Properties == null)
-				m_Properties = new Dictionary<string, ApiPropertyInfo>();
+				m_Properties = new IcdOrderedDictionary<string, ApiPropertyInfo>();
 
 			if (m_Properties.ContainsKey(property.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate property info with name {1}", this, property.Name)); 
@@ -401,7 +408,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("node", string.Format("{0} can not add node info with null name", this));
 
 			if (m_Nodes == null)
-				m_Nodes = new Dictionary<string, ApiNodeInfo>();
+				m_Nodes = new IcdOrderedDictionary<string, ApiNodeInfo>();
 
 			if (m_Nodes.ContainsKey(node.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate node info with name {1}", this, node.Name)); 
@@ -493,7 +500,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("nodeGroup", string.Format("{0} can not add node group info with null name", this));
 
 			if (m_NodeGroups == null)
-				m_NodeGroups = new Dictionary<string, ApiNodeGroupInfo>();
+				m_NodeGroups = new IcdOrderedDictionary<string, ApiNodeGroupInfo>();
 
 			if (m_NodeGroups.ContainsKey(nodeGroup.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate node group info with name {1}", this, nodeGroup.Name));
@@ -521,6 +528,69 @@ namespace ICD.Connect.API.Info
 
 		#endregion
 
+		/// <summary>
+		/// Interprets the incoming API request.
+		/// </summary>
+		public void HandleRequest()
+		{
+			HandleRequest(null);
+		}
+
+		/// <summary>
+		/// Interprets the incoming API request.
+		/// </summary>
+		/// <param name="requestor"></param>
+		public void HandleRequest([CanBeNull] IApiRequestor requestor)
+		{
+			HandleClassRequest(requestor, Root.GetType(), Root, new Stack<IApiInfo>());
+		}
+
+		/// <summary>
+		/// Interprets the incoming API request.
+		/// </summary>
+		/// <param name="requestor"></param>
+		/// <param name="type"></param>
+		/// <param name="instance"></param>
+		/// <param name="path"></param>
+		public void HandleClassRequest([CanBeNull] IApiRequestor requestor, [NotNull] Type type,
+		                               [CanBeNull] object instance, [NotNull] Stack<IApiInfo> path)
+		{
+			type = instance == null ? type : instance.GetType();
+
+			// If there was nothing to handle we provide a response describing the features on this class
+			if (IsEmpty)
+			{
+				ApiClassInfo resultData = ApiClassAttribute.GetInfo(type, instance, 3);
+				Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
+				Result.SetValue(resultData);
+				return;
+			}
+
+			path.Push(this);
+
+			try
+			{
+				foreach (ApiEventInfo eventInfo in GetEvents())
+					eventInfo.HandleEventRequest(requestor, type, instance, path);
+
+				foreach (ApiPropertyInfo property in GetProperties())
+					property.HandlePropertyRequest(type, instance, path);
+
+				foreach (ApiMethodInfo method in GetMethods())
+					method.HandleMethodRequest(type, instance, path);
+
+				foreach (ApiNodeInfo node in GetNodes())
+					node.HandleNodeRequest(requestor, type, instance, path);
+
+				foreach (ApiNodeGroupInfo nodeGroup in GetNodeGroups())
+					nodeGroup.HandleNodeGroupRequest(requestor, type, instance, path);
+			}
+			finally
+			{
+				path.Pop();
+			}
+		}
+
 		#region Private Methods
 
 		/// <summary>
@@ -544,6 +614,19 @@ namespace ICD.Connect.API.Info
 				AddNodeGroup(child as ApiNodeGroupInfo);
 			else
 				throw new ArgumentException(string.Format("{0} can not add child of type {1}", GetType(), child.GetType()));
+		}
+
+		/// <summary>
+		/// Gets the children attached to this node.
+		/// </summary>
+		/// <returns></returns>
+		protected override IEnumerable<IApiInfo> GetChildren()
+		{
+			return GetEvents().Cast<IApiInfo>()
+			                  .Concat(GetMethods())
+			                  .Concat(GetProperties())
+			                  .Concat(GetNodes())
+			                  .Concat(GetNodeGroups());
 		}
 
 		/// <summary>

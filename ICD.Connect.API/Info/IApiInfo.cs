@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using ICD.Common.Properties;
+
 namespace ICD.Connect.API.Info
 {
 	public interface IApiInfo
@@ -28,5 +32,11 @@ namespace ICD.Connect.API.Info
 		/// </summary>
 		/// <param name="child"></param>
 		void AddChild(IApiInfo child);
+
+		/// <summary>
+		/// Gets the children attached to this node.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<IApiInfo> GetChildren();
 	}
 }
