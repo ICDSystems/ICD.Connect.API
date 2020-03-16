@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
+using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 
 namespace ICD.Connect.API.Utils
@@ -11,86 +12,98 @@ namespace ICD.Connect.API.Utils
 		/// <summary>
 		/// Given a sequence of console commands, formats each item with braces to show the shorthand command.
 		/// E.g.
-		///		ALongCommand
-		///		AnotherLongCommand
-		///		ALousyCommand
-		///		BCommand
-		///		
+		/// 	ALongCommand
+		/// 	AnotherLongCommand
+		/// 	ALousyCommand
+		/// 	BCommand
 		/// Would return:
-		///		(ALon)gCommand
-		///		(An)otherLongCommand
-		///		(ALou)syCommand
-		///		(B)Command
+		/// 	(ALon)gCommand
+		/// 	(An)otherLongCommand
+		/// 	(ALou)syCommand
+		/// 	(B)Command
 		/// </summary>
 		/// <param name="items"></param>
+		/// <param name="reverse"></param>
 		/// <returns></returns>
-		public static IEnumerable<string> FormatMinimalConsoleCommands([NotNull] IEnumerable<string> items)
+		public static IEnumerable<string> FormatMinimalConsoleCommands([NotNull] IEnumerable<string> items,
+		                                                               bool reverse)
 		{
 			if (items == null)
 				throw new ArgumentNullException("items");
 
 			IList<string> itemsList = items as IList<string> ?? items.ToArray();
-			return itemsList.Select(item => FormatMinimalConsoleCommand(item, itemsList));
+			return itemsList.Select(item => FormatMinimalConsoleCommand(item, itemsList, reverse));
 		}
 
-		///  <summary>
-		///  Given a console command and a sequence of console commands, formats the item with braces to show the shorthand command.
-		///  E.g.
-		/// 		ALongCommand
-		/// 		AnotherLongCommand
-		/// 		ALousyCommand
-		/// 		BCommand
-		/// 		
-		///  Would return:
-		/// 		(ALon)gCommand
-		/// 		(An)otherLongCommand
-		/// 		(ALou)syCommand
-		/// 		(B)Command
-		///  </summary>
+		/// <summary>
+		/// Given a console command and a sequence of console commands, formats the item with braces to show the shorthand command.
+		/// E.g.
+		/// 	ALongCommand
+		/// 	AnotherLongCommand
+		/// 	ALousyCommand
+		/// 	BCommand
+		/// Would return:
+		/// 	(ALon)gCommand
+		/// 	(An)otherLongCommand
+		/// 	(ALou)syCommand
+		/// 	(B)Command
+		/// </summary>
 		/// <param name="item"></param>
 		/// <param name="items"></param>
-		///  <returns></returns>
-		private static string FormatMinimalConsoleCommand(string item, [NotNull] IEnumerable<string> items)
+		/// <param name="reverse"></param>
+		/// <returns></returns>
+		private static string FormatMinimalConsoleCommand(string item, [NotNull] IEnumerable<string> items,
+		                                                  bool reverse)
 		{
 			if (items == null)
 				throw new ArgumentNullException("items");
 
 			// Avoid comparing a console command with itself
-			items = items.Where(i => !string.Equals(item, i, StringComparison.OrdinalIgnoreCase));
+			string[] itemsArray = items.Where(i => !string.Equals(item, i, StringComparison.OrdinalIgnoreCase)).ToArray();
 
-			int leadingMatch = GetLeadingMatch(item, items);
+			int uniqueLength = GetUniqueLength(item, itemsArray, reverse);
 
 			// Easy case - there is no minimal console command
-			if (leadingMatch >= item.Length)
+			if (uniqueLength >= item.Length)
 				return item;
 
-			// Insert braces
-			return string.Format("({0}){1}", item.Substring(0, leadingMatch + 1), item.Substring(leadingMatch + 1));
+			return reverse
+				? string.Format("{0}{1}({2}){3}",
+				                item.Substring(0, item.Length - uniqueLength),
+								AnsiUtils.COLOR_BLUE,
+				                item.Substring(item.Length - uniqueLength),
+				                AnsiUtils.ANSI_RESET)
+				: string.Format("{0}({1}){2}{3}",
+				                AnsiUtils.COLOR_BLUE,
+								item.Substring(0, uniqueLength),
+				                AnsiUtils.ANSI_RESET,
+								item.Substring(uniqueLength));
 		}
 
 		/// <summary>
-		/// Gets the min length from the start of the item to each string, finding the
-		/// point where they deviate from the given.
+		/// Gets the minimum number of characters of the given item to be unique against the
+		/// same number of characters from any item in the given sequence.
 		/// E.g.
-		///		FooBar
-		///		FooBaz
+		///  	FooBar
+		///  	FooBaz
 		/// Returns
-		///		5
+		/// 	6
 		/// </summary>
 		/// <param name="item"></param>
 		/// <param name="items"></param>
+		/// <param name="reverse"></param>
 		/// <returns></returns>
-		private static int GetLeadingMatch(string item, [NotNull] IEnumerable<string> items)
+		private static int GetUniqueLength(string item, [NotNull] IEnumerable<string> items, bool reverse)
 		{
 			if (items == null)
 				throw new ArgumentNullException("items");
 
-			return items.Select(other => GetLeadingMatch(item, other))
-			            .MaxOrDefault();
+			return items.Select(other => GetDeviationIndex(item, other, reverse))
+			            .MaxOrDefault() + 1;
 		}
 
 		/// <summary>
-		/// Gets the length from the start of each string to the point where they deviate.
+		/// Returns the index where the two strings start to deviate from each other.
 		/// E.g.
 		///		FooBar
 		///		FooBaz
@@ -99,8 +112,9 @@ namespace ICD.Connect.API.Utils
 		/// </summary>
 		/// <param name="item"></param>
 		/// <param name="other"></param>
+		/// <param name="reverse"></param>
 		/// <returns></returns>
-		private static int GetLeadingMatch([NotNull] string item, [NotNull] string other)
+		private static int GetDeviationIndex([NotNull] string item, [NotNull] string other, bool reverse)
 		{
 			if (item == null)
 				throw new ArgumentNullException("item");
@@ -112,8 +126,19 @@ namespace ICD.Connect.API.Utils
 
 			for (int index = 1; index <= item.Length && index <= other.Length; index++)
 			{
-				string a = item.Substring(0, index);
-				string b = other.Substring(0, index);
+				string a;
+				string b;
+
+				if (reverse)
+				{
+					a = item.Substring(item.Length - index);
+					b = other.Substring(other.Length - index);
+				}
+				else
+				{
+					a = item.Substring(0, index);
+					b = other.Substring(0, index);
+				}
 
 				if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase))
 					output = index;

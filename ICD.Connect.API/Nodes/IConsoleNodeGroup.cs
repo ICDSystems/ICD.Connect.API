@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
+using ICD.Connect.API.Utils;
 
 namespace ICD.Connect.API.Nodes
 {
@@ -45,7 +45,7 @@ namespace ICD.Connect.API.Nodes
 			if (first.Equals(ApiConsole.HELP_COMMAND, StringComparison.CurrentCultureIgnoreCase))
 				return extends.PrintConsoleHelp();
 
-			IConsoleNodeBase[] nodes = GetConsoleNodesBySelector(extends, first).ToArray();
+			IConsoleNodeBase[] nodes = extends.GetConsoleNodesBySelector(first).ToArray();
 			if (nodes.Length == 0)
 				return string.Format("{0} has no item with key {1}", extends.GetSafeConsoleName(),
 				                     StringUtils.ToRepresentation(first));
@@ -63,104 +63,27 @@ namespace ICD.Connect.API.Nodes
 		}
 
 		/// <summary>
-		/// Gets the child console nodes based on the given selector (e.g. index, all, etc).
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="selector"></param>
-		/// <returns></returns>
-		private static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelector(this IConsoleNodeGroup extends, string selector)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			return GetConsoleNodesBySelectorIterator(extends, selector);
-		}
-
-		/// <summary>
-		/// Gets the child console nodes based on the given selector (e.g. index, all, etc).
-		/// </summary>
-		/// <param name="node"></param>
-		/// <param name="selector"></param>
-		/// <returns></returns>
-		private static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelectorIterator(IConsoleNodeGroup node, string selector)
-		{
-			// Selector is an index.
-			uint index;
-			if (StringUtils.TryParse(selector, out index))
-			{
-				IConsoleNodeBase indexed = null;
-				
-				try
-				{
-					indexed = node.GetConsoleNodeByKey(index);
-				}
-				catch (ArgumentOutOfRangeException)
-				{
-				}
-				
-				if (indexed != null)
-					yield return indexed;
-				yield break;
-			}
-
-			// Selector is all
-			if (selector.Equals(ApiConsole.ALL_COMMAND, StringComparison.CurrentCultureIgnoreCase))
-			{
-				foreach (IConsoleNodeBase child in node.GetConsoleNodes().Values)
-					yield return child;
-				yield break;
-			}
-
-			// Selector is a name
-			IConsoleNodeBase named = node.GetConsoleNodeByName(selector);
-			if (named != null)
-				yield return named;
-		}
-
-		/// <summary>
-		/// Gets the child console node with the given name. Otherwise returns null.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="name"></param>
-		/// <returns></returns>
-		[CanBeNull]
-		private static IConsoleNodeBase GetConsoleNodeByName(this IConsoleNodeGroup extends, string name)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			return extends.GetConsoleNodes()
-			              .Values
-			              .FirstOrDefault(v => name.Equals(v.GetSafeConsoleName(), StringComparison.CurrentCultureIgnoreCase));
-		}
-
-		/// <summary>
 		/// Gets the child console node with the given key/index.
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="key"></param>
 		/// <returns></returns>
-		private static IConsoleNodeBase GetConsoleNodeByKey(this IConsoleNodeBase extends, uint key)
+		internal static IConsoleNodeBase GetConsoleNodeByKey(this IConsoleNodeGroup extends, uint key)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			IConsoleNodeGroup group = extends as IConsoleNodeGroup;
-			if (group != null)
+			try
 			{
-				IConsoleNodeBase output;
-				if (group.GetConsoleNodes().TryGetValue(key, out output))
-					return output;
-
-				throw new ArgumentOutOfRangeException("extends", "No child with the given key");
+				// Match the trailing digits
+				return extends.GetConsoleNodes()
+				              .Single(kvp => kvp.Key.ToString().EndsWith(key.ToString(), StringComparison.OrdinalIgnoreCase))
+				              .Value;
 			}
-
-			IConsoleNode node = extends as IConsoleNode;
-			if (node != null)
-				return node.GetConsoleNodes().ElementAtOrDefault((int)key);
-
-			throw new ArgumentOutOfRangeException("extends", "Unable to execute console command for type "
-			                                                 + extends.GetType().Name);
+			catch (InvalidOperationException)
+			{
+				throw new ArgumentOutOfRangeException("extends", "No item with key " + key);
+			}
 		}
 
 		/// <summary>
@@ -171,14 +94,25 @@ namespace ICD.Connect.API.Nodes
 		{
 			TableBuilder builder = new TableBuilder("Index", "Name", "Type", "Help");
 
-			foreach (KeyValuePair<uint, IConsoleNodeBase> kvp in extends.GetConsoleNodes().OrderByKey())
+			KeyValuePair<uint, IConsoleNodeBase>[] kvps =
+				extends.GetConsoleNodes()
+				       .OrderByKey()
+				       .ToArray();
+
+			string[] keysFormatted =
+				ConsoleUtils.FormatMinimalConsoleCommands(kvps.Select(kvp => kvp.Key.ToString()), true)
+				            .ToArray();
+
+			for (int index = 0; index < kvps.Length; index++)
 			{
-				IConsoleNodeBase node = kvp.Value;
+				IConsoleNodeBase node = kvps[index].Value;
+				string key = keysFormatted[index];
+
 				string name = node.GetSafeConsoleName();
 				string type = node.GetType().GetSyntaxName();
 				string help = node.ConsoleHelp;
 
-				builder.AddRow(kvp.Key.ToString(), name, type, help);
+				builder.AddRow(key, name, type, help);
 			}
 
 			return string.Format("Help for '{0}':{1}{2}", extends.GetSafeConsoleName(), IcdEnvironment.NewLine, builder);

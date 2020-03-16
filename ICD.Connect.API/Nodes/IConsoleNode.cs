@@ -130,7 +130,7 @@ namespace ICD.Connect.API.Nodes
 				       .ToArray();
 			IEnumerable<string> commandNames = nodes.Select(n => n.GetSafeConsoleName())
 			                                        .Concat(commands.Select(c => c.GetSafeConsoleName()));
-			string[] formattedCommandNames = ConsoleUtils.FormatMinimalConsoleCommands(commandNames).ToArray();
+			string[] formattedCommandNames = ConsoleUtils.FormatMinimalConsoleCommands(commandNames, false).ToArray();
 
 			// Add the nodes
 			for (int index = 0; index < nodes.Length; index++)

@@ -114,13 +114,14 @@ namespace ICD.Connect.API.Nodes
 		/// <param name="node"></param>
 		/// <param name="selector"></param>
 		/// <returns></returns>
-		private static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelectorIterator(IConsoleNodeBase node, string selector)
+		internal static IEnumerable<IConsoleNodeBase> GetConsoleNodesBySelectorIterator(IConsoleNodeBase node, string selector)
 		{
 			// Selector is an index.
+			IConsoleNodeGroup group = node as IConsoleNodeGroup;
 			uint index;
-			if (StringUtils.TryParse(selector, out index))
+			if (group != null && StringUtils.TryParse(selector, out index))
 			{
-				IConsoleNodeBase indexed = node.GetConsoleNodeByKey(index);
+				IConsoleNodeBase indexed = group.GetConsoleNodeByKey(index);
 				if (indexed != null)
 					yield return indexed;
 				yield break;
@@ -161,33 +162,6 @@ namespace ICD.Connect.API.Nodes
 			{
 				return null;
 			}
-		}
-
-		/// <summary>
-		/// Gets the child console node with the given key/index.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <param name="key"></param>
-		/// <returns></returns>
-		private static IConsoleNodeBase GetConsoleNodeByKey(this IConsoleNodeBase extends, uint key)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			IConsoleNodeGroup group = extends as IConsoleNodeGroup;
-			if (group != null)
-			{
-				IConsoleNodeBase output;
-				if (group.GetConsoleNodes().TryGetValue(key, out output))
-					return output;
-			}
-
-			IConsoleNode node = extends as IConsoleNode;
-			if (node != null)
-				return node.GetConsoleNodes().ElementAtOrDefault((int)key);
-
-			throw new ArgumentOutOfRangeException("extends", "Unable to execute console command for type "
-			                                                 + extends.GetType().Name);
 		}
 	}
 }
