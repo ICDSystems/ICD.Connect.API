@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
  - ICD console supports setting/clearing root with '/' command
+ - Console commands support abbreviations
 
 ### Changed
  - True/False values in the console status are now red/green

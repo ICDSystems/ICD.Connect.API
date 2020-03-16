@@ -5,6 +5,7 @@ using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
+using ICD.Connect.API.Utils;
 
 namespace ICD.Connect.API.Nodes
 {
@@ -95,8 +96,19 @@ namespace ICD.Connect.API.Nodes
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			return extends.GetConsoleCommands()
-			              .FirstOrDefault(c => name.Equals(c.GetSafeConsoleName(), StringComparison.CurrentCultureIgnoreCase));
+			try
+			{
+				return extends.GetConsoleCommands()
+				              .Append(new ConsoleCommand("Status", "Prints the current status for this item",
+				                                         () => PrintConsoleStatus(extends)))
+				              .SingleOrDefault(c => c.GetSafeConsoleName()
+				                                     .StartsWith(name, StringComparison.OrdinalIgnoreCase));
+
+			}
+			catch (InvalidOperationException)
+			{
+				return null;
+			}
 		}
 
 		/// <summary>
@@ -110,13 +122,32 @@ namespace ICD.Connect.API.Nodes
 
 			TableBuilder builder = new TableBuilder("Command", "Help");
 
-			foreach (IConsoleNodeBase node in extends.GetConsoleNodes() ?? new IConsoleNodeBase[0])
-				builder.AddRow(node.GetSafeConsoleName(), node.ConsoleHelp);
+			IConsoleNodeBase[] nodes = extends.GetConsoleNodes().ToArray();
+			IConsoleCommand[] commands =
+				extends.GetConsoleCommands()
+				       .Append(new ConsoleCommand("Status", "Prints the current status for this item",
+				                                  () => PrintConsoleStatus(extends)))
+				       .ToArray();
+			IEnumerable<string> commandNames = nodes.Select(n => n.GetSafeConsoleName())
+			                                        .Concat(commands.Select(c => c.GetSafeConsoleName()));
+			string[] formattedCommandNames = ConsoleUtils.FormatMinimalConsoleCommands(commandNames).ToArray();
 
-			foreach (IConsoleCommand command in (extends.GetConsoleCommands() ?? new IConsoleCommand[0]).Where(n => !n.Hidden))
-				builder.AddRow(command.GetSafeConsoleName(), command.Help);
+			// Add the nodes
+			for (int index = 0; index < nodes.Length; index++)
+			{
+				IConsoleNodeBase node = nodes[index];
+				string name = formattedCommandNames[index];
+				builder.AddRow(name, node.ConsoleHelp);
+			}
 
-			builder.AddRow(ApiConsole.STATUS_COMMAND, "Prints the current status for this item");
+			// Add the console commands
+			for (int index = 0; index < commands.Length; index++)
+			{
+				int indexOffset = index + nodes.Length;
+				IConsoleCommand command = commands[index];
+				string name = formattedCommandNames[indexOffset];
+				builder.AddRow(name, command.Help);
+			}
 
 			return string.Format("Help for '{0}':{1}{2}{3}", extends.GetSafeConsoleName(),
 			                     IcdEnvironment.NewLine, IcdEnvironment.NewLine, builder);
@@ -145,7 +176,6 @@ namespace ICD.Connect.API.Nodes
 			return string.Format("Status for '{0}':{1}{2}{3}", extends.GetSafeConsoleName(),
 			                     IcdEnvironment.NewLine, IcdEnvironment.NewLine, builder);
 		}
-
 
 		private static string GetStatusString(object value)
 		{

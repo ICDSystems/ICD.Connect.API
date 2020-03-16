@@ -152,8 +152,15 @@ namespace ICD.Connect.API.Nodes
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			return extends.GetConsoleNodes()
-			              .FirstOrDefault(g => name.Equals(g.GetSafeConsoleName(), StringComparison.CurrentCultureIgnoreCase));
+			try
+			{
+				return extends.GetConsoleNodes()
+				              .SingleOrDefault(g => g.GetSafeConsoleName().StartsWith(name, StringComparison.CurrentCultureIgnoreCase));
+			}
+			catch (InvalidOperationException)
+			{
+				return null;
+			}
 		}
 
 		/// <summary>
