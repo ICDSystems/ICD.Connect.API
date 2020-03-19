@@ -68,12 +68,12 @@ namespace ICD.Connect.API.Utils
 				return item;
 
 			return reverse
-				? string.Format("{0}{1}({2}){3}",
+				? string.Format("{0}{1}{2}{3}",
 				                item.Substring(0, item.Length - uniqueLength),
 								AnsiUtils.COLOR_BLUE,
 				                item.Substring(item.Length - uniqueLength),
 				                AnsiUtils.ANSI_RESET)
-				: string.Format("{0}({1}){2}{3}",
+				: string.Format("{0}{1}{2}{3}",
 				                AnsiUtils.COLOR_BLUE,
 								item.Substring(0, uniqueLength),
 				                AnsiUtils.ANSI_RESET,
