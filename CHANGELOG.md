@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.2.0] - 2020-03-20
 ### Added
  - ICD console supports setting/clearing root with '/' command
  - Console commands support abbreviations
