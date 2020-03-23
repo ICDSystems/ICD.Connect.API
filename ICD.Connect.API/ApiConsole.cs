@@ -26,7 +26,6 @@ namespace ICD.Connect.API
 		public const string ALL_COMMAND = "A";
 		public const string HELP_COMMAND = "?";
 		public const string SET_ROOT_COMMAND = "/";
-		public const string STATUS_COMMAND = "STATUS";
 
 		private static readonly ApiConsole s_Singleton;
 		private static readonly IcdHashSet<IConsoleNodeBase> s_Children;

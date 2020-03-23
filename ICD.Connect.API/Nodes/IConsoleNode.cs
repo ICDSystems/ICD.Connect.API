@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Extensions;
 using ICD.Connect.API.Commands;
@@ -13,6 +12,8 @@ namespace ICD.Connect.API.Nodes
 
 	public interface IConsoleNode : IConsoleNodeBase
 	{
+		#region Methods
+
 		/// <summary>
 		/// Calls the delegate for each console status item.
 		/// </summary>
@@ -24,6 +25,8 @@ namespace ICD.Connect.API.Nodes
 		/// </summary>
 		/// <returns></returns>
 		IEnumerable<IConsoleCommand> GetConsoleCommands();
+
+		#endregion
 	}
 
 	/// <summary>
@@ -31,12 +34,14 @@ namespace ICD.Connect.API.Nodes
 	/// </summary>
 	public static class ConsoleNodeExtensions
 	{
+		#region Internal Methods
+
 		/// <summary>
 		/// Runs the command.
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="command"></param>
-		public static string ExecuteConsoleCommand(this IConsoleNode extends, params string[] command)
+		internal static string ExecuteConsoleCommand(this IConsoleNode extends, params string[] command)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -44,109 +49,96 @@ namespace ICD.Connect.API.Nodes
 			string first = command.FirstOrDefault(ApiConsole.HELP_COMMAND);
 			string[] remaining = command.Skip(1).ToArray();
 
-			// Root
-			if (first.Equals(ApiConsole.SET_ROOT_COMMAND, StringComparison.CurrentCultureIgnoreCase))
-				return ApiConsole.ToggleRoot(extends);
-
-			// Help
-			if (first.Equals(ApiConsole.HELP_COMMAND, StringComparison.CurrentCultureIgnoreCase))
-				return extends.PrintConsoleHelp();
-
-			// Status
-			if (first.Equals(ApiConsole.STATUS_COMMAND, StringComparison.CurrentCultureIgnoreCase))
-				return extends.PrintConsoleStatus();
-
-			// Command
-			IConsoleCommand nodeCommand = extends.GetConsoleCommandByName(first);
-			if (nodeCommand != null)
-			{
-				try
-				{
-					return nodeCommand.Execute(remaining);
-				}
-				catch (Exception e)
-				{
-					return string.Format("Failed to execute console command {0} - {1}", first, e.Message);
-				}
-			}
-
-			// Child
-			IConsoleNodeBase[] children = extends.GetConsoleNodesBySelector(first).ToArray();
+			IConsoleCommon[] children = extends.GetChildrenBySelector(first).ToArray();
 			if (children.Length == 0)
 				return string.Format("Unexpected command {0}", StringUtils.ToRepresentation(first));
 
-			foreach (IConsoleNodeBase child in children)
-			{
-				string resp = child.ExecuteConsoleCommand(remaining);
-				if (resp != null)
-					return resp;
-			}
-			return null;
+			string[] output = children.Select(c => c.ExecuteConsoleCommand(remaining))
+			                          .Where(o => !string.IsNullOrEmpty(o))
+			                          .ToArray();
+
+			return string.Join(IcdEnvironment.NewLine, output);
 		}
 
+		#endregion
+
+		#region Private Methods
+
 		/// <summary>
-		/// Gets the console command with the given name. Otherwise returns null.
+		/// Gets the child console nodes based on the given selector (e.g. index, all, etc).
 		/// </summary>
 		/// <param name="extends"></param>
-		/// <param name="name"></param>
+		/// <param name="selector"></param>
 		/// <returns></returns>
-		[PublicAPI]
-		public static IConsoleCommand GetConsoleCommandByName(this IConsoleNode extends, string name)
+		private static IEnumerable<IConsoleCommon> GetChildrenBySelector(this IConsoleNode extends, string selector)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
+			IConsoleCommon[] children = extends.GetChildren().ToArray();
+
+			// Is there an exact match?
+			IConsoleCommon exact = children.FirstOrDefault(c => selector.Equals(c.GetSafeConsoleName(), StringComparison.OrdinalIgnoreCase));
+			if (exact != null)
+				return exact.Yield();
+
+			// Selector is an abbreviation
 			try
 			{
-				return extends.GetConsoleCommands()
-				              .Append(new ConsoleCommand("Status", "Prints the current status for this item",
-				                                         () => PrintConsoleStatus(extends)))
-				              .SingleOrDefault(c => c.GetSafeConsoleName()
-				                                     .StartsWith(name, StringComparison.OrdinalIgnoreCase));
-
+				return children.Single(g => g.GetSafeConsoleName()
+				                             .StartsWith(selector, StringComparison.CurrentCultureIgnoreCase))
+				               .Yield();
 			}
 			catch (InvalidOperationException)
 			{
-				return null;
+				return Enumerable.Empty<IConsoleCommon>();
 			}
+		}
+
+		/// <summary>
+		/// Gets the full set of child nodes and commands for the given console node.
+		/// </summary>
+		/// <param name="extends"></param>
+		/// <returns></returns>
+		private static IEnumerable<IConsoleCommon> GetChildren(this IConsoleNode extends)
+		{
+			IEnumerable<IConsoleCommon> nodes =
+				extends.GetConsoleNodes()
+				       .Cast<IConsoleCommon>();
+
+			IEnumerable<IConsoleCommon> commands =
+				extends.GetConsoleCommands()
+					// Add the special commands
+					   .Append(new ConsoleCommand("Status", "Prints the current status for this item", () => PrintConsoleStatus(extends)))
+				       .Append(new ConsoleCommand(ApiConsole.SET_ROOT_COMMAND, null, () => ApiConsole.ToggleRoot(extends), true))
+				       .Append(new ConsoleCommand(ApiConsole.HELP_COMMAND, null, () => extends.PrintConsoleHelp(), true))
+					   .Cast<IConsoleCommon>();
+
+			return nodes.Concat(commands);
 		}
 
 		/// <summary>
 		/// Prints the help to the console.
 		/// </summary>
 		/// <param name="extends"></param>
-		public static string PrintConsoleHelp(this IConsoleNode extends)
+		private static string PrintConsoleHelp(this IConsoleNode extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			TableBuilder builder = new TableBuilder("Command", "Help");
-
-			IConsoleNodeBase[] nodes = extends.GetConsoleNodes().ToArray();
-			IConsoleCommand[] commands =
-				extends.GetConsoleCommands()
-				       .Append(new ConsoleCommand("Status", "Prints the current status for this item",
-				                                  () => PrintConsoleStatus(extends)))
-				       .ToArray();
-			IEnumerable<string> commandNames = nodes.Select(n => n.GetSafeConsoleName())
-			                                        .Concat(commands.Select(c => c.GetSafeConsoleName()));
+			// Get the abbreviations for the child items
+			IConsoleCommon[] children = extends.GetChildren().ToArray();
+			IEnumerable<string> commandNames = children.Select(c => c.GetSafeConsoleName());
 			string[] formattedCommandNames = ConsoleUtils.FormatMinimalConsoleCommands(commandNames, false).ToArray();
 
-			// Add the nodes
-			for (int index = 0; index < nodes.Length; index++)
+			TableBuilder builder = new TableBuilder("Command", "Help");
+			foreach (KeyValuePair<string, IConsoleCommon> pair in formattedCommandNames.Zip(children))
 			{
-				IConsoleNodeBase node = nodes[index];
-				string name = formattedCommandNames[index];
-				builder.AddRow(name, node.ConsoleHelp);
-			}
+				IConsoleCommand command = pair.Value as IConsoleCommand;
+				if (command != null && command.Hidden)
+					continue;
 
-			// Add the console commands
-			for (int index = 0; index < commands.Length; index++)
-			{
-				int indexOffset = index + nodes.Length;
-				IConsoleCommand command = commands[index];
-				string name = formattedCommandNames[indexOffset];
-				builder.AddRow(name, command.ConsoleHelp);
+				builder.AddRow(pair.Key, pair.Value.ConsoleHelp);
 			}
 
 			return string.Format("Help for '{0}':{1}{2}{3}", extends.GetSafeConsoleName(),
@@ -157,7 +149,7 @@ namespace ICD.Connect.API.Nodes
 		/// Prints the status to the console.
 		/// </summary>
 		/// <param name="extends"></param>
-		public static string PrintConsoleStatus(this IConsoleNode extends)
+		private static string PrintConsoleStatus(this IConsoleNode extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -177,6 +169,11 @@ namespace ICD.Connect.API.Nodes
 			                     IcdEnvironment.NewLine, IcdEnvironment.NewLine, builder);
 		}
 
+		/// <summary>
+		/// Gets the string representation for the given status value.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
 		private static string GetStatusString(object value)
 		{
 			string output = value == null ? "NULL" : value.ToString();
@@ -189,5 +186,7 @@ namespace ICD.Connect.API.Nodes
 
 			return output;
 		}
+
+		#endregion
 	}
 }
