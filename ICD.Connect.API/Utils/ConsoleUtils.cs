@@ -65,7 +65,7 @@ namespace ICD.Connect.API.Utils
 
 			// Easy case - there is no minimal console command
 			if (uniqueLength >= item.Length)
-				return item;
+				return string.Format("{0}{1}{2}", AnsiUtils.COLOR_BLUE, item, AnsiUtils.ANSI_RESET);
 
 			return reverse
 				? string.Format("{0}{1}{2}{3}",
