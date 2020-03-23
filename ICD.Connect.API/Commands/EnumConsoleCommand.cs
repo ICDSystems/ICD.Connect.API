@@ -2,6 +2,7 @@
 using System.Linq;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.API.Commands
 {

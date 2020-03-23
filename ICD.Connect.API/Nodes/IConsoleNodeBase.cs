@@ -8,18 +8,8 @@ using ICD.Common.Utils.Services.Logging;
 
 namespace ICD.Connect.API.Nodes
 {
-	public interface IConsoleNodeBase
+	public interface IConsoleNodeBase : IConsoleCommon
 	{
-		/// <summary>
-		/// Gets the name of the node.
-		/// </summary>
-		string ConsoleName { get; }
-
-		/// <summary>
-		/// Gets the help information for the node.
-		/// </summary>
-		string ConsoleHelp { get; }
-
 		/// <summary>
 		/// Gets the child console nodes.
 		/// </summary>
@@ -79,19 +69,6 @@ namespace ICD.Connect.API.Nodes
 
 			throw new ArgumentOutOfRangeException("extends", "Unable to execute console command for type "
 			                                                 + extends.GetType().Name);
-		}
-
-		/// <summary>
-		/// Gets the console name without any whitespace.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <returns></returns>
-		public static string GetSafeConsoleName(this IConsoleNodeBase extends)
-		{
-			if (extends == null)
-				throw new ArgumentNullException("extends");
-
-			return StringUtils.RemoveWhitespace(extends.ConsoleName);
 		}
 
 		/// <summary>

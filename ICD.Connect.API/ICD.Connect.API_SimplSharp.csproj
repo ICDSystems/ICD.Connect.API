@@ -87,6 +87,7 @@
     <Compile Include="Info\ApiNodeGroupKeyInfo.cs" />
     <Compile Include="Info\Converters\ApiEventInfoConverter.cs" />
     <Compile Include="Info\Converters\ApiNodeGroupKeyInfoConverter.cs" />
+    <Compile Include="Nodes\IConsoleCommon.cs" />
     <Compile Include="Proxies\AbstractProxy.cs" />
     <Compile Include="ApiClassInfoEventArgs.cs" />
     <Compile Include="ApiCommandBuilder.cs" />

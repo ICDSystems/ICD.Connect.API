@@ -1,19 +1,12 @@
-﻿using ICD.Common.Utils;
+﻿using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.API.Commands
 {
-	public interface IConsoleCommand
+	public interface IConsoleCommand : IConsoleCommon
 	{
 		/// <summary>
-		/// Gets the name of the command.
+		/// Returns true if the command should be hidden in the console.
 		/// </summary>
-		string ConsoleName { get; }
-
-		/// <summary>
-		/// Gets the help for the command.
-		/// </summary>
-		string Help { get; }
-
 		bool Hidden { get; }
 
 		/// <summary>
@@ -21,21 +14,5 @@ namespace ICD.Connect.API.Commands
 		/// </summary>
 		/// <param name="parameters"></param>
 		string Execute(params string[] parameters);
-	}
-
-	/// <summary>
-	/// Extension methods for console commands.
-	/// </summary>
-	public static class ConsoleCommandExtensions
-	{
-		/// <summary>
-		/// Gets the console name without any whitespace.
-		/// </summary>
-		/// <param name="extends"></param>
-		/// <returns></returns>
-		public static string GetSafeConsoleName(this IConsoleCommand extends)
-		{
-			return StringUtils.RemoveWhitespace(extends.ConsoleName);
-		}
 	}
 }

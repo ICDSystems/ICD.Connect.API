@@ -1,5 +1,6 @@
 ﻿using System;
 using ICD.Common.Properties;
+using ICD.Connect.API.Nodes;
 
 namespace ICD.Connect.API.Commands
 {

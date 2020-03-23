@@ -20,8 +20,11 @@ namespace ICD.Connect.API.Commands
 		/// <summary>
 		/// Gets the help for the command.
 		/// </summary>
-		public string Help { get { return m_Help; } }
+		public string ConsoleHelp { get { return m_Help; } }
 
+		/// <summary>
+		/// Returns true if the command should be hidden in the console.
+		/// </summary>
 		public bool Hidden { get { return m_Hidden; } }
 
 		/// <summary>

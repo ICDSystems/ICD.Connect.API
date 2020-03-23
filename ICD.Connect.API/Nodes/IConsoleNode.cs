@@ -146,7 +146,7 @@ namespace ICD.Connect.API.Nodes
 				int indexOffset = index + nodes.Length;
 				IConsoleCommand command = commands[index];
 				string name = formattedCommandNames[indexOffset];
-				builder.AddRow(name, command.Help);
+				builder.AddRow(name, command.ConsoleHelp);
 			}
 
 			return string.Format("Help for '{0}':{1}{2}{3}", extends.GetSafeConsoleName(),
