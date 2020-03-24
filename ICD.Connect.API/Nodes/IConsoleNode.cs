@@ -86,7 +86,7 @@ namespace ICD.Connect.API.Nodes
 			try
 			{
 				return children.Single(g => g.GetSafeConsoleName()
-				                             .StartsWith(selector, StringComparison.CurrentCultureIgnoreCase))
+											 .StartsWith(selector, StringComparison.OrdinalIgnoreCase))
 				               .Yield();
 			}
 			catch (InvalidOperationException)

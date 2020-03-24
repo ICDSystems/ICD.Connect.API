@@ -77,7 +77,7 @@ namespace ICD.Connect.API.Nodes
 			KeyValuePair<string, IConsoleCommon>[] children = extends.GetChildren().ToArray();
 
 			// Special "all" case
-			if (ApiConsole.ALL_COMMAND.Equals(selector, StringComparison.CurrentCultureIgnoreCase))
+			if (ApiConsole.ALL_COMMAND.Equals(selector, StringComparison.OrdinalIgnoreCase))
 			{
 				// We only care about child nodes when using the "all" command
 				isAll = true;
@@ -96,7 +96,7 @@ namespace ICD.Connect.API.Nodes
 			// Selector is an abbreviation
 			try
 			{
-				return children.Where(kvp => kvp.Key.EndsWith(selector, StringComparison.CurrentCultureIgnoreCase))
+				return children.Where(kvp => kvp.Key.EndsWith(selector, StringComparison.OrdinalIgnoreCase))
 				               .Select(kvp => kvp.Value)
 				               .Single()
 				               .Yield();
