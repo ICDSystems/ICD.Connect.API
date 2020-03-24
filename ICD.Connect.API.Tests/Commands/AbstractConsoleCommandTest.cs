@@ -18,7 +18,7 @@ namespace ICD.Connect.API.Tests.Commands
         public virtual void HelpTest(string help)
         {
             AbstractConsoleCommand command = InstantiateDefault(null, help, false);
-            Assert.AreEqual(help, command.Help);
+            Assert.AreEqual(help, command.ConsoleHelp);
         }
 
         [TestCase(true)]

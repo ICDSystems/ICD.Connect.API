@@ -24,7 +24,7 @@ namespace ICD.Connect.API.Tests.Commands
         public override void HelpTest(string help)
         {
             EnumConsoleCommand<eTestEnum> command = new EnumConsoleCommand<eTestEnum>("Test", e => { }, false);
-            Assert.AreEqual("Test <[A, B, C, None]>", command.Help);
+            Assert.AreEqual("Test <[A, B, C, None]>", command.ConsoleHelp);
         }
     }
 }
