@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [4.2.1] - 2020-03-24
 ### Changed
  - Fixed some bad assumptions when generating console abbreviations
 
