@@ -12,6 +12,11 @@ namespace ICD.Connect.API.EventArguments
 		/// <summary>
 		/// Gets the wrapped data associated with the event.
 		/// </summary>
+		object IGenericEventArgs.Data { get { return Data; } }
+
+		/// <summary>
+		/// Gets the wrapped data associated with the event.
+		/// </summary>
 		public T Data { get { return m_Data; } }
 
 		/// <summary>
