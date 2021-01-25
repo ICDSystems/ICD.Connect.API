@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using ICD.Common.Properties;
-using ICD.Common.Utils;
 using ICD.Common.Utils.Collections;
 using ICD.Connect.API.Attributes;
 using ICD.Common.Utils.Extensions;
@@ -623,10 +622,10 @@ namespace ICD.Connect.API.Info
 		protected override IEnumerable<IApiInfo> GetChildren()
 		{
 			return GetEvents().Cast<IApiInfo>()
-			                  .Concat(GetMethods())
-			                  .Concat(GetProperties())
-			                  .Concat(GetNodes())
-			                  .Concat(GetNodeGroups());
+			                  .Concat(GetMethods().Cast<IApiInfo>())
+			                  .Concat(GetProperties().Cast<IApiInfo>())
+			                  .Concat(GetNodes().Cast<IApiInfo>())
+			                  .Concat(GetNodeGroups().Cast<IApiInfo>());
 		}
 
 		/// <summary>

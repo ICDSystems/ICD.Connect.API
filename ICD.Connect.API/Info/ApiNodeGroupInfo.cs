@@ -210,7 +210,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		protected override IEnumerable<IApiInfo> GetChildren()
 		{
-			return GetNodes();
+			return GetNodes().Cast<IApiInfo>();
 		}
 
 		/// <summary>

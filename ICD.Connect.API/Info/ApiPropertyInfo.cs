@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ICD.Common.Properties;
 using ICD.Common.Utils;
+using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;

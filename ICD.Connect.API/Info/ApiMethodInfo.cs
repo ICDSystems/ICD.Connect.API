@@ -162,7 +162,7 @@ namespace ICD.Connect.API.Info
 		/// <returns></returns>
 		protected override IEnumerable<IApiInfo> GetChildren()
 		{
-			return GetParameters();
+			return GetParameters().Cast<IApiInfo>();
 		}
 
 		/// <summary>
