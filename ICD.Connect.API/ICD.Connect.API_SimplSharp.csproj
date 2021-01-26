@@ -91,7 +91,6 @@
     <Compile Include="Proxies\AbstractProxy.cs" />
     <Compile Include="ApiClassInfoEventArgs.cs" />
     <Compile Include="ApiCommandBuilder.cs" />
-    <Compile Include="ApiHandler.cs" />
     <Compile Include="Attributes\ApiNodeAttribute.cs" />
     <Compile Include="Attributes\ApiNodeGroupAttribute.cs" />
     <Compile Include="Attributes\IApiAttribute.cs" />
