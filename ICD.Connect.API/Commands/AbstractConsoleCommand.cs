@@ -81,9 +81,6 @@ namespace ICD.Connect.API.Commands
 
 		public static object Convert(string value, Type type)
 		{
-			if (string.IsNullOrEmpty(value))
-				throw new ArgumentException("Value must not be null or empty");
-
 			if (type == null)
 				throw new ArgumentNullException("type");
 
