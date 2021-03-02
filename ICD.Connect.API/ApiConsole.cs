@@ -270,6 +270,10 @@ namespace ICD.Connect.API
 		/// <param name="addRow"></param>
 		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
+#if STANDARD
+			addRow("Is Elevated", ProgramUtils.IsElevated);
+#endif
+
 			ILoggerService logger = ServiceProvider.TryGetService<ILoggerService>();
 			if (logger != null)
 				addRow("Logging Severity", logger.SeverityLevel);
