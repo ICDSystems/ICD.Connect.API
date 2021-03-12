@@ -295,10 +295,12 @@ namespace ICD.Connect.API.Info
 				// Method failed to execute.
 				catch (TargetInvocationException e)
 				{
+					Exception inner = e.InnerException ?? e;
+
 					Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Exception };
 					Result.SetValue(string.Format("Failed to execute method {0} due to {1} - {2}.",
 					                              StringUtils.ToRepresentation(Name),
-					                              e.InnerException.GetType().Name, e.InnerException.Message));
+					                              inner.GetType().Name, inner.Message));
 					return;
 				}
 				catch (Exception e)
