@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ICD.Common.Utils.Extensions;
 using Newtonsoft.Json;
 #if SIMPLSHARP
 using Crestron.SimplSharp.Reflection;
