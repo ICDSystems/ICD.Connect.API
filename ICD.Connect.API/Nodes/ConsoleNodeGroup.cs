@@ -12,7 +12,7 @@ namespace ICD.Connect.API.Nodes
 		private readonly string m_Help;
 		private readonly IEnumerable<KeyValuePair<uint, IConsoleNodeBase>> m_Enumerable;
 
-		private IcdOrderedDictionary<uint, IConsoleNodeBase> m_Nodes;
+		private IcdSortedDictionary<uint, IConsoleNodeBase> m_Nodes;
 
 		#region Properties
 
@@ -141,7 +141,7 @@ namespace ICD.Connect.API.Nodes
 		{
 			if (m_Nodes == null)
 			{
-				m_Nodes = new IcdOrderedDictionary<uint, IConsoleNodeBase>();
+				m_Nodes = new IcdSortedDictionary<uint, IConsoleNodeBase>();
 
 				foreach (KeyValuePair<uint, IConsoleNodeBase> pair in m_Enumerable)
 				{

@@ -23,15 +23,15 @@ namespace ICD.Connect.API.Info
 		//private List<Type> m_ProxyTypes;
 
 		[CanBeNull]
-		private IcdOrderedDictionary<string, ApiEventInfo> m_Events;
+		private IcdSortedDictionary<string, ApiEventInfo> m_Events;
 		[CanBeNull]
-		private IcdOrderedDictionary<string, ApiMethodInfo> m_Methods;
+		private IcdSortedDictionary<string, ApiMethodInfo> m_Methods;
 		[CanBeNull]
-		private IcdOrderedDictionary<string, ApiPropertyInfo> m_Properties;
+		private IcdSortedDictionary<string, ApiPropertyInfo> m_Properties;
 		[CanBeNull]
-		private IcdOrderedDictionary<string, ApiNodeInfo> m_Nodes;
+		private IcdSortedDictionary<string, ApiNodeInfo> m_Nodes;
 		[CanBeNull]
-		private IcdOrderedDictionary<string, ApiNodeGroupInfo> m_NodeGroups;
+		private IcdSortedDictionary<string, ApiNodeGroupInfo> m_NodeGroups;
 
 		#region Properties
 
@@ -242,7 +242,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("eventInfo", string.Format("{0} can not add event info with null name", this));
 
 			if (m_Events == null)
-				m_Events = new IcdOrderedDictionary<string, ApiEventInfo>();
+				m_Events = new IcdSortedDictionary<string, ApiEventInfo>();
 
 			if (m_Events.ContainsKey(eventInfo.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate event info with name {1}", this, eventInfo.Name)); 
@@ -297,7 +297,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("method", string.Format("{0} can not add method info with null name", this));
 
 			if (m_Methods == null)
-				m_Methods = new IcdOrderedDictionary<string, ApiMethodInfo>();
+				m_Methods = new IcdSortedDictionary<string, ApiMethodInfo>();
 
 			if (m_Methods.ContainsKey(method.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate method info with name {1}", this, method.Name)); 
@@ -352,7 +352,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("property", string.Format("{0} can not add property info with null name", this));
 
 			if (m_Properties == null)
-				m_Properties = new IcdOrderedDictionary<string, ApiPropertyInfo>();
+				m_Properties = new IcdSortedDictionary<string, ApiPropertyInfo>();
 
 			if (m_Properties.ContainsKey(property.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate property info with name {1}", this, property.Name)); 
@@ -407,7 +407,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("node", string.Format("{0} can not add node info with null name", this));
 
 			if (m_Nodes == null)
-				m_Nodes = new IcdOrderedDictionary<string, ApiNodeInfo>();
+				m_Nodes = new IcdSortedDictionary<string, ApiNodeInfo>();
 
 			if (m_Nodes.ContainsKey(node.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate node info with name {1}", this, node.Name)); 
@@ -499,7 +499,7 @@ namespace ICD.Connect.API.Info
 				throw new ArgumentNullException("nodeGroup", string.Format("{0} can not add node group info with null name", this));
 
 			if (m_NodeGroups == null)
-				m_NodeGroups = new IcdOrderedDictionary<string, ApiNodeGroupInfo>();
+				m_NodeGroups = new IcdSortedDictionary<string, ApiNodeGroupInfo>();
 
 			if (m_NodeGroups.ContainsKey(nodeGroup.Name))
 				throw new ArgumentException(string.Format("{0} failed to add duplicate node group info with name {1}", this, nodeGroup.Name));
