@@ -139,19 +139,19 @@ namespace ICD.Connect.API.Info
 			{
 				switch (SubscribeAction)
 				{
-					case ApiEventInfo.eSubscribeAction.None:
+					case eSubscribeAction.None:
 						// We're not doing anything with the event so return info.
 						ApiEventInfo resultInfo = ApiEventAttribute.GetInfo(eventInfo, instance, 3);
 						Result = new ApiResult { ErrorCode = ApiResult.eErrorCode.Ok };
 						Result.SetValue(resultInfo);
 						return;
 
-					case ApiEventInfo.eSubscribeAction.Subscribe:
+					case eSubscribeAction.Subscribe:
 						// Subscribe to the event
 						Result = Subscribe(requestor, eventInfo, instance, path);
 						return;
 
-					case ApiEventInfo.eSubscribeAction.Unsubscribe:
+					case eSubscribeAction.Unsubscribe:
 						// Unsubscribe from the event
 						Result = Unsubscribe(requestor, instance, path);
 						return;
