@@ -35,11 +35,6 @@ namespace ICD.Connect.API.Info
 
 		#region Properties
 
-		/// <summary>
-		/// The object at the root of the API.
-		/// </summary>
-		public static object Root { get; set; }
-
 		//public int ProxyTypeCount { get { return m_ProxyTypes == null ? 0 : m_ProxyTypes.Count; } }
 
 		public int EventCount { get { return m_Events == null ? 0 : m_Events.Count; } }
@@ -530,18 +525,14 @@ namespace ICD.Connect.API.Info
 		/// <summary>
 		/// Interprets the incoming API request.
 		/// </summary>
-		public void HandleRequest()
-		{
-			HandleRequest(null);
-		}
-
-		/// <summary>
-		/// Interprets the incoming API request.
-		/// </summary>
+		/// <param name="instance"></param>
 		/// <param name="requestor"></param>
-		public void HandleRequest([CanBeNull] IApiRequestor requestor)
+		public void HandleRequest([NotNull] object instance, [CanBeNull] IApiRequestor requestor)
 		{
-			HandleClassRequest(requestor, Root.GetType(), Root, new Stack<IApiInfo>());
+			if (instance == null)
+				throw new ArgumentNullException("instance");
+
+			HandleClassRequest(requestor, instance.GetType(), instance, new Stack<IApiInfo>());
 		}
 
 		/// <summary>
@@ -554,6 +545,12 @@ namespace ICD.Connect.API.Info
 		public void HandleClassRequest([CanBeNull] IApiRequestor requestor, [NotNull] Type type,
 		                               [CanBeNull] object instance, [NotNull] Stack<IApiInfo> path)
 		{
+			if (type == null)
+				throw new ArgumentNullException("type");
+
+			if (path == null)
+				throw new ArgumentNullException("path");
+
 			type = instance == null ? type : instance.GetType();
 
 			// If there was nothing to handle we provide a response describing the features on this class
@@ -596,7 +593,7 @@ namespace ICD.Connect.API.Info
 		/// Adds the given item as an immediate child to this node.
 		/// </summary>
 		/// <param name="child"></param>
-		protected override void AddChild(IApiInfo child)
+		protected override void AddChild([NotNull] IApiInfo child)
 		{
 			if (child == null)
 				throw new ArgumentNullException("child");
