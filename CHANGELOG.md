@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.0] - 2021-05-14
+### Added
+ - Added "Is Elevated" to root console status
+
+### Changed
+ - ApiHandler logic split into relevant API nodes
+ - Fixed a bug preventing empty string parameters in the console
+ - Moved API root to the DirectMessageManager
+
 ## [4.2.3] - 2021-02-04
 ### Changed
  - Changed from Uptime to StartTime for Program/System start time
