@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ICD.Common.Properties;
 using ICD.Common.Utils;
 using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
@@ -12,11 +13,13 @@ namespace ICD.Connect.API.Nodes
 		/// <summary>
 		/// Gets the name of the node.
 		/// </summary>
+		[NotNull]
 		string ConsoleName { get; }
 
 		/// <summary>
 		/// Gets the help information for the node.
 		/// </summary>
+		[CanBeNull]
 		string ConsoleHelp { get; }
 	}
 
@@ -27,12 +30,17 @@ namespace ICD.Connect.API.Nodes
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <returns></returns>
-		internal static string GetSafeConsoleName(this IConsoleCommon extends)
+		[NotNull]
+		internal static string GetSafeConsoleName([NotNull] this IConsoleCommon extends)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
 
-			return StringUtils.RemoveWhitespace(extends.ConsoleName);
+			string consoleName = StringUtils.RemoveWhitespace(extends.ConsoleName);
+			if (string.IsNullOrEmpty(consoleName))
+				throw new InvalidOperationException(extends.GetType().Name + " console name is null or empty");
+
+			return consoleName;
 		}
 
 		/// <summary>
@@ -40,7 +48,7 @@ namespace ICD.Connect.API.Nodes
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="command"></param>
-		internal static string ExecuteConsoleCommand(this IConsoleCommon extends, string command)
+		internal static string ExecuteConsoleCommand([NotNull] this IConsoleCommon extends, [NotNull] string command)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
@@ -67,7 +75,7 @@ namespace ICD.Connect.API.Nodes
 		/// </summary>
 		/// <param name="extends"></param>
 		/// <param name="command"></param>
-		internal static string ExecuteConsoleCommand(this IConsoleCommon extends, params string[] command)
+		internal static string ExecuteConsoleCommand([NotNull] this IConsoleCommon extends, params string[] command)
 		{
 			if (extends == null)
 				throw new ArgumentNullException("extends");
