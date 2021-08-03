@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.1] - 2021-08-03
+### Changed
+ - Clarifying console name nullability, better handling of null/empty names
+
 ## [5.0.0] - 2021-05-14
 ### Added
  - Added "Is Elevated" to root console status
