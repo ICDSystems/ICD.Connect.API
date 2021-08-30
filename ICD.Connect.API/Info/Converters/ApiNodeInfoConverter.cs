@@ -1,4 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿#if NETFRAMEWORK
+extern alias RealNewtonsoft;
+using RealNewtonsoft.Newtonsoft.Json;
+#else
+using Newtonsoft.Json;
+#endif
 
 namespace ICD.Connect.API.Info.Converters
 {

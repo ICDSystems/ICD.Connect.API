@@ -1,6 +1,11 @@
-﻿using ICD.Connect.API.Attributes;
-using ICD.Connect.API.Info;
+﻿#if NETFRAMEWORK
+extern alias RealNewtonsoft;
+using RealNewtonsoft.Newtonsoft.Json;
+#else
 using Newtonsoft.Json;
+#endif
+using ICD.Connect.API.Attributes;
+using ICD.Connect.API.Info;
 using NUnit.Framework;
 
 namespace ICD.Connect.API.Tests.Info
