@@ -270,7 +270,7 @@ namespace ICD.Connect.API
 		/// <param name="addRow"></param>
 		public void BuildConsoleStatus(AddStatusRowDelegate addRow)
 		{
-#if !SIMPLSHARP
+#if NETSTANDARD
 			addRow("Is Elevated", ProgramUtils.IsElevated);
 #endif
 
