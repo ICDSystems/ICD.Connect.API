@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.2] - 2022-07-01
+### Changed
+ - Fixed PreProcessors for NETSTANDARD vs SIMPLSHARP for 4-series builds
+ - Updated Dependencies, Updated Crestron SDK to 2.18.96
+
 ## [5.0.1] - 2021-08-03
 ### Changed
  - Clarifying console name nullability, better handling of null/empty names
