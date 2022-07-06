@@ -9,7 +9,7 @@ using ICD.Common.Utils.Services;
 using ICD.Common.Utils.Services.Logging;
 using ICD.Connect.API.Commands;
 using ICD.Connect.API.Nodes;
-#if SIMPLSHARP
+#if !NETSTANDARD
 using Crestron.SimplSharp;
 #endif
 
@@ -131,7 +131,7 @@ namespace ICD.Connect.API
 			return root.ExecuteConsoleCommand(command);
 		}
 
-#if SIMPLSHARP
+#if !NETSTANDARD
 
 		/// <summary>
 		/// Called by S+ to execute a console command via UCMD.
