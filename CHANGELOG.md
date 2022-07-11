@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [5.0.3] - 2022-07-11
+### Changed
+ - Fixed Preprocessor issue for S+ console
+
 ## [5.0.2] - 2022-07-01
 ### Changed
  - Fixed PreProcessors for NETSTANDARD vs SIMPLSHARP for 4-series builds
